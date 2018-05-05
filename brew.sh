@@ -7,6 +7,11 @@ fi
 
 brew tap caskroom/cask
 
+# brew installs
+brew install neovim
+brew install tmux
+
+
 # homebrew cask apps
 # apps
 brew cask install google-chrome
@@ -24,7 +29,7 @@ brew cask install hammerspoon
 brew cask install visual-studio-code
 brew cask install sourcetree
 brew cask install gas-mask # host管理
-brew install neovim
+brew cask install shadowsocksx-ng
 # brew cask install docker
 # brew cask install alfred
 # brew cask install charles
