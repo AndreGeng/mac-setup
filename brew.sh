@@ -21,7 +21,6 @@ brew install zsh zsh-completions
 brew cask install iterm2
 brew cask install karabiner-elements
 brew cask install hammerspoon
-brew cask install macvim
 brew cask install visual-studio-code
 brew cask install sourcetree
 brew cask install gas-mask # host管理
