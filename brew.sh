@@ -1,5 +1,10 @@
-# homebrew & homebrew cask
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+# Check for Homebrew,
+# Install if we don't have it
+if test ! $(which brew); then
+  echo "Installing homebrew..."
+  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+fi
+
 brew tap caskroom/cask
 
 # homebrew cask apps
@@ -12,6 +17,7 @@ brew cask install baiduinput
 brew cask install qq
 brew cask install youdaodict # 有道词典
 # develop
+brew install zsh zsh-completions
 brew cask install iterm2
 brew cask install karabiner-elements
 brew cask install hammerspoon
