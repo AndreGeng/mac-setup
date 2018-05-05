@@ -10,5 +10,7 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 ./oh-my-zsh.sh
 # install node with nvm
 ./nodejs.sh
+# vim config
+./vim.sh
 # sync macconfig
 ./mac-config.sh
