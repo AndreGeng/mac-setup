@@ -1,6 +1,6 @@
 currentDir="$PWD"
 mkdir -p ~/Documents/unremitting && cd $_
-if [ ! -d "~/Documents/unremitting/MacConfig/.git" ]; then
+if [ ! -d ~/Documents/unremitting/MacConfig/.git ]; then
 	git clone https://github.com/AndreGeng/MacConfig.git
 	cd MacConfig
 else
@@ -8,4 +8,4 @@ else
 	git pull
 fi
 ./sync.sh
-cd currentDir
+cd $currentDir
