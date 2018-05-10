@@ -8,3 +8,4 @@
 todo:
   hammerspoon
     cmd+space切换输入法
+    zsh autojump not working
