@@ -5,7 +5,7 @@ sh ~/.vim_runtime/install_awesome_vimrc.sh
 curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 # copy vim conifg
-curl -L https://gist.github.com/AndreGeng/5bcf9381cb4080deae401941b96f145e/raw > ~/.vimrc
+curl -L https://gist.githubusercontent.com/AndreGeng/5bcf9381cb4080deae401941b96f145e/raw > ~/.vimrc
 # install python3 and neovim python3 provider
 curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | zsh
 pyenv install 2.7.11
