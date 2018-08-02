@@ -1,3 +1,7 @@
+使用:
+clone项目
+运行根目录下的./setup.sh脚本
+
 目前仍需手动配置项
 1. key repeat rate
   System Preference -> Keyboard -> Keyboard tab
