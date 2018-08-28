@@ -9,3 +9,4 @@ else
 fi
 ./sync.sh
 cd $currentDir
+source ~/.zshrc

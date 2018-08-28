@@ -11,6 +11,8 @@ brew tap caskroom/cask
 brew install neovim
 brew install tmux
 brew install zsh zsh-completions
+brew install autojump
+brew install yarn --without-node
 
 
 # homebrew cask apps
