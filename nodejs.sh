@@ -4,4 +4,5 @@ source ~/.zshrc
 nvm install --lts
 nvm alias default lts/*
 npm install -g js-beautify // vim autoformat json
+npm install -g typescript
 sudo ln -s "$(which node)" /usr/local/bin/node
