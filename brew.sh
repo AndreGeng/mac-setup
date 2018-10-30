@@ -14,6 +14,7 @@ brew install reattach-to-user-namespace --with-wrap-pbcopy-and-pbpaste
 brew install zsh zsh-completions
 brew install autojump
 brew install yarn --without-node
+brew install fd
 
 
 # homebrew cask apps
