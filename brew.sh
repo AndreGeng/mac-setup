@@ -1,16 +1,11 @@
 # Check for Homebrew,
-# Install if we don't have it
-if test ! $(which brew); then
-  echo "Installing homebrew..."
-  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-fi
+for f in $(dirname "$0")/utils/*.sh; do
+    source $f
+done
 
 brew tap caskroom/cask
 
 # brew installs
-brew install neovim
-brew install tmux
-brew install reattach-to-user-namespace --with-wrap-pbcopy-and-pbpaste
 brew install autojump
 brew install yarn --without-node
 brew install fd

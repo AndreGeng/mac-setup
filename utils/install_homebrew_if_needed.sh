@@ -3,8 +3,8 @@
 
 source $(dirname "$0")/utils/command_exists.sh
 if exists brew; then
-    echo 'homebrew already exists!'
+    log "homebrew already exists!" $Green
 else
-    echo 'Installing Homebrew Now'
+    log "Installing Homebrew Now"
     /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null
 fi

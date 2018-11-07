@@ -1,13 +1,18 @@
-echo 'setup amix/vimrc'
-git clone --depth=1 https://github.com/amix/vimrc.git ~/.vim_runtime
-sh ~/.vim_runtime/install_awesome_vimrc.sh
-echo 'install vim-plug'
+#!/bin/bash
+for f in $(dirname "$0")/utils/*.sh; do
+    source $f
+done
+
+brewInstallIfNotExists neovim
+
+log 'install vim-plug' $Green
 curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-echo 'copy vim config'
-curl -L https://gist.githubusercontent.com/AndreGeng/5bcf9381cb4080deae401941b96f145e/raw > ~/.vimrc
 # install python3 and neovim python3 provider
-curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | zsh
+log 'install neovim python provider' $Green
+if test ! $(exists pyenv); then
+    curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | zsh
+fi
 pyenv install 2.7.11
 pyenv install 3.6.4
 pyenv virtualenv 2.7.11 neovim2
@@ -20,3 +25,6 @@ pyenv which python  # Note the path
 pyenv activate neovim3
 pip install neovim
 pyenv which python  # Note the path
+
+# download nvim config
+curl -o ~/.config/nvim/init.vim https://raw.githubusercontent.com/AndreGeng/MacConfig/master/nvim/init.vim
