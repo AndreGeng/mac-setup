@@ -5,6 +5,7 @@ done
 
 brewInstallIfNotExists neovim
 brewInstallIfNotExists fd
+brewInstallIfNotExists ack
 
 log 'install vim-plug' $Green
 curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
