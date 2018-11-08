@@ -6,10 +6,6 @@ done
 brew tap caskroom/cask
 
 # brew installs
-brew install autojump
-brew install yarn --without-node
-brew install fd
-
 
 # homebrew cask apps
 # develop

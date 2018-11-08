@@ -5,6 +5,8 @@ done
 
 brewInstallIfNotExists zsh
 brewInstallIfNotExists zsh-completions
+brewInstallIfNotExists autojump
+brewInstallIfNotExists yarn --without-node
 # install oh-my-zsh
 log "installing oh-my-zsh" $Green
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
@@ -15,3 +17,4 @@ git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:
 # download .zshrc
 log 'downloading .zshrc' $Green
 curl -o ~/.zshrc https://raw.githubusercontent.com/AndreGeng/MacConfig/master/.zshrc
+source ~/.zshrc

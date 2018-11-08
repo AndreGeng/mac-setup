@@ -9,6 +9,6 @@ brewInstallIfNotExists()
     else
     # The package is not installed
         log "Installing $1 now!" $Green
-        brew install "$1"
+        brew install "$@"
     fi
 }
