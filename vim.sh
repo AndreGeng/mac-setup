@@ -6,6 +6,8 @@ done
 brewInstallIfNotExists neovim
 brewInstallIfNotExists fd
 brewInstallIfNotExists ack
+brewInstallIfNotExists openssl
+brewInstallIfNotExists xz
 
 log 'install vim-plug' $Green
 curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
@@ -27,14 +29,19 @@ fi
 if test ! $(pyenv versions | grep '^\s*neovim3'); then
     pyenv virtualenv 3.6.4 neovim3
 fi
-
-pyenv activate neovim2
+export PYENV_VERSION=2.7.11
+CPPFLAGS="-I$(brew --prefix openssl)/include" \
+LDFLAGS="-L$(brew --prefix openssl)/lib" \ 
 pip install neovim
 pyenv which python  # Note the path
+unset PYENV_VERSION
 
-pyenv activate neovim3
+export PYENV_VERSION=3.6.4
+CPPFLAGS="-I$(brew --prefix openssl)/include" \
+LDFLAGS="-L$(brew --prefix openssl)/lib" \ 
 pip install neovim
 pyenv which python  # Note the path
+unset PYENV_VERSION
 
 # download nvim config
 curl -o ~/.config/nvim/init.vim https://raw.githubusercontent.com/AndreGeng/MacConfig/master/nvim/init.vim
