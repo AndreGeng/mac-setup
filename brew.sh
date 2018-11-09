@@ -10,21 +10,21 @@ brew tap caskroom/cask
 
 # homebrew cask apps
 # develop
-brew cask install karabiner-elements
-brew cask install iterm2
-brew cask install hammerspoon
-brew cask install visual-studio-code
-brew cask install sourcetree
-brew cask install gas-mask # host管理
-brew cask install shadowsocksx-ng
+brew cask install karabiner-elements --force
+brew cask install iterm2 --force
+brew cask install hammerspoon --force
+brew cask install visual-studio-code --force
+brew cask install sourcetree --force
+brew cask install gas-mask --force # host管理
+brew cask install shadowsocksx-ng --force
 # brew cask install docker
 # brew cask install alfred
 # brew cask install charles
 # apps
-brew cask install google-chrome
-brew cask install evernote
-brew cask install appcleaner
-brew cask install android-file-transfer
-brew cask install baiduinput
-brew cask install qq
-brew cask install youdaodict # 有道词典
+brew cask install google-chrome --force
+brew cask install evernote --force
+brew cask install appcleaner --force
+brew cask install android-file-transfer --force
+brew cask install baiduinput --force
+brew cask install qq --force
+brew cask install youdaodict --force # 有道词典
