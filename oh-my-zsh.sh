@@ -5,7 +5,7 @@ done
 
 # download .zshrc
 log 'downloading .zshrc' $Green
-curl -o ~/.zshrc https://raw.githubusercontent.com/AndreGeng/MacConfig/master/.zshrc
+cp $(dirname "$0")/mac-config/.zshrc ~/.zshrc
 
 brewInstallIfNotExists zsh
 brewInstallIfNotExists zsh-completions

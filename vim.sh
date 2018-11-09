@@ -44,4 +44,4 @@ pyenv which python  # Note the path
 unset PYENV_VERSION
 
 # download nvim config
-curl -o ~/.config/nvim/init.vim https://raw.githubusercontent.com/AndreGeng/MacConfig/master/nvim/init.vim
+cp -R $(dirname "$0")/mac-config/nvim ~/.config
