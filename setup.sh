@@ -14,6 +14,8 @@ done
 ./nodejs.sh
 # homebrew
 ./brew.sh
+# alacrity
+./alacrity.sh
 # don't know how to install '*.app' through command lint
 # open baiduinput folder for now
 open /usr/local/Caskroom/baiduinput/latest
