@@ -1,14 +1,22 @@
+#!/bin/bash
+for f in $(dirname "$0")/utils/*.sh; do
+    source $f
+done
+
+# install realpath util
+brewInstallIfNotExists coreutils
+
+rm -rf ~/.config/alacritty
+rm -rf ~/.config/karabiner
+rm -rf ~/.config/nvim
+rm -rf ~/.config/tmuxinator
 rm -rf ~/.hammerspoon
-rm -rf ~/config/karabiner
 rm -f ~/.zshrc
 rm -f ~/.tmux.conf
-rm -rf ~/.config/nvim
-rm -rf ~/.config/alacritty
-rm -rf ~/.tmuxinator
-cp -R ./mac-config/.hammerspoon ~
-cp -R ./mac-config/karabiner ~/.config
-cp -R ./mac-config/.zshrc ~
-cp -R ./mac-config/nvim ~/.config
-cp -R ./mac-config/alacritty ~/.config
-cp -R ./mac-config/.tmux.conf ~
-cp -R ./mac-config/.tmuxinator ~
+ln -s $(realpath $(dirname "$0"))/mac-config/alacritty ~/.config
+ln -s $(realpath $(dirname "$0"))/mac-config/karabiner ~/.config
+ln -s $(realpath $(dirname "$0"))/mac-config/nvim ~/.config
+ln -s $(realpath $(dirname "$0"))/mac-config/tmuxinator ~/.config
+ln -s $(realpath $(dirname "$0"))/mac-config/.hammerspoon ~
+ln -s $(realpath $(dirname "$0"))/mac-config/.zshrc ~
+ln -s $(realpath $(dirname "$0"))/mac-config/.tmux.conf ~
