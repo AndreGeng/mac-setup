@@ -136,6 +136,11 @@ map <leader>tc :tabclose<cr>
 map <leader>tm :tabmove 
 map <leader>t<leader> :tabnext 
 
+" terminal mode key binding
+if has('nvim')
+  tnoremap <Esc> <C-\><C-n>
+  tnoremap <C-v><Esc> <Esc>
+endif
 "toggle quickfixlist/locationlist -- start
   function! GetBufferList()
     redir =>buflist
