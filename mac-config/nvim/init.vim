@@ -136,6 +136,9 @@ map <leader>tc :tabclose<cr>
 map <leader>tm :tabmove 
 map <leader>t<leader> :tabnext 
 
+" always use very magic when search
+nnoremap / /\v
+
 " terminal mode key binding
 " if has('nvim')
 "   tnoremap <Esc> <C-\><C-n>
