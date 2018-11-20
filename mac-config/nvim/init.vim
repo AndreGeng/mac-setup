@@ -108,6 +108,8 @@ nmap <leader>w :w!<cr>
 nnoremap <leader>ev :rightbelow vsplit $MYVIMRC<cr>
 " smart way to close pane
 nnoremap <leader>q :q<CR>
+" make all splits equal
+nnoremap <leader>e <C-w>=<CR>
 
 " git shortcut
 nnoremap <leader>gs :Gstatus<CR>
@@ -252,6 +254,7 @@ Plug 'mattn/webapi-vim'
 Plug 'sjl/gundo.vim'
 " syntax -- start
 Plug 'pangloss/vim-javascript'
+Plug 'leafgarland/typescript-vim'
 Plug 'othree/html5.vim'
 Plug 'mxw/vim-jsx'
 " syntax -- end
@@ -325,10 +328,15 @@ set completeopt=noinsert,menuone,noselect
 let g:LanguageClient_serverCommands = {
     \ 'javascript': [expand('`npm get prefix`/bin/javascript-typescript-stdio')],
     \ 'javascript.jsx': [expand('`npm get prefix`/bin/javascript-typescript-stdio')],
+    \ 'typescript': [expand('`npm get prefix`/bin/javascript-typescript-stdio')],
     \ }
 nnoremap <silent> K :call LanguageClient#textDocument_hover()<CR>
 nnoremap <silent> gd :call LanguageClient#textDocument_definition()<CR>
 nnoremap <silent> <F2> :call LanguageClient#textDocument_rename()<CR>
+augroup LanguageClient_config
+  autocmd!
+  autocmd User LanguageClientStarted call LanguageClient#setDiagnosticsList('Disabled')
+augroup END
 
 " xkbswitch
 let g:XkbSwitchEnabled = 1
