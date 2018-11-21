@@ -333,11 +333,7 @@ let g:LanguageClient_serverCommands = {
 nnoremap <silent> K :call LanguageClient#textDocument_hover()<CR>
 nnoremap <silent> gd :call LanguageClient#textDocument_definition()<CR>
 nnoremap <silent> <F2> :call LanguageClient#textDocument_rename()<CR>
-augroup LanguageClient_config
-  autocmd!
-  autocmd User LanguageClientStarted call LanguageClient#setDiagnosticsList('Disabled')
-augroup END
-
+let g:LanguageClient_diagnosticsList = 'Disabled'
 " xkbswitch
 let g:XkbSwitchEnabled = 1
 
