@@ -46,7 +46,7 @@ set diffopt+=iwhite
 
 " check one time after 4s of inactivity in normal mode
 set autoread
-autocmd FocusGained,BufEnter,CursorHold * checktime
+autocmd FocusGained,BufEnter,CursorHold * if bufname('%') != '[Command Line]' | checktime | endif
 
 " setup nvim with python support
 let g:python_host_prog = $HOME.'/.pyenv/versions/neovim2/bin/python'
@@ -155,6 +155,9 @@ nnoremap / /\v
   endfunction
 
   function! ToggleList(bufname, pfx)
+    if bufname('%') == '[Command Line]'
+      return
+    endif
     let buflist = GetBufferList()
     for bufnum in map(filter(split(buflist, '\n'), 'v:val =~ "'.a:bufname.'"'), 'str2nr(matchstr(v:val, "\\d\\+"))')
       if bufwinnr(bufnum) != -1
@@ -226,6 +229,8 @@ Plug 'nelstrom/vim-visual-star-search'
 Plug 'tpope/vim-abolish'
 Plug 'troydm/zoomwintab.vim'
 Plug 'tpope/vim-dispatch'
+Plug 'iamcco/mathjax-support-for-mkdp'
+Plug 'iamcco/markdown-preview.vim'
 " fix: can't use vim command under chinese input source
 Plug 'lyokha/vim-xkbswitch'
 Plug 'ncm2/ncm2'
