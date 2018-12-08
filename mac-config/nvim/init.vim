@@ -372,5 +372,9 @@ endfunction
 autocmd FocusGained,BufEnter * :call BookmarkMapKeys()
 autocmd FocusGained,BufEnter NERD_tree_* :call BookmarkUnmapKeys()
 
+" vim-indexed-search
+let g:indexed_search_max_hits = 1.0e6
+let g:indexed_search_max_lines = 1.0e6
+
 " }}}
 
