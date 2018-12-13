@@ -276,6 +276,16 @@ let g:NERDTreeMapJumpNextSibling = '<Nop>'
 let g:NERDTreeMapJumpPrevSibling = '<Nop>'
 " fzf
 nmap <leader>f :Files<CR>
+function! ToggleVCSIgnore()
+  if $FZF_DEFAULT_COMMAND !~# 'no-ignore-vcs'
+    let $FZF_DEFAULT_COMMAND = 'fd --type f --no-ignore-vcs'
+    echom 'all'
+  else
+    let $FZF_DEFAULT_COMMAND = 'fd --type f'
+    echom 'ignore'
+  endif
+endfunction
+nnoremap <leader>ts :call ToggleVCSIgnore()<cr>
 " Ack
 nmap <leader>a :Ack -i 
 
