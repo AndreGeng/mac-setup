@@ -194,6 +194,7 @@ augroup end
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
 Plug 'mg979/vim-visual-multi'
+Plug 'godlygeek/tabular'
 Plug 'scrooloose/nerdtree'
 Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'christoomey/vim-tmux-navigator'
@@ -267,6 +268,13 @@ call plug#end()
 " }}}
 
 " Plugin configurations {{{
+" multi
+let g:VM_manual_infoline = 1
+let g:VM_maps = {}
+let g:VM_maps["Select l"]           = '<m-l>'       " start selecting left
+let g:VM_maps["Select h"]           = '<m-h>'        " start selecting right
+let g:VM_maps["Select Cursor Down"] = '<m-j>'      " start selecting down
+let g:VM_maps["Select Cursor Up"]   = '<m-k>'        " start selecting up
 " nerdtree mapping
 let g:NERDTreeWinPos = "right"
 map <leader>nn :NERDTreeToggle<cr>
@@ -346,6 +354,7 @@ let g:LanguageClient_serverCommands = {
     \ 'typescript': [expand('`npm get prefix`/bin/javascript-typescript-stdio')],
     \ }
 nnoremap <silent> K :call LanguageClient#textDocument_hover()<CR>
+nnoremap <silent> E :call LanguageClient#explainErrorAtPoint()<CR>
 nnoremap <silent> gd :call LanguageClient#textDocument_definition()<CR>
 nnoremap <silent> <F2> :call LanguageClient#textDocument_rename()<CR>
 let g:LanguageClient_diagnosticsList = 'Disabled'
