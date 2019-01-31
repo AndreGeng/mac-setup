@@ -14,6 +14,7 @@ rm -rf ~/.hammerspoon
 rm -f ~/.zshrc
 rm -f ~/.tmux.conf
 rm -f ~/.ackrc
+mkdir -p ~/fzf-addons && ln -sf $(realpath $(dirname "$0"))/mac-config/fzf-git/fzf-git.sh ~/fzf-addons/
 ln -s $(realpath $(dirname "$0"))/mac-config/alacritty ~/.config
 ln -s $(realpath $(dirname "$0"))/mac-config/karabiner ~/.config
 ln -s $(realpath $(dirname "$0"))/mac-config/nvim ~/.config

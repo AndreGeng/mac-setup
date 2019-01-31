@@ -15,12 +15,6 @@ set lazyredraw
 set number
 set relativenumber
 
-" color scheme
-set termguicolors
-colorscheme evening 
-autocmd BufEnter,SourcePre * highlight Search guibg=none guifg=#50FA7B gui=underline
-autocmd FilterWritePre * if &diff | colorscheme apprentice | endif
-
 " indent
 set autoindent
 " use whitespace insteadof tab
@@ -268,6 +262,13 @@ call plug#end()
 " }}}
 
 " Plugin configurations {{{
+" color scheme
+set termguicolors
+set background=dark
+colorscheme evening
+autocmd BufEnter,SourcePre * highlight Search guibg=none guifg=#50FA7B gui=underline
+autocmd FilterWritePre * if &diff | colorscheme apprentice | endif
+
 " multi
 let g:VM_manual_infoline = 1
 let g:VM_maps = {}
@@ -396,4 +397,3 @@ let g:indexed_search_max_hits = 1.0e6
 let g:indexed_search_max_lines = 1.0e6
 
 " }}}
-
