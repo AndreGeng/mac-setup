@@ -6,9 +6,9 @@ done
 
 brewInstallIfNotExists neovim
 brewInstallIfNotExists fd
-brewInstallIfNotExists ack
 brewInstallIfNotExists openssl
 brewInstallIfNotExists xz
+brewInstallIfNotExists the_silver_searcher
 
 log 'install vim-plug' $Green
 curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \

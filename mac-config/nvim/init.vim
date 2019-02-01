@@ -296,6 +296,9 @@ function! ToggleVCSIgnore()
 endfunction
 nnoremap <leader>ts :call ToggleVCSIgnore()<cr>
 " Ack
+if executable('ag')
+  let g:ackprg = 'ag --vimgrep'
+endif
 nmap <leader>a :Ack -i 
 
 " expand region shortcut 

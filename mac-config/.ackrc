@@ -1,6 +1,0 @@
---type-set=js:ext:js,jsx
---ignore-dir=release
---ignore-dir=dist
---ignore-dir=mock
---ignore-dir=node_modules
---ignore-dir=cortex_modules
