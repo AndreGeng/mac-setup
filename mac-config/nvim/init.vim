@@ -187,47 +187,22 @@ augroup end
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+Plug 'sjl/gundo.vim'
 Plug 'mg979/vim-visual-multi'
 Plug 'godlygeek/tabular'
-Plug 'scrooloose/nerdtree'
-Plug 'Xuyuanp/nerdtree-git-plugin'
-Plug 'christoomey/vim-tmux-navigator'
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
-Plug 'mileszs/ack.vim'
-Plug 'tpope/vim-commentary'
-Plug 'w0rp/ale'
-Plug 'terryma/vim-expand-region'
-Plug 'itchyny/lightline.vim'
-Plug 'flazz/vim-colorschemes'
-Plug 'jiangmiao/auto-pairs'
-Plug 'mattn/emmet-vim'
-Plug 'Valloric/MatchTagAlways'
-Plug 'Chiel92/vim-autoformat'
-Plug 'henrik/vim-indexed-search'
 Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-fugitive'
 Plug 'junegunn/gv.vim'
-Plug 'ConradIrwin/vim-bracketed-paste'
-Plug 'kana/vim-textobj-user'
-Plug 'kana/vim-textobj-entire'
-Plug 'kana/vim-textobj-line'
-Plug 'kana/vim-textobj-indent'
-Plug 'kana/vim-textobj-lastpat'
-Plug 'editorconfig/editorconfig-vim'
-Plug 'tpope/vim-surround'
 Plug 'MattesGroeger/vim-bookmarks'
 Plug 'wellle/targets.vim'
 Plug 'moll/vim-node'
 Plug 'tpope/vim-unimpaired'
-Plug 'nelstrom/vim-visual-star-search'
 Plug 'tpope/vim-abolish'
 Plug 'troydm/zoomwintab.vim'
 Plug 'tpope/vim-dispatch'
 Plug 'iamcco/mathjax-support-for-mkdp'
-Plug 'iamcco/markdown-preview.vim'
-" fix: can't use vim command under chinese input source
-Plug 'lyokha/vim-xkbswitch'
+
+" completion framework ncm2 -- start
 Plug 'ncm2/ncm2'
 Plug 'roxma/nvim-yarp'
 Plug 'ncm2/ncm2-snipmate'
@@ -241,23 +216,55 @@ Plug 'autozimu/LanguageClient-neovim', {
   \ 'do': 'bash install.sh',
   \ }
 " ncm2 complete source --end
+" completion framework ncm2 -- end
 " snippet -- start
 Plug 'MarcWeber/vim-addon-mw-utils'
 Plug 'tomtom/tlib_vim'
 Plug 'garbas/vim-snipmate'
 Plug 'honza/vim-snippets'
 " snippet --end
+
+" familiar
+Plug 'scrooloose/nerdtree'
+Plug 'Xuyuanp/nerdtree-git-plugin'
+Plug 'christoomey/vim-tmux-navigator'
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
+Plug 'mileszs/ack.vim'
+Plug 'tpope/vim-commentary'
+Plug 'w0rp/ale'
+Plug 'itchyny/lightline.vim'
+Plug 'flazz/vim-colorschemes'
+Plug 'jiangmiao/auto-pairs'
+Plug 'mattn/emmet-vim'
+Plug 'Valloric/MatchTagAlways'
+Plug 'Chiel92/vim-autoformat'
+Plug 'henrik/vim-indexed-search'
+Plug 'ConradIrwin/vim-bracketed-paste'
+Plug 'kana/vim-textobj-user'
+Plug 'kana/vim-textobj-entire'
+Plug 'kana/vim-textobj-line'
+Plug 'kana/vim-textobj-indent'
+Plug 'kana/vim-textobj-lastpat'
+Plug 'editorconfig/editorconfig-vim'
+Plug 'tpope/vim-surround'
+Plug 'nelstrom/vim-visual-star-search'
+Plug 'iamcco/markdown-preview.vim'
+" fix: can't use vim command under chinese input source
+Plug 'lyokha/vim-xkbswitch'
 " gist -- start
 Plug 'mattn/gist-vim'
 Plug 'mattn/webapi-vim'
 " gist -- end
-Plug 'sjl/gundo.vim'
 " syntax -- start
 Plug 'pangloss/vim-javascript'
 Plug 'leafgarland/typescript-vim'
 Plug 'othree/html5.vim'
 Plug 'mxw/vim-jsx'
 " syntax -- end
+" seldom used -- start
+" Plug 'terryma/vim-expand-region'
+" seldom used -- end
 call plug#end()
 " }}}
 
