@@ -183,7 +183,9 @@ augroup DragQuickfixWindowDown
   autocmd FileType qf wincmd J
 augroup end
 
-" }}}
+" auto resize window size when container window size changed
+autocmd VimResized * wincmd =
+"}}}
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
@@ -201,6 +203,7 @@ Plug 'tpope/vim-abolish'
 Plug 'troydm/zoomwintab.vim'
 Plug 'tpope/vim-dispatch'
 Plug 'iamcco/mathjax-support-for-mkdp'
+Plug 'yssl/QFEnter'
 
 " completion framework ncm2 -- start
 Plug 'ncm2/ncm2'
@@ -261,6 +264,9 @@ Plug 'pangloss/vim-javascript'
 Plug 'leafgarland/typescript-vim'
 Plug 'othree/html5.vim'
 Plug 'mxw/vim-jsx'
+Plug 'ekalinin/Dockerfile.vim'
+Plug 'stephpy/vim-yaml'
+Plug 'tpope/vim-dotenv'
 " syntax -- end
 " seldom used -- start
 " Plug 'terryma/vim-expand-region'
