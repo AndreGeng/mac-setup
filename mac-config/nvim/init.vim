@@ -359,7 +359,9 @@ nmap <leader>lf :ALEFix<CR>
 let g:tmux_navigator_disable_when_zoomed = 1
 
 " enable ncm2 for all buffers
-autocmd BufEnter * call ncm2#enable_for_buffer()
+if exists('*ncm2#enable_for_buffer')
+  autocmd BufEnter * call ncm2#enable_for_buffer()
+endif
 
 " IMPORTANTE: :help Ncm2PopupOpen for more information
 set completeopt=noinsert,menuone,noselect
