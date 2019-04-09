@@ -112,6 +112,16 @@ nnoremap <leader>dc :windo diffoff<CR>
 nnoremap <leader>du :diffupdate<CR>
 nnoremap <leader>dg :diffget<CR>
 nnoremap <leader>du :diffput<CR>
+" view changes of current file made by me
+" helpful when resolving mege conflicts
+nnoremap <leader>cm :call ShowChangesByMe()<cr>
+function! ShowChangesByMe()
+  let username = system('git config user.name')
+  let name = substitute(username, '\%x00', '', 'g')
+  execute 'on|vs|Git!log --author="'.name.'" -- %'
+  execute 'wincmd l|vs|Git!log --author="'.name.'" -p -- %'
+  execute 'wincmd l'
+endfunction
 
 " buffer explorer
 nnoremap <leader>be :Buffers<CR>
