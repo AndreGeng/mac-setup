@@ -49,6 +49,9 @@ let g:python3_host_prog = $HOME.'/.pyenv/versions/neovim3/bin/python'
 " complete setting
 set complete+=i
 
+" fix webpack watch option
+set backupcopy=yes
+
 " }}}
 
 " FileType specific setting {{{
