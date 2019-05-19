@@ -111,7 +111,7 @@ nnoremap <leader>e <C-w>=<CR>
 " git shortcut
 nnoremap <leader>gs :Gstatus<CR>
 nnoremap <leader>dt :windo diffthis<CR>
-nnoremap <leader>dc :windo diffoff<CR>
+nnoremap <leader>do :windo diffoff<CR>
 nnoremap <leader>du :diffupdate<CR>
 nnoremap <leader>dg :diffget<CR>
 nnoremap <leader>du :diffput<CR>
@@ -121,8 +121,8 @@ nnoremap <leader>cm :call ShowChangesByMe()<cr>
 function! ShowChangesByMe()
   let username = system('git config user.name')
   let name = substitute(username, '\%x00', '', 'g')
-  execute 'on|vs|Git!log --author="'.name.'" -- %'
-  execute 'wincmd l|vs|Git!log --author="'.name.'" -p -- %'
+  execute 'on|vs|Git!log master.. --author="'.name.'" -- %'
+  execute 'wincmd l|vs|Git!log master.. --author="'.name.'" -p -- %'
   execute 'wincmd l'
 endfunction
 
@@ -293,7 +293,7 @@ set termguicolors
 set background=dark
 colorscheme evening
 autocmd BufEnter,SourcePre * highlight Search guibg=none guifg=#50FA7B gui=underline
-autocmd FilterWritePre * if &diff | colorscheme apprentice | endif
+" autocmd FilterWritePre * if &diff | colorscheme apprentice | endif
 
 " multi
 let g:VM_manual_infoline = 1
