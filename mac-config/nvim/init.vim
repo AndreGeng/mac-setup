@@ -425,4 +425,10 @@ autocmd FocusGained,BufEnter NERD_tree_* :call BookmarkUnmapKeys()
 let g:indexed_search_max_hits = 1.0e6
 let g:indexed_search_max_lines = 1.0e6
 
+" enable emmet for ts/tsx
+let g:user_emmet_settings = {
+\ 'typescript' : {
+\     'extends' : 'jsx',
+\ },
+\}
 " }}}
