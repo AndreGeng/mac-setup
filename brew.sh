@@ -17,8 +17,8 @@ brew cask install visual-studio-code --force
 brew cask install sourcetree --force
 brew cask install gas-mask --force # host管理
 brew cask install shadowsocksx-ng --force
+brew cask install alfred --force
 # brew cask install docker
-# brew cask install alfred
 # brew cask install charles
 # apps
 brew cask install google-chrome --force
