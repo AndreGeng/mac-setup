@@ -15,12 +15,6 @@ set lazyredraw
 set number
 set relativenumber
 
-" color scheme
-set termguicolors
-colorscheme evening 
-autocmd BufEnter,SourcePre * highlight Search guibg=none guifg=#50FA7B gui=underline
-autocmd FilterWritePre * if &diff | colorscheme apprentice | endif
-
 " indent
 set autoindent
 " use whitespace insteadof tab
@@ -46,7 +40,7 @@ set diffopt+=iwhite
 
 " check one time after 4s of inactivity in normal mode
 set autoread
-autocmd FocusGained,BufEnter,CursorHold * checktime
+autocmd FocusGained,BufEnter,CursorHold * if bufname('%') != '[Command Line]' | checktime | endif
 
 " setup nvim with python support
 let g:python_host_prog = $HOME.'/.pyenv/versions/neovim2/bin/python'
@@ -54,6 +48,9 @@ let g:python3_host_prog = $HOME.'/.pyenv/versions/neovim3/bin/python'
 
 " complete setting
 set complete+=i
+
+" fix webpack watch option
+set backupcopy=yes
 
 " }}}
 
@@ -114,10 +111,20 @@ nnoremap <leader>e <C-w>=<CR>
 " git shortcut
 nnoremap <leader>gs :Gstatus<CR>
 nnoremap <leader>dt :windo diffthis<CR>
-nnoremap <leader>dc :windo diffoff<CR>
+nnoremap <leader>do :windo diffoff<CR>
 nnoremap <leader>du :diffupdate<CR>
 nnoremap <leader>dg :diffget<CR>
 nnoremap <leader>du :diffput<CR>
+" view changes of current file made by me
+" helpful when resolving mege conflicts
+nnoremap <leader>cm :call ShowChangesByMe()<cr>
+function! ShowChangesByMe()
+  let username = system('git config user.name')
+  let name = substitute(username, '\%x00', '', 'g')
+  execute 'on|vs|Git!log master.. --author="'.name.'" -- %'
+  execute 'wincmd l|vs|Git!log master.. --author="'.name.'" -p -- %'
+  execute 'wincmd l'
+endfunction
 
 " buffer explorer
 nnoremap <leader>be :Buffers<CR>
@@ -130,13 +137,6 @@ nmap <m-i> mz:m+<cr>`z
 nmap <m-o> mz:m-2<cr>`z
 vmap <m-i> :m'>+<cr>`<my`>mzgv`yo`z
 vmap <m-o> :m'<-2<cr>`>my`<mzgv`yo`z
-
-" Useful mappings for managing tabs
-map <leader>tn :tabnew<cr>
-map <leader>to :tabonly<cr>
-map <leader>tc :tabclose<cr>
-map <leader>tm :tabmove 
-map <leader>t<leader> :tabnext 
 
 " Useful mappings for managing tabs
 map <leader>tn :tabnew<cr>
@@ -219,10 +219,6 @@ Plug 'iamcco/mathjax-support-for-mkdp'
 Plug 'yssl/QFEnter'
 
 " completion framework ncm2 -- start
-Plug '/Users/andregeng/Documents/vim-share/potion'
-Plug '/Users/andregeng/Documents/vim-share/example/transformer-node'
-" fix: can't use vim command under chinese input source
-Plug 'lyokha/vim-xkbswitch'
 Plug 'ncm2/ncm2'
 Plug 'roxma/nvim-yarp'
 Plug 'ncm2/ncm2-snipmate'
@@ -265,12 +261,70 @@ Plug 'kana/vim-textobj-user'
 Plug 'kana/vim-textobj-entire'
 Plug 'kana/vim-textobj-line'
 Plug 'kana/vim-textobj-indent'
+Plug 'kana/vim-textobj-lastpat'
+Plug 'editorconfig/editorconfig-vim'
+Plug 'tpope/vim-surround'
+Plug 'nelstrom/vim-visual-star-search'
+Plug 'iamcco/markdown-preview.vim'
+" fix: can't use vim command under chinese input source
+Plug 'lyokha/vim-xkbswitch'
+" gist -- start
+Plug 'mattn/gist-vim'
+Plug 'mattn/webapi-vim'
+" gist -- end
+" syntax -- start
+Plug 'pangloss/vim-javascript'
+Plug 'leafgarland/typescript-vim'
+Plug 'othree/html5.vim'
+Plug 'mxw/vim-jsx'
+Plug 'ekalinin/Dockerfile.vim'
+Plug 'stephpy/vim-yaml'
+Plug 'tpope/vim-dotenv'
+" syntax -- end
+" seldom used -- start
+" Plug 'terryma/vim-expand-region'
+" seldom used -- end
+call plug#end()
+" }}}
+
+" Plugin configurations {{{
+" color scheme
+set termguicolors
+set background=dark
+colorscheme evening
+autocmd BufEnter,SourcePre * highlight Search guibg=none guifg=#50FA7B gui=underline
+" autocmd FilterWritePre * if &diff | colorscheme apprentice | endif
+
+" multi
+let g:VM_manual_infoline = 1
+let g:VM_maps = {}
+let g:VM_maps["Select l"]           = '<m-l>'       " start selecting left
+let g:VM_maps["Select h"]           = '<m-h>'        " start selecting right
+let g:VM_maps["Select Cursor Down"] = '<m-j>'      " start selecting down
+let g:VM_maps["Select Cursor Up"]   = '<m-k>'        " start selecting up
+" nerdtree mapping
+let g:NERDTreeWinPos = "right"
+map <leader>nn :NERDTreeToggle<cr>
+map <leader>nf :NERDTreeFind<cr>
 " enable ctrl+j/k to switch panel in nerdtree
 let g:NERDTreeMapJumpNextSibling = '<Nop>'
 let g:NERDTreeMapJumpPrevSibling = '<Nop>'
 " fzf
 nmap <leader>f :Files<CR>
+function! ToggleVCSIgnore()
+  if $FZF_DEFAULT_COMMAND !~# 'no-ignore-vcs'
+    let $FZF_DEFAULT_COMMAND = 'fd --type f --no-ignore-vcs'
+    echom 'all'
+  else
+    let $FZF_DEFAULT_COMMAND = 'fd --type f'
+    echom 'ignore'
+  endif
+endfunction
+nnoremap <leader>ts :call ToggleVCSIgnore()<cr>
 " Ack
+if executable('ag')
+  let g:ackprg = 'ag --vimgrep'
+endif
 nmap <leader>a :Ack -i 
 
 " expand region shortcut 
@@ -330,6 +384,7 @@ let g:LanguageClient_serverCommands = {
     \ 'typescript': [expand('`npm get prefix`/bin/javascript-typescript-stdio')],
     \ }
 nnoremap <silent> K :call LanguageClient#textDocument_hover()<CR>
+nnoremap <silent> E :call LanguageClient#explainErrorAtPoint()<CR>
 nnoremap <silent> gd :call LanguageClient#textDocument_definition()<CR>
 nnoremap <silent> <F2> :call LanguageClient#textDocument_rename()<CR>
 let g:LanguageClient_diagnosticsList = 'Disabled'
@@ -366,5 +421,14 @@ endfunction
 autocmd FocusGained,BufEnter * :call BookmarkMapKeys()
 autocmd FocusGained,BufEnter NERD_tree_* :call BookmarkUnmapKeys()
 
-" }}}
+" vim-indexed-search
+let g:indexed_search_max_hits = 1.0e6
+let g:indexed_search_max_lines = 1.0e6
 
+" enable emmet for ts/tsx
+let g:user_emmet_settings = {
+\ 'typescript' : {
+\     'extends' : 'jsx',
+\ },
+\}
+" }}}
