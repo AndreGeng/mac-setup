@@ -4,6 +4,7 @@ clone项目
 2. 手动配置ss代理
 3. 运行根目录下的./setup.sh脚本
 4. 安装dropbox, [sync alfred setting](https://www.alfredapp.com/help/advanced/sync/)(brew cask install dropbox总是出错)
+ps: dropbox要设代理才能访问
 
 目前仍需手动配置项
 1. 设置dock位置
