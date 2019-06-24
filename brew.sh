@@ -27,4 +27,5 @@ brew cask install appcleaner --force
 brew cask install android-file-transfer --force
 brew cask install baiduinput --force
 brew cask install qq --force
+brew cask install notion --force
 brew cask install youdaodict --force # 有道词典
