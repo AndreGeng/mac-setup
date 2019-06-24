@@ -10,6 +10,5 @@ source ~/.rvm/scripts/rvm
 rvm install ruby --latest
 rvm --default use ruby
 
-# TODO: 这里这么写有问题
-brewInstallIfNotExists reattach-to-user-namespace --with-wrap-pbcopy-and-pbpaste
+brewInstallIfNotExists reattach-to-user-namespace
 sudo gem install tmuxinator
