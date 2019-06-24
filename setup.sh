@@ -7,8 +7,6 @@ log_dir=$base_dir/logs
 # restore mac config
 ./sync.sh
 
-echo "$PIDS"
-trap 'kill $PIDS; exit' SIGINT
 # install&config oh-my-zsh
 ./oh-my-zsh.sh
 # vim config
@@ -17,10 +15,10 @@ trap 'kill $PIDS; exit' SIGINT
 ./tmux.sh
 # install node with nvm
 ./nodejs.sh
-# homebrew
-./brew.sh
 # alacrity
 ./alacrity.sh
+# homebrew
+./brew.sh
 
 # don't know how to install '*.app' through command lint
 # open baiduinput folder for now
