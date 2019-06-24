@@ -13,7 +13,7 @@ ln -sf $(realpath $(dirname "$0"))/mac-config/.zshrc ~
 brewInstallIfNotExists zsh
 brewInstallIfNotExists zsh-completions
 brewInstallIfNotExists autojump
-brewInstallIfNotExists yarn --without-node
+brewInstallIfNotExists yarn
 # install oh-my-zsh
 log "installing oh-my-zsh" $Green
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"

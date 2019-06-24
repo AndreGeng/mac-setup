@@ -10,25 +10,18 @@ log_dir=$base_dir/logs
 echo "$PIDS"
 trap 'kill $PIDS; exit' SIGINT
 # install&config oh-my-zsh
-./oh-my-zsh.sh >$log_dir/oh-my-zsh.out 2>&1 &
-PIDS+=$!
+./oh-my-zsh.sh
 # vim config
-./vim.sh >$log_dir/vim.out 2>&1 &
-PIDS+=" $!"
+./vim.sh
 # tmux config
-./tmux.sh >$log_dir/tmux.out 2>&1 &
-PIDS+=" $!"
+./tmux.sh
 # install node with nvm
-./nodejs.sh >$log_dir/node.out 2>&1 &
-PIDS+=" $!"
+./nodejs.sh
 # homebrew
-./brew.sh >$log_dir/brew.out 2>&1 &
-PIDS+=" $!"
+./brew.sh
 # alacrity
-./alacrity.sh >$log_dir/alacrity.out 2>&1 &
-PIDS+=" $!"
+./alacrity.sh
 
-wait $PIDS
 # don't know how to install '*.app' through command lint
 # open baiduinput folder for now
 open /usr/local/Caskroom/baiduinput/latest
