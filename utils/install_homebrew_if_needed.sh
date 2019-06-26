@@ -8,3 +8,4 @@ else
     log "Installing Homebrew Now"
     /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null
 fi
+export HOMEBREW_FORCE_BREWED_CURL=1
