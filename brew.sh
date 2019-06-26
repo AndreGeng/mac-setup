@@ -5,6 +5,7 @@ for f in $(dirname "$0")/utils/*.sh; do
 done
 
 brew tap caskroom/cask
+brewInstallIfNotExists nginx
 
 # brew installs
 
