@@ -248,6 +248,7 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'mileszs/ack.vim'
 Plug 'tpope/vim-commentary'
+Plug 'suy/vim-context-commentstring'
 Plug 'w0rp/ale'
 Plug 'itchyny/lightline.vim'
 Plug 'flazz/vim-colorschemes'
