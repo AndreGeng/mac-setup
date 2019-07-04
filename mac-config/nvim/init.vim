@@ -63,7 +63,7 @@ autocmd BufEnter *.wxss :setlocal filetype=css
 " vimscript file setting
 augroup filetype_vim
   autocmd!
-  autocmd FileType,SourcePre *.vim :setlocal foldmethod=marker
+  autocmd FileType *.vim :setlocal foldmethod=marker
 augroup END
 
 " set include path for javascript files, enable <c-x><c-i>
