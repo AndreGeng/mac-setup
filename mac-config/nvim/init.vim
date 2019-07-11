@@ -125,6 +125,17 @@ function! ShowChangesByMe()
   execute 'wincmd l|vs|Git!log master.. --author="'.name.'" -p -- %'
   execute 'wincmd l'
 endfunction
+" examine git diff
+nnoremap <leader>gd :call ShowDiff()<cr>
+function! ShowDiff()
+  execute '0Glog --no-merges --'
+endfunction
+" fold git log patches in order to highlight filenames
+autocmd FileType git call FoldAll()
+function! FoldAll()
+  :setlocal foldlevelstart=0
+  execute "normal zM"
+endfunction
 
 " buffer explorer
 nnoremap <leader>be :Buffers<CR>
