@@ -63,7 +63,7 @@ autocmd BufEnter *.wxss :setlocal filetype=css
 " vimscript file setting
 augroup filetype_vim
   autocmd!
-  autocmd FileType *.vim :setlocal foldmethod=marker
+  autocmd FileType vim :setlocal foldmethod=marker
 augroup END
 
 " set include path for javascript files, enable <c-x><c-i>
@@ -278,6 +278,25 @@ Plug 'editorconfig/editorconfig-vim'
 Plug 'tpope/vim-surround'
 Plug 'nelstrom/vim-visual-star-search'
 Plug 'iamcco/markdown-preview.vim'
+Plug 'prettier/vim-prettier', {
+  \ 'do': 'yarn install',
+  \ 'branch': 'release/1.x',
+  \ 'for': [
+    \ 'javascript',
+    \ 'typescript',
+    \ 'css',
+    \ 'less',
+    \ 'scss',
+    \ 'json',
+    \ 'graphql',
+    \ 'markdown',
+    \ 'vue',
+    \ 'lua',
+    \ 'php',
+    \ 'python',
+    \ 'ruby',
+    \ 'html',
+    \ 'swift' ] }
 " fix: can't use vim command under chinese input source
 Plug 'lyokha/vim-xkbswitch'
 " gist -- start
@@ -443,4 +462,7 @@ let g:user_emmet_settings = {
 \     'extends' : 'jsx',
 \ },
 \}
+" prettier auto format on saving
+let g:prettier#autoformat = 0
+autocmd BufWritePre *.js,*.jsx,*.mjs,*.ts,*.tsx,*.css,*.less,*.scss,*.json,*.graphql,*.md,*.vue,*.yaml,*.html PrettierAsync
 " }}}
