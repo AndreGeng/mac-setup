@@ -109,12 +109,13 @@ nnoremap <leader>q :q<CR>
 nnoremap <leader>e <C-w>=<CR>
 
 " git shortcut
-nnoremap <leader>gs :Gstatus<CR>
+nnoremap <leader>gs :Magit<CR>
+nnoremap <leader>gp :Gpush<CR>
 nnoremap <leader>dt :windo diffthis<CR>
 nnoremap <leader>do :windo diffoff<CR>
 nnoremap <leader>du :diffupdate<CR>
 nnoremap <leader>dg :diffget<CR>
-nnoremap <leader>du :diffput<CR>
+nnoremap <leader>dp :diffput<CR>
 " show git log patches
 nnoremap <leader>sp :call ShowPatch()<cr>
 " view changes of current file made by me
