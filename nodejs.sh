@@ -11,6 +11,7 @@ echo $NVM_DIR
 nvm install --lts
 nvm alias default lts/*
 npm install -g js-beautify # vim autoformat json
+npm install -g prettier # also for code format
 npm install -g typescript
 npm install -g javascript-typescript-langserver
 sudo ln -s "$(which node)" /usr/local/bin/node
