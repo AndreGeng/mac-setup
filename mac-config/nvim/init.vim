@@ -109,7 +109,7 @@ nnoremap <leader>q :q<CR>
 nnoremap <leader>e <C-w>=<CR>
 
 " git shortcut
-nnoremap <leader>gs :Magit<CR>
+nnoremap <leader>gs :Gstatus<CR>
 nnoremap <leader>gp :Gpush<CR>
 nnoremap <leader>dt :windo diffthis<CR>
 nnoremap <leader>do :windo diffoff<CR>
@@ -279,7 +279,6 @@ Plug 'editorconfig/editorconfig-vim'
 Plug 'tpope/vim-surround'
 Plug 'nelstrom/vim-visual-star-search'
 Plug 'iamcco/markdown-preview.vim'
-Plug 'jreybert/vimagit'
 Plug 'prettier/vim-prettier', {
   \ 'do': 'yarn install',
   \ 'branch': 'release/1.x',
