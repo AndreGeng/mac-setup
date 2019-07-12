@@ -12,6 +12,7 @@ ps: dropbox要设代理才能访问
 2. key repeat rate
   System Preference -> Keyboard -> Keyboard tab
   两项都调至fast
+  defaults write -g ApplePressAndHoldEnabled -bool false
 3. 使用tab去控制dialog上的button
   System Preference -> Keyboard -> Shortcuts -> Full Keyboard Access, 打开All controls
 4. 输入法切快捷键
