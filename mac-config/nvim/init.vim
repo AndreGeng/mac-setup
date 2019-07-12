@@ -115,6 +115,8 @@ nnoremap <leader>do :windo diffoff<CR>
 nnoremap <leader>du :diffupdate<CR>
 nnoremap <leader>dg :diffget<CR>
 nnoremap <leader>du :diffput<CR>
+" show git log patches
+nnoremap <leader>sp :call ShowPatch()<cr>
 " view changes of current file made by me
 " helpful when resolving mege conflicts
 nnoremap <leader>cm :call ShowChangesByMe()<cr>
@@ -125,9 +127,7 @@ function! ShowChangesByMe()
   execute 'wincmd l|vs|Git!log master.. --author="'.name.'" -p -- %'
   execute 'wincmd l'
 endfunction
-" examine git diff
-nnoremap <leader>gd :call ShowDiff()<cr>
-function! ShowDiff()
+function! ShowPatch()
   execute '0Glog --no-merges --'
 endfunction
 " fold git log patches in order to highlight filenames
@@ -278,6 +278,7 @@ Plug 'editorconfig/editorconfig-vim'
 Plug 'tpope/vim-surround'
 Plug 'nelstrom/vim-visual-star-search'
 Plug 'iamcco/markdown-preview.vim'
+Plug 'jreybert/vimagit'
 Plug 'prettier/vim-prettier', {
   \ 'do': 'yarn install',
   \ 'branch': 'release/1.x',
