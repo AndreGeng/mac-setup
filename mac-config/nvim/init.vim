@@ -274,7 +274,6 @@ Plug 'editorconfig/editorconfig-vim'
 Plug 'tpope/vim-surround'
 Plug 'nelstrom/vim-visual-star-search'
 Plug 'iamcco/markdown-preview.vim'
-Plug 'lambdalisue/gina.vim'
 Plug 'prettier/vim-prettier', {
   \ 'do': 'yarn install',
   \ 'branch': 'release/1.x',
@@ -463,22 +462,22 @@ let g:user_emmet_settings = {
 let g:prettier#autoformat = 0
 autocmd BufWritePre *.js,*.jsx,*.mjs,*.ts,*.tsx,*.css,*.less,*.scss,*.json,*.graphql,*.md,*.vue,*.yaml,*.html PrettierAsync
 " gina custom mapping
-call gina#custom#command#option(
-      \ '/\%(log\|diff\)',
-      \ '--opener', 'vsplit'
-      \)
-call gina#custom#command#option(
-      \ '/\%(compare\|patch\)',
-      \ '--opener', 'split'
-      \)
-call gina#custom#mapping#nmap(
-      \ 'status', '<C-^>',
-      \ ':<C-u>Gina commit<CR>',
-      \ {'noremap': 1, 'silent': 1}
-      \)
-call gina#custom#mapping#nmap(
-      \ 'commit', '<C-^>',
-      \ ':<C-u>Gina status<CR>',
-      \ {'noremap': 1, 'silent': 1}
-      \)
+" call gina#custom#command#option(
+"       \ '/\%(log\|diff\)',
+"       \ '--opener', 'vsplit'
+"       \)
+" call gina#custom#command#option(
+"       \ '/\%(compare\|patch\)',
+"       \ '--opener', 'split'
+"       \)
+" call gina#custom#mapping#nmap(
+"       \ 'status', '<C-^>',
+"       \ ':<C-u>Gina commit<CR>',
+"       \ {'noremap': 1, 'silent': 1}
+"       \)
+" call gina#custom#mapping#nmap(
+"       \ 'commit', '<C-^>',
+"       \ ':<C-u>Gina status<CR>',
+"       \ {'noremap': 1, 'silent': 1}
+"       \)
 " }}}
