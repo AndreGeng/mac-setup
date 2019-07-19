@@ -460,7 +460,7 @@ let g:user_emmet_settings = {
 \}
 " prettier auto format on saving
 let g:prettier#autoformat = 0
-autocmd BufWritePre *.js,*.jsx,*.mjs,*.ts,*.tsx,*.css,*.less,*.scss,*.json,*.graphql,*.md,*.vue,*.yaml,*.html PrettierAsync
+" autocmd BufWritePre *.js,*.jsx,*.mjs,*.ts,*.tsx,*.css,*.less,*.scss,*.json,*.graphql,*.md,*.vue,*.yaml,*.html PrettierAsync
 " gina custom mapping
 " call gina#custom#command#option(
 "       \ '/\%(log\|diff\)',
