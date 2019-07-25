@@ -274,25 +274,6 @@ Plug 'editorconfig/editorconfig-vim'
 Plug 'tpope/vim-surround'
 Plug 'nelstrom/vim-visual-star-search'
 Plug 'iamcco/markdown-preview.vim'
-Plug 'prettier/vim-prettier', {
-  \ 'do': 'yarn install',
-  \ 'branch': 'release/1.x',
-  \ 'for': [
-    \ 'javascript',
-    \ 'typescript',
-    \ 'css',
-    \ 'less',
-    \ 'scss',
-    \ 'json',
-    \ 'graphql',
-    \ 'markdown',
-    \ 'vue',
-    \ 'lua',
-    \ 'php',
-    \ 'python',
-    \ 'ruby',
-    \ 'html',
-    \ 'swift' ] }
 " fix: can't use vim command under chinese input source
 Plug 'lyokha/vim-xkbswitch'
 " gist -- start
@@ -386,9 +367,18 @@ vnoremap <leader>gv :GV!<CR>
 
 " ALE
 let g:ale_fixers = {
-\   'javascript': ['eslint'],
-\   'javascript.jsx': ['eslint'],
+\   'javascript': ['prettier'],
+\   'javascript.jsx': ['prettier'],
+\   'typescript': ['prettier'],
+\   'css': ['prettier'],
+\   'less': ['prettier'],
+\   'sass': ['prettier'],
 \}
+
+" @see https://prettier.io/docs/en/vim.html
+let g:ale_linters_explicit = 1
+let g:ale_fix_on_save = 1
+
 
 "Set this setting in vimrc if you want to fix files automatically on save.
 "This is off by default.
@@ -458,26 +448,3 @@ let g:user_emmet_settings = {
 \     'extends' : 'jsx',
 \ },
 \}
-" prettier auto format on saving
-let g:prettier#autoformat = 0
-autocmd BufWritePre *.js,*.jsx,*.mjs,*.ts,*.tsx,*.css,*.less,*.scss,*.json,*.graphql,*.md,*.vue,*.yaml,*.html PrettierAsync
-" gina custom mapping
-" call gina#custom#command#option(
-"       \ '/\%(log\|diff\)',
-"       \ '--opener', 'vsplit'
-"       \)
-" call gina#custom#command#option(
-"       \ '/\%(compare\|patch\)',
-"       \ '--opener', 'split'
-"       \)
-" call gina#custom#mapping#nmap(
-"       \ 'status', '<C-^>',
-"       \ ':<C-u>Gina commit<CR>',
-"       \ {'noremap': 1, 'silent': 1}
-"       \)
-" call gina#custom#mapping#nmap(
-"       \ 'commit', '<C-^>',
-"       \ ':<C-u>Gina status<CR>',
-"       \ {'noremap': 1, 'silent': 1}
-"       \)
-" }}}
