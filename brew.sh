@@ -33,3 +33,4 @@ brew cask install notion --force
 brew cask install youdaodict --force # 有道词典
 brew cask install drawio --force
 brew cask install postman --force
+brew cask install marp --force # writting ppt using markdown

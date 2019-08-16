@@ -366,6 +366,10 @@ nnoremap <leader>gv :GV!<CR>
 vnoremap <leader>gv :GV!<CR>
 
 " ALE
+let g:ale_linters = {
+\  'javascript': ['eslint'],
+\  'javascript.jsx': ['eslint'],
+\}
 let g:ale_fixers = {
 \   'javascript': ['prettier'],
 \   'javascript.jsx': ['prettier'],
