@@ -71,14 +71,6 @@ augroup END
 " => JavaScript section
 """""""""""""""""""""""""""""""
 autocmd FileType javascript,javascript.jsx call JavaScriptFold()
-autocmd FileType javascript setl fen
-autocmd FileType javascript setl nocindent
-
-autocmd FileType javascript imap <c-t> $log();<esc>hi
-autocmd FileType javascript imap <c-a> alert();<esc>hi
-
-autocmd FileType javascript inoremap <buffer> $r return 
-autocmd FileType javascript inoremap <buffer> $f // --- PH<esc>FP2xi
 
 function! JavaScriptFold() 
     setl foldmethod=syntax
