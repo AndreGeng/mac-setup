@@ -19,12 +19,12 @@ set relativenumber
 set autoindent
 " use whitespace insteadof tab
 set expandtab
-" set shiftround
+" set shiftround, used to auto indent
 set shiftround
+set shiftwidth=2
 
 " set tab width
 set softtabstop=2
-set shiftwidth=2
 set tabstop=2
 
 " search
@@ -66,11 +66,6 @@ augroup filetype_vim
   autocmd FileType vim :setlocal foldmethod=marker
 augroup END
 
-" set include path for javascript files, enable <c-x><c-i>
-autocmd FileType javascript,javascript.jsx call <SID>JavaScriptInclude()
-function! s:JavaScriptInclude()
-  let &l:include='\v%(require\(|from)\s*(["''])\zs[^\1]+\ze\1'
-endfunction
 " fold style
 """"""""""""""""""""""""""""""
 " => JavaScript section
