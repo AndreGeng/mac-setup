@@ -52,6 +52,9 @@ set complete+=i
 " fix webpack watch option
 set backupcopy=yes
 
+" Maintain undo history between sessions
+set undofile
+
 " }}}
 
 " FileType specific setting {{{
@@ -63,7 +66,7 @@ autocmd BufEnter *.wxss :setlocal filetype=css
 " vimscript file setting
 augroup filetype_vim
   autocmd!
-  autocmd FileType vim :setlocal foldmethod=marker
+  autocmd BufEnter *.vim :setlocal foldmethod=marker
 augroup END
 
 " fold style
@@ -92,8 +95,8 @@ nmap <leader>w :w!<cr>
 nnoremap <leader>ev :rightbelow vsplit $MYVIMRC<cr>
 " smart way to close pane
 nnoremap <leader>q :q<CR>
-" make all splits equal
-nnoremap <leader>e <C-w>=<CR>
+" toggle GundoToggle
+nnoremap <leader>u :GundoToggle<CR>
 
 " git shortcut
 nnoremap <leader>gs :Gstatus<CR>
@@ -126,7 +129,7 @@ nnoremap <leader>be :Buffers<CR>
 " cmdline mapping
 cnoremap <C-A> <Home>
 
-" Move a line of text using ALT+[jk]
+" Move a line of text using ALT+[io]
 nmap <m-i> mz:m+<cr>`z
 nmap <m-o> mz:m-2<cr>`z
 vmap <m-i> :m'>+<cr>`<my`>mzgv`yo`z
@@ -136,52 +139,47 @@ vmap <m-o> :m'<-2<cr>`>my`<mzgv`yo`z
 map <leader>tn :tabnew<cr>
 map <leader>to :tabonly<cr>
 map <leader>tc :tabclose<cr>
-map <leader>tm :tabmove 
-map <leader>t<leader> :tabnext 
+map <leader>tl :tabnext<cr>
+map <leader>th :tabp<cr> 
 
 " always use very magic when search
 nnoremap / /\v
 
-" terminal mode key binding
-" if has('nvim')
-"   tnoremap <Esc> <C-\><C-n>
-"   tnoremap <C-v><Esc> <Esc>
-" endif
 "toggle quickfixlist/locationlist -- start
-  function! GetBufferList()
-    redir =>buflist
-    silent! ls!
-    redir END
-    return buflist
-  endfunction
+function! GetBufferList()
+  redir =>buflist
+  silent! ls!
+  redir END
+  return buflist
+endfunction
 
-  function! ToggleList(bufname, pfx)
-    if bufname('%') == '[Command Line]'
+function! ToggleList(bufname, pfx)
+  if bufname('%') == '[Command Line]'
+    return
+  endif
+  let buflist = GetBufferList()
+  for bufnum in map(filter(split(buflist, '\n'), 'v:val =~ "'.a:bufname.'"'), 'str2nr(matchstr(v:val, "\\d\\+"))')
+    if bufwinnr(bufnum) != -1
+      exec(a:pfx.'close')
       return
     endif
-    let buflist = GetBufferList()
-    for bufnum in map(filter(split(buflist, '\n'), 'v:val =~ "'.a:bufname.'"'), 'str2nr(matchstr(v:val, "\\d\\+"))')
-      if bufwinnr(bufnum) != -1
-        exec(a:pfx.'close')
-        return
-      endif
-    endfor
-    if a:pfx == 'l' && len(getloclist(0)) == 0
-      echohl ErrorMsg
-      echo "Location List is Empty."
-      return
-    endif
-    let winnr = winnr()
-    exec(a:pfx.'open')
-    if winnr() != winnr
-      wincmd p
-    endif
-  endfunction
+  endfor
+  if a:pfx == 'l' && len(getloclist(0)) == 0
+    echohl ErrorMsg
+    echo "Location List is Empty."
+    return
+  endif
+  let winnr = winnr()
+  exec(a:pfx.'open')
+  if winnr() != winnr
+    wincmd p
+  endif
+endfunction
 
-  " nmap <silent> <leader>l :call ToggleList("Location", 'l')<CR>
-  " nmap <silent> <leader>q :call ToggleList("Quickfix", 'c')<CR>
-  nmap <silent> <leader>l :call ToggleList("Location", 'l')<CR>
-  nmap <silent> <leader>k :call ToggleList("Quickfix", 'c')<CR>
+" nmap <silent> <leader>l :call ToggleList("Location", 'l')<CR>
+" nmap <silent> <leader>q :call ToggleList("Quickfix", 'c')<CR>
+nmap <silent> <leader>l :call ToggleList("Location", 'l')<CR>
+nmap <silent> <leader>k :call ToggleList("Quickfix", 'c')<CR>
 "toggle quickfixlist/locationlist -- end
 
 " always open quickfix window at bottom
