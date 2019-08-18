@@ -15,8 +15,6 @@ log_dir=$base_dir/logs
 ./tmux.sh
 # install node with nvm
 ./nodejs.sh
-# alacrity
-./alacrity.sh
 # homebrew
 ./brew.sh
 

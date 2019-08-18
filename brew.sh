@@ -13,6 +13,7 @@ brewInstallIfNotExists nginx
 # develop
 brew cask install karabiner-elements --force
 brew cask install iterm2 --force
+brew cask install alacritty --force
 brew cask install hammerspoon --force
 brew cask install visual-studio-code --force
 brew cask install sourcetree --force

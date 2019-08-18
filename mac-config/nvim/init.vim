@@ -129,11 +129,13 @@ nnoremap <leader>be :Buffers<CR>
 " cmdline mapping
 cnoremap <C-A> <Home>
 
-" Move a line of text using ALT+[io]
-nmap <m-i> mz:m+<cr>`z
-nmap <m-o> mz:m-2<cr>`z
-vmap <m-i> :m'>+<cr>`<my`>mzgv`yo`z
-vmap <m-o> :m'<-2<cr>`>my`<mzgv`yo`z
+" Move a line of text using ALT+[io], @see https://vim.fandom.com/wiki/Moving_lines_up_or_down
+nnoremap <A-i> :m .+1<CR>==
+nnoremap <A-o> :m .-2<CR>==
+inoremap <A-i> <Esc>:m .+1<CR>==gi
+inoremap <A-o> <Esc>:m .-2<CR>==gi
+vnoremap <A-i> :m '>+1<CR>gv=gv
+vnoremap <A-o> :m '<-2<CR>gv=gv
 
 " Useful mappings for managing tabs
 map <leader>tn :tabnew<cr>
