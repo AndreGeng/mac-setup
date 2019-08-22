@@ -261,6 +261,7 @@ Plug 'editorconfig/editorconfig-vim'
 Plug 'tpope/vim-surround'
 Plug 'nelstrom/vim-visual-star-search'
 Plug 'iamcco/markdown-preview.vim'
+Plug 'ludovicchabant/vim-gutentags'
 " fix: can't use vim command under chinese input source
 Plug 'lyokha/vim-xkbswitch'
 " gist -- start
@@ -439,3 +440,5 @@ let g:user_emmet_settings = {
 \     'extends' : 'jsx',
 \ },
 \}
+
+" }}}
