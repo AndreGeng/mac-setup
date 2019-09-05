@@ -38,10 +38,6 @@ nnoremap <Space> za
 " diff ignore whitespace
 set diffopt+=iwhite,vertical
 
-" check one time after 4s of inactivity in normal mode
-set autoread
-autocmd FocusGained,BufEnter,CursorHold * if bufname('%') != '[Command Line]' | checktime | endif
-
 " setup nvim with python support
 let g:python_host_prog = $HOME.'/.pyenv/versions/neovim2/bin/python'
 let g:python3_host_prog = $HOME.'/.pyenv/versions/neovim3/bin/python'
@@ -262,6 +258,8 @@ Plug 'tpope/vim-surround'
 Plug 'nelstrom/vim-visual-star-search'
 Plug 'iamcco/markdown-preview.vim'
 Plug 'ludovicchabant/vim-gutentags'
+Plug 'wesQ3/vim-windowswap'
+Plug 'djoshea/vim-autoread'
 " fix: can't use vim command under chinese input source
 Plug 'lyokha/vim-xkbswitch'
 " gist -- start
