@@ -51,6 +51,9 @@ set backupcopy=yes
 " Maintain undo history between sessions
 set undofile
 
+" Disable vim E211: File no longer available @see
+" https://stackoverflow.com/questions/52780939/disable-vim-e211-file-no-longer-available
+autocmd FileChangedShell * execute
 " }}}
 
 " FileType specific setting {{{
