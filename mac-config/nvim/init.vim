@@ -201,7 +201,6 @@ Plug 'godlygeek/tabular'
 Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-fugitive'
 Plug 'junegunn/gv.vim'
-Plug 'MattesGroeger/vim-bookmarks'
 Plug 'wellle/targets.vim'
 Plug 'moll/vim-node'
 Plug 'tpope/vim-unimpaired'
@@ -247,7 +246,7 @@ Plug 'itchyny/lightline.vim'
 Plug 'flazz/vim-colorschemes'
 Plug 'jiangmiao/auto-pairs'
 Plug 'mattn/emmet-vim'
-Plug 'Valloric/MatchTagAlways'
+Plug 'andymass/vim-matchup'
 Plug 'Chiel92/vim-autoformat'
 Plug 'henrik/vim-indexed-search'
 Plug 'ConradIrwin/vim-bracketed-paste'
@@ -306,6 +305,7 @@ map <leader>nf :NERDTreeFind<cr>
 " enable ctrl+j/k to switch panel in nerdtree
 let g:NERDTreeMapJumpNextSibling = '<Nop>'
 let g:NERDTreeMapJumpPrevSibling = '<Nop>'
+let NERDTreeAutoDeleteBuffer=1
 " fzf
 nmap <leader>f :Files<CR>
 function! ToggleVCSIgnore()
@@ -404,33 +404,6 @@ let g:XkbSwitchEnabled = 1
 
 " bufexplorer
 let g:bufExplorerShowRelativePath=1
-
-" bookmarks, avoid conflicts with nerdtree
-let g:bookmark_no_default_key_mappings = 1
-function! BookmarkMapKeys()
-    nmap mm :BookmarkToggle<CR>
-    nmap mi :BookmarkAnnotate<CR>
-    nmap mn :BookmarkNext<CR>
-    nmap mp :BookmarkPrev<CR>
-    nmap ma :BookmarkShowAll<CR>
-    nmap mc :BookmarkClear<CR>
-    nmap mx :BookmarkClearAll<CR>
-    nmap mkk :BookmarkMoveUp
-    nmap mjj :BookmarkMoveDown
-endfunction
-function! BookmarkUnmapKeys()
-    unmap mm
-    unmap mi
-    unmap mn
-    unmap mp
-    unmap ma
-    unmap mc
-    unmap mx
-    unmap mkk
-    unmap mjj
-endfunction
-autocmd FocusGained,BufEnter * :call BookmarkMapKeys()
-autocmd FocusGained,BufEnter NERD_tree_* :call BookmarkUnmapKeys()
 
 " vim-indexed-search
 let g:indexed_search_max_hits = 1.0e6
