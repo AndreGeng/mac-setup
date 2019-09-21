@@ -416,4 +416,8 @@ let g:user_emmet_settings = {
 \ },
 \}
 
+" WindowSwap.vim
+let g:windowswap_map_keys = 0 "prevent default bindings
+nnoremap <silent> <leader>ss :call WindowSwap#EasyWindowSwap()<CR>
+
 " }}}
