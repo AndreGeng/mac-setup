@@ -59,6 +59,7 @@ autocmd FileChangedShell * execute
 " FileType specific setting {{{
 " map extension to filetype
 autocmd BufEnter *.less.module :setlocal filetype=less
+autocmd BufEnter *.pcss :setlocal filetype=scss
 autocmd BufEnter *.wxml :setlocal filetype=html
 autocmd BufEnter *.wxss :setlocal filetype=css
 
