@@ -260,7 +260,6 @@ Plug 'editorconfig/editorconfig-vim'
 Plug 'tpope/vim-surround'
 Plug 'nelstrom/vim-visual-star-search'
 Plug 'iamcco/markdown-preview.vim'
-Plug 'ludovicchabant/vim-gutentags'
 Plug 'wesQ3/vim-windowswap'
 Plug 'djoshea/vim-autoread'
 " fix: can't use vim command under chinese input source
