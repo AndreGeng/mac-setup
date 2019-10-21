@@ -359,19 +359,19 @@ let g:ale_linters = {
 \  'javascript': ['eslint'],
 \  'javascript.jsx': ['eslint'],
 \}
-" let g:ale_fixers = {
-" \   'javascript': ['prettier'],
-" \   'json': ['prettier'],
-" \   'javascript.jsx': ['prettier'],
-" \   'typescript': ['prettier'],
-" \   'css': ['prettier'],
-" \   'less': ['prettier'],
-" \   'sass': ['prettier'],
-" \}
+let g:ale_fixers = {
+\   'javascript': ['prettier'],
+\   'json': ['prettier'],
+\   'javascript.jsx': ['prettier'],
+\   'typescript': ['prettier'],
+\   'css': ['prettier'],
+\   'less': ['prettier'],
+\   'sass': ['prettier'],
+\}
 
 " @see https://prettier.io/docs/en/vim.html
 let g:ale_linters_explicit = 1
-let g:ale_fix_on_save = 1
+" let g:ale_fix_on_save = 1
 
 
 "Set this setting in vimrc if you want to fix files automatically on save.
