@@ -54,6 +54,10 @@ set undofile
 " Disable vim E211: File no longer available @see
 " https://stackoverflow.com/questions/52780939/disable-vim-e211-file-no-longer-available
 autocmd FileChangedShell * execute
+
+" autoread
+set autoread
+au FocusGained * :checktime
 " }}}
 
 " FileType specific setting {{{
@@ -261,7 +265,6 @@ Plug 'tpope/vim-surround'
 Plug 'nelstrom/vim-visual-star-search'
 Plug 'iamcco/markdown-preview.vim'
 Plug 'wesQ3/vim-windowswap'
-Plug 'djoshea/vim-autoread'
 " fix: can't use vim command under chinese input source
 Plug 'lyokha/vim-xkbswitch'
 " gist -- start
