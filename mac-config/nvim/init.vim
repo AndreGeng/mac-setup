@@ -425,5 +425,8 @@ let g:user_emmet_settings = {
 " WindowSwap.vim
 let g:windowswap_map_keys = 0 "prevent default bindings
 nnoremap <silent> <leader>ss :call WindowSwap#EasyWindowSwap()<CR>
-
+" snip
+" Press enter key to trigger snippet expansion
+" The parameters are the same as `:help feedkeys()`
+inoremap <silent> <expr> <CR> ncm2_snipmate#expand_or("\<CR>", 'n')
 " }}}
