@@ -368,6 +368,7 @@ let g:ale_fixers = {
 \   'javascript.jsx': ['prettier'],
 \   'typescript': ['prettier'],
 \   'css': ['prettier'],
+\   'scss': ['prettier'],
 \   'less': ['prettier'],
 \   'sass': ['prettier'],
 \}
@@ -380,7 +381,7 @@ let g:ale_linters_explicit = 1
 "Set this setting in vimrc if you want to fix files automatically on save.
 "This is off by default.
 " let g:ale_fix_on_save = 1
-nmap <leader>lf :ALEFix<CR>
+nmap <leader>af :ALEFix<CR>
 
 " tmux navigator: Disable tmux navigator when zooming the Vim pane
 let g:tmux_navigator_disable_when_zoomed = 1
