@@ -429,5 +429,5 @@ nnoremap <silent> <leader>ss :call WindowSwap#EasyWindowSwap()<CR>
 " snip
 " Press enter key to trigger snippet expansion
 " The parameters are the same as `:help feedkeys()`
-inoremap <silent> <expr> <CR> ncm2_snipmate#expand_or("\<CR>", 'n')
+inoremap <silent> <expr> <C-e> ncm2_snipmate#expand_or("\<C-e>", 'n')
 " }}}
