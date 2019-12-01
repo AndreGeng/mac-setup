@@ -67,12 +67,6 @@ autocmd BufEnter *.pcss :setlocal filetype=scss
 autocmd BufEnter *.wxml :setlocal filetype=html
 autocmd BufEnter *.wxss :setlocal filetype=css
 
-" vimscript file setting
-augroup filetype_vim
-  autocmd!
-  autocmd BufEnter *.vim :setlocal foldmethod=marker
-augroup END
-
 " fold style
 """"""""""""""""""""""""""""""
 " => JavaScript section
