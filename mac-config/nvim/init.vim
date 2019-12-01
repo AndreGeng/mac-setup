@@ -408,8 +408,7 @@ let g:indexed_search_max_hits = 1.0e6
 let g:indexed_search_max_lines = 1.0e6
 
 " emmet
-let g:user_emmet_expandabbr_key='<Tab>'
-imap <expr> <tab> emmet#expandAbbrIntelligent("\<tab>")
+imap <expr> <tab> emmet#expandAbbrIntelligent("\<c-i>")
 " enable emmet for ts/tsx
 let g:user_emmet_settings = {
 \ 'typescript' : {
