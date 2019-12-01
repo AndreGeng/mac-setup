@@ -58,6 +58,12 @@ autocmd FileChangedShell * execute
 " autoread
 set autoread
 au FocusGained * :checktime
+
+" default updatetime 4000ms is not good for async update
+set updatetime=100
+
+" terminal
+tnoremap <C-f> <C-\><C-n>
 " }}}
 
 " FileType specific setting {{{
@@ -99,6 +105,7 @@ nnoremap <leader>u :GundoToggle<CR>
 " git shortcut
 nnoremap <leader>gs :Gstatus<CR>
 nnoremap <leader>gb :Gblame<CR>
+nnoremap <leader>gm :GitMessenger<CR>
 " show git log patches
 nnoremap <leader>sp :call ShowPatch()<cr>
 " view changes of current file made by me
@@ -194,10 +201,12 @@ autocmd VimResized * wincmd =
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+Plug 'voldikss/vim-floaterm'
+Plug 'rhysd/git-messenger.vim'
 Plug 'sjl/gundo.vim'
 Plug 'mg979/vim-visual-multi'
 Plug 'godlygeek/tabular'
-Plug 'airblade/vim-gitgutter'
+Plug 'mhinz/vim-signify'
 Plug 'tpope/vim-fugitive'
 Plug 'junegunn/gv.vim'
 Plug 'wellle/targets.vim'
@@ -423,4 +432,6 @@ nnoremap <silent> <leader>ss :call WindowSwap#EasyWindowSwap()<CR>
 " Press enter key to trigger snippet expansion
 " The parameters are the same as `:help feedkeys()`
 inoremap <silent> <expr> <C-e> ncm2_snipmate#expand_or("\<C-e>", 'n')
+" floaterm
+nnoremap <C-f> :FloatermToggle<CR>
 " }}}
