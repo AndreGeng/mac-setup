@@ -201,6 +201,7 @@ autocmd VimResized * wincmd =
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+Plug 'jpalardy/vim-slime'
 Plug 'voldikss/vim-floaterm'
 Plug 'rhysd/git-messenger.vim'
 Plug 'sjl/gundo.vim'
@@ -434,4 +435,7 @@ nnoremap <silent> <leader>ss :call WindowSwap#EasyWindowSwap()<CR>
 inoremap <silent> <expr> <C-e> ncm2_snipmate#expand_or("\<C-e>", 'n')
 " floaterm
 nnoremap <C-f> :FloatermToggle<CR>
+" slime
+let g:slime_target = "tmux"
+let g:slime_default_config = {"socket_name": "default", "target_pane": "{bottom-right}"}
 " }}}
