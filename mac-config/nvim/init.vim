@@ -4,6 +4,7 @@
 let mapleader = ","
 " copy to system clipboard
 set clipboard+=unnamedplus
+language zh_CN.UTF-8
 
 " jump between unsaved buffers without the E37
 set hidden
