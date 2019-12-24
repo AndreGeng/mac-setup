@@ -198,11 +198,14 @@ augroup end
 
 " auto resize window size when container window size changed
 autocmd VimResized * wincmd =
+
+" set filetype to javascript if it's empty
+autocmd BufEnter * if &filetype == "" | setlocal ft=javascript | endif
 "}}}
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
-Plug 'jpalardy/vim-slime'
+Plug 'kassio/neoterm'
 Plug 'voldikss/vim-floaterm'
 Plug 'rhysd/git-messenger.vim'
 Plug 'sjl/gundo.vim'
@@ -436,7 +439,11 @@ nnoremap <silent> <leader>ss :call WindowSwap#EasyWindowSwap()<CR>
 inoremap <silent> <expr> <C-e> ncm2_snipmate#expand_or("\<C-e>", 'n')
 " floaterm
 nnoremap <C-f> :FloatermToggle<CR>
-" slime
-let g:slime_target = "tmux"
-let g:slime_default_config = {"socket_name": "default", "target_pane": "{bottom-right}"}
+
+" neoterm
+let g:neoterm_default_mod = 'botright'
+nmap <c-c><c-c> :Topen<cr>:TREPLSendFile<cr>
+nmap <c-c><c-v> :TtoggleAll<cr>
+nmap <c-c><c-x> :Tclear<cr>
+
 " }}}
