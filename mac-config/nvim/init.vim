@@ -205,6 +205,7 @@ autocmd BufEnter * if &filetype == "" | setlocal ft=javascript | endif
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+Plug 'ap/vim-css-color'
 Plug 'kassio/neoterm'
 Plug 'voldikss/vim-floaterm'
 Plug 'rhysd/git-messenger.vim'
