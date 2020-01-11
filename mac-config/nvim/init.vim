@@ -73,6 +73,7 @@ autocmd BufEnter *.less.module :setlocal filetype=less
 autocmd BufEnter *.pcss :setlocal filetype=scss
 autocmd BufEnter *.wxml :setlocal filetype=html
 autocmd BufEnter *.wxss :setlocal filetype=css
+autocmd BufEnter *.md,*.mdx :setlocal filetype=markdown
 
 " fold style
 """"""""""""""""""""""""""""""
@@ -205,6 +206,7 @@ autocmd BufEnter * if &filetype == "" | setlocal ft=javascript | endif
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+Plug 'justinmk/vim-sneak'
 Plug 'ap/vim-css-color'
 Plug 'kassio/neoterm'
 Plug 'voldikss/vim-floaterm'
