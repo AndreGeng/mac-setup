@@ -64,7 +64,7 @@ au FocusGained * :checktime
 set updatetime=100
 
 " terminal
-tnoremap <C-f> <C-\><C-n>
+tnoremap <C-g> <C-\><C-n>
 " }}}
 
 " FileType specific setting {{{
@@ -441,7 +441,7 @@ nnoremap <silent> <leader>ss :call WindowSwap#EasyWindowSwap()<CR>
 " The parameters are the same as `:help feedkeys()`
 inoremap <silent> <expr> <C-e> ncm2_snipmate#expand_or("\<C-e>", 'n')
 " floaterm
-nnoremap <C-f> :FloatermToggle<CR>
+nnoremap <C-g> :FloatermToggle<CR>
 
 " neoterm
 let g:neoterm_default_mod = 'botright'
