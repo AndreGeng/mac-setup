@@ -206,24 +206,31 @@ autocmd BufEnter * if &filetype == "" | setlocal ft=javascript | endif
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
-Plug 'justinmk/vim-sneak'
+" preview color
 Plug 'ap/vim-css-color'
-Plug 'kassio/neoterm'
+" open built-in terminal in floating window
 Plug 'voldikss/vim-floaterm'
-Plug 'rhysd/git-messenger.vim'
+" visualize vim undo tree
 Plug 'sjl/gundo.vim'
+" multi cursor support, use <tab> to switch mode
 Plug 'mg979/vim-visual-multi'
-Plug 'godlygeek/tabular'
+" show a diff using sign column
 Plug 'mhinz/vim-signify'
+" git
 Plug 'tpope/vim-fugitive'
+" show git history for specific range
 Plug 'junegunn/gv.vim'
+" Vim plugin that provides additional text objects
 Plug 'wellle/targets.vim'
+" gf jump to file
 Plug 'moll/vim-node'
+" common used mappings [q,]q fro :cnext, :cprevious
 Plug 'tpope/vim-unimpaired'
+" quick rename var: crs(snake_case), crm(MixedCase),crc(camelCase),cru(UPPER_CASE),cr-(dash-case),cr.(dot.case),cr<space>(space case),crt(Title Case)
 Plug 'tpope/vim-abolish'
+" zoom window using <c-w>o
 Plug 'troydm/zoomwintab.vim'
-Plug 'tpope/vim-dispatch'
-Plug 'iamcco/mathjax-support-for-mkdp'
+" open items in quickfix window wherever you wish, <leader><enter> vertical split, <leader><space> horizontal split
 Plug 'yssl/QFEnter'
 
 " completion framework ncm2 -- start
@@ -286,7 +293,7 @@ Plug 'mattn/webapi-vim'
 Plug 'pangloss/vim-javascript'
 Plug 'leafgarland/typescript-vim'
 Plug 'othree/html5.vim'
-Plug 'mxw/vim-jsx'
+Plug 'maxmellon/vim-jsx-pretty'
 Plug 'ekalinin/Dockerfile.vim'
 Plug 'stephpy/vim-yaml'
 Plug 'tpope/vim-dotenv'
@@ -448,5 +455,7 @@ let g:neoterm_default_mod = 'botright'
 nmap <c-c><c-c> :Topen<cr>:TREPLSendFile<cr>
 nmap <c-c><c-v> :TtoggleAll<cr>
 nmap <c-c><c-x> :Tclear<cr>
+" gundo
+nmap <leader>u :GundoToggle<cr>
 
 " }}}
