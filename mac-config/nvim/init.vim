@@ -74,6 +74,7 @@ autocmd BufEnter *.pcss :setlocal filetype=scss
 autocmd BufEnter *.wxml :setlocal filetype=html
 autocmd BufEnter *.wxss :setlocal filetype=css
 autocmd BufEnter *.md,*.mdx :setlocal filetype=markdown
+autocmd BufEnter *.js,*.jsx :setlocal filetype=javascript.jsx
 
 " fold style
 """"""""""""""""""""""""""""""
@@ -201,7 +202,7 @@ augroup end
 autocmd VimResized * wincmd =
 
 " set filetype to javascript if it's empty
-autocmd BufEnter * if &filetype == "" | setlocal ft=javascript | endif
+autocmd BufEnter * if &filetype == "" | setlocal ft=javascript.jsx | endif
 "}}}
 
 " Plugins {{{
@@ -222,16 +223,12 @@ Plug 'tpope/vim-fugitive'
 Plug 'junegunn/gv.vim'
 " Vim plugin that provides additional text objects
 Plug 'wellle/targets.vim'
-" gf jump to file
-Plug 'moll/vim-node'
 " common used mappings [q,]q fro :cnext, :cprevious
 Plug 'tpope/vim-unimpaired'
 " quick rename var: crs(snake_case), crm(MixedCase),crc(camelCase),cru(UPPER_CASE),cr-(dash-case),cr.(dot.case),cr<space>(space case),crt(Title Case)
 Plug 'tpope/vim-abolish'
 " zoom window using <c-w>o
 Plug 'troydm/zoomwintab.vim'
-" open items in quickfix window wherever you wish, <leader><enter> vertical split, <leader><space> horizontal split
-Plug 'yssl/QFEnter'
 
 " completion framework ncm2 -- start
 Plug 'ncm2/ncm2'
@@ -262,8 +259,10 @@ Plug 'christoomey/vim-tmux-navigator'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'mileszs/ack.vim'
-Plug 'tpope/vim-commentary'
-Plug 'suy/vim-context-commentstring'
+" comment stuff out
+" Plug 'tpope/vim-commentary'
+" Plug 'suy/vim-context-commentstring'
+Plug 'preservim/nerdcommenter'
 Plug 'w0rp/ale'
 Plug 'itchyny/lightline.vim'
 Plug 'flazz/vim-colorschemes'
@@ -299,7 +298,10 @@ Plug 'stephpy/vim-yaml'
 Plug 'tpope/vim-dotenv'
 " syntax -- end
 " seldom used -- start
-" Plug 'terryma/vim-expand-region'
+" open items in quickfix window wherever you wish, <leader><enter> vertical split, <leader><space> horizontal split
+Plug 'yssl/QFEnter'
+" gf jump to file
+Plug 'moll/vim-node'
 " seldom used -- end
 call plug#end()
 " }}}
@@ -457,5 +459,10 @@ nmap <c-c><c-v> :TtoggleAll<cr>
 nmap <c-c><c-x> :Tclear<cr>
 " gundo
 nmap <leader>u :GundoToggle<cr>
+" nerdcommenter
+nnoremap gcc :call NERDComment(0,"toggle")<CR>
+vnoremap gcc :call NERDComment(0,"toggle")<CR>
+let g:NERDSpaceDelims = 1
+let g:NERDDefaultAlign = 'both'
 
 " }}}
