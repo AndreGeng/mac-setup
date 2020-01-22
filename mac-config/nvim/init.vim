@@ -230,27 +230,7 @@ Plug 'tpope/vim-abolish'
 " zoom window using <c-w>o
 Plug 'troydm/zoomwintab.vim'
 
-" completion framework ncm2 -- start
-Plug 'ncm2/ncm2'
-Plug 'roxma/nvim-yarp'
-Plug 'ncm2/ncm2-snipmate'
-Plug 'tomarrell/vim-npr'
-" ncm2 complete source -- start
-Plug 'ncm2/ncm2-bufword'
-Plug 'ncm2/ncm2-path'
-Plug 'wellle/tmux-complete.vim'
-Plug 'autozimu/LanguageClient-neovim', {
-  \ 'branch': 'next',
-  \ 'do': 'bash install.sh',
-  \ }
-" ncm2 complete source --end
-" completion framework ncm2 -- end
-" snippet -- start
-Plug 'MarcWeber/vim-addon-mw-utils'
-Plug 'tomtom/tlib_vim'
-Plug 'garbas/vim-snipmate'
-Plug 'honza/vim-snippets'
-" snippet --end
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
 " familiar
 Plug 'scrooloose/nerdtree'
@@ -406,23 +386,6 @@ nmap <leader>af :ALEFix<CR>
 " tmux navigator: Disable tmux navigator when zooming the Vim pane
 let g:tmux_navigator_disable_when_zoomed = 1
 
-" enable ncm2 for all buffers
-autocmd BufEnter * call ncm2#enable_for_buffer()
-
-" IMPORTANTE: :help Ncm2PopupOpen for more information
-set completeopt=noinsert,menuone,noselect
-
-" LSP
-let g:LanguageClient_serverCommands = {
-    \ 'javascript': [expand('`npm get prefix`/bin/javascript-typescript-stdio')],
-    \ 'javascript.jsx': [expand('`npm get prefix`/bin/javascript-typescript-stdio')],
-    \ 'typescript': [expand('`npm get prefix`/bin/javascript-typescript-stdio')],
-    \ }
-nnoremap <silent> K :call LanguageClient#textDocument_hover()<CR>
-nnoremap <silent> E :call LanguageClient#explainErrorAtPoint()<CR>
-nnoremap <silent> gd :call LanguageClient#textDocument_definition()<CR>
-nnoremap <silent> <F2> :call LanguageClient#textDocument_rename()<CR>
-let g:LanguageClient_diagnosticsList = 'Disabled'
 " xkbswitch
 let g:XkbSwitchEnabled = 1
 
@@ -445,10 +408,6 @@ let g:user_emmet_settings = {
 " WindowSwap.vim
 let g:windowswap_map_keys = 0 "prevent default bindings
 nnoremap <silent> <leader>ss :call WindowSwap#EasyWindowSwap()<CR>
-" snip
-" Press enter key to trigger snippet expansion
-" The parameters are the same as `:help feedkeys()`
-inoremap <silent> <expr> <C-e> ncm2_snipmate#expand_or("\<C-e>", 'n')
 " floaterm
 nnoremap <C-g> :FloatermToggle<CR>
 
