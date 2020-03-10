@@ -231,6 +231,7 @@ Plug 'tpope/vim-abolish'
 Plug 'troydm/zoomwintab.vim'
 
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'honza/vim-snippets'
 
 " familiar
 Plug 'scrooloose/nerdtree'
