@@ -75,7 +75,7 @@ autocmd BufEnter *.wxml :setlocal filetype=html
 autocmd BufEnter *.wxss :setlocal filetype=css
 autocmd BufEnter *.md,*.mdx :setlocal filetype=markdown
 autocmd BufEnter *.js,*.jsx :setlocal filetype=javascript.jsx
-
+autocmd BufEnter *.json set filetype=jsonc
 " fold style
 """"""""""""""""""""""""""""""
 " => JavaScript section
@@ -207,6 +207,8 @@ autocmd BufEnter * if &filetype == "" | setlocal ft=javascript.jsx | endif
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+" allow comments in json
+Plug 'neoclide/jsonc.vim'
 " preview color
 Plug 'ap/vim-css-color'
 " open built-in terminal in floating window
@@ -366,6 +368,7 @@ let g:ale_linters = {
 let g:ale_fixers = {
 \   'javascript': ['prettier'],
 \   'json': ['prettier'],
+\   'jsonc': ['prettier'],
 \   'javascript.jsx': ['prettier'],
 \   'typescript': ['prettier'],
 \   'css': ['prettier'],
@@ -424,5 +427,15 @@ nnoremap gcc :call NERDComment(0,"toggle")<CR>
 vnoremap gcc :call NERDComment(0,"toggle")<CR>
 let g:NERDSpaceDelims = 1
 let g:NERDDefaultAlign = 'both'
+" coc.nvim
+" Use K to show documentation in preview window.
+nnoremap <silent> K :call <SID>show_documentation()<CR>
 
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
+endfunction
 " }}}
