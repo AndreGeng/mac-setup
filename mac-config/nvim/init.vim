@@ -213,8 +213,6 @@ Plug 'neoclide/jsonc.vim'
 Plug 'ap/vim-css-color'
 " open built-in terminal in floating window
 Plug 'voldikss/vim-floaterm'
-" visualize vim undo tree
-Plug 'sjl/gundo.vim'
 " multi cursor support, use <tab> to switch mode
 Plug 'mg979/vim-visual-multi'
 " show a diff using sign column
