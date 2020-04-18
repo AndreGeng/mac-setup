@@ -8,7 +8,7 @@ log_dir=$base_dir/logs
 ./sync.sh
 
 # install&config oh-my-zsh
-./oh-my-zsh.sh
+./zsh.sh
 # vim config
 ./vim.sh
 # tmux config
