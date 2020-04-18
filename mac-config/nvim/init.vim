@@ -75,6 +75,7 @@ autocmd BufEnter *.wxml :setlocal filetype=html
 autocmd BufEnter *.wxss :setlocal filetype=css
 autocmd BufEnter *.md,*.mdx :setlocal filetype=markdown
 autocmd BufEnter *.js,*.jsx :setlocal filetype=javascript.jsx
+autocmd BufEnter *.ts,*.tsx :setlocal filetype=typescript
 autocmd BufEnter *.json set filetype=jsonc
 " fold style
 """"""""""""""""""""""""""""""
