@@ -429,6 +429,9 @@ let g:NERDDefaultAlign = 'both'
 " coc.nvim
 " Use K to show documentation in preview window.
 nnoremap <silent> K :call <SID>show_documentation()<CR>
+nmap <silent> [g <Plug>(coc-diagnostic-prev)
+nmap <silent> ]g <Plug>(coc-diagnostic-next)
+nmap <silent> gy <Plug>(coc-type-definition)
 
 function! s:show_documentation()
   if (index(['vim','help'], &filetype) >= 0)
