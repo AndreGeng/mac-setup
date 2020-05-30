@@ -8,6 +8,22 @@ language zh_CN.UTF-8
 
 " jump between unsaved buffers without the E37
 set hidden
+" coc setting -- start
+set nobackup
+set nowritebackup
+" Give more space for displaying messages.
+set cmdheight=2
+" Don't pass messages to |ins-completion-menu|.
+set shortmess+=c
+" Always show the signcolumn, otherwise it would shift the text each time
+" diagnostics appear/become resolved.
+if has("patch-8.1.1564")
+  " Recently vim can merge signcolumn and number column into one
+  set signcolumn=number
+else
+  set signcolumn=yes
+endif
+" coc setting -- end
 
 " set lazyredraw, makes nvim smooth in tmux
 set lazyredraw
@@ -75,7 +91,7 @@ autocmd BufEnter *.wxml :setlocal filetype=html
 autocmd BufEnter *.wxss :setlocal filetype=css
 autocmd BufEnter *.md,*.mdx :setlocal filetype=markdown
 autocmd BufEnter *.js,*.jsx :setlocal filetype=javascript.jsx
-autocmd BufEnter *.ts,*.tsx :setlocal filetype=typescript
+autocmd BufEnter *.ts,*.tsx :setlocal filetype=typescript.tsx
 autocmd BufEnter *.json set filetype=jsonc
 " fold style
 """"""""""""""""""""""""""""""
@@ -208,6 +224,8 @@ autocmd BufEnter * if &filetype == "" | setlocal ft=javascript.jsx | endif
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+" markdown preview
+Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() } }
 " allow comments in json
 Plug 'neoclide/jsonc.vim'
 " preview color
@@ -231,7 +249,8 @@ Plug 'tpope/vim-abolish'
 " zoom window using <c-w>o
 Plug 'troydm/zoomwintab.vim'
 
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
+" always download fail, install manually @see https://github.com/neoclide/coc.nvim/wiki/Install-coc.nvim#add-cocnvim-to-your-vims-runtimepath
+" Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
 Plug 'honza/vim-snippets'
 
 " familiar
@@ -242,9 +261,7 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'mileszs/ack.vim'
 " comment stuff out
-" Plug 'tpope/vim-commentary'
-" Plug 'suy/vim-context-commentstring'
-Plug 'preservim/nerdcommenter'
+Plug 'tpope/vim-commentary'
 Plug 'w0rp/ale'
 Plug 'itchyny/lightline.vim'
 Plug 'flazz/vim-colorschemes'
@@ -383,7 +400,7 @@ let g:ale_linters_explicit = 1
 
 "Set this setting in vimrc if you want to fix files automatically on save.
 "This is off by default.
-" let g:ale_fix_on_save = 1
+let g:ale_fix_on_save = 1
 nmap <leader>af :ALEFix<CR>
 
 " tmux navigator: Disable tmux navigator when zooming the Vim pane
@@ -421,17 +438,18 @@ nmap <c-c><c-v> :TtoggleAll<cr>
 nmap <c-c><c-x> :Tclear<cr>
 " gundo
 nmap <leader>u :GundoToggle<cr>
-" nerdcommenter
-nnoremap gcc :call NERDComment(0,"toggle")<CR>
-vnoremap gcc :call NERDComment(0,"toggle")<CR>
-let g:NERDSpaceDelims = 1
-let g:NERDDefaultAlign = 'both'
+" vim-commentary jsx comment
+autocmd FileType javascript.jsx,typescript.jsx setlocal commentstring={/*\ %s\ */}
 " coc.nvim
 " Use K to show documentation in preview window.
 nnoremap <silent> K :call <SID>show_documentation()<CR>
 nmap <silent> [g <Plug>(coc-diagnostic-prev)
 nmap <silent> ]g <Plug>(coc-diagnostic-next)
+" GoTo code navigation.
+nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
 
 function! s:show_documentation()
   if (index(['vim','help'], &filetype) >= 0)
