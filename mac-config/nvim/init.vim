@@ -224,6 +224,7 @@ autocmd BufEnter * if &filetype == "" | setlocal ft=javascript.jsx | endif
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+Plug 'jreybert/vimagit'
 " markdown preview
 Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() } }
 " allow comments in json
@@ -279,7 +280,6 @@ Plug 'kana/vim-textobj-lastpat'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'tpope/vim-surround'
 Plug 'nelstrom/vim-visual-star-search'
-Plug 'iamcco/markdown-preview.vim'
 Plug 'wesQ3/vim-windowswap'
 " fix: can't use vim command under chinese input source
 Plug 'lyokha/vim-xkbswitch'
