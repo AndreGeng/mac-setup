@@ -1,11 +1,12 @@
 #!/bin/bash
 # Check for Homebrew,
 for f in $(dirname "$0")/utils/*.sh; do
-    source $f
+  source $f
 done
 
 brew tap caskroom/cask
 brewInstallIfNotExists nginx
+brewInstallIfNotExists shfmt
 
 # brew installs
 

@@ -123,7 +123,7 @@ nnoremap <leader>q :q<CR>
 nnoremap <leader>u :GundoToggle<CR>
 
 " git shortcut
-nnoremap <leader>gs :Gstatus<CR>
+nnoremap <leader>gs :G<CR>
 nnoremap <leader>gb :Gblame<CR>
 nnoremap <leader>gm :GitMessenger<CR>
 " show git log patches
@@ -224,6 +224,7 @@ autocmd BufEnter * if &filetype == "" | setlocal ft=javascript.jsx | endif
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+Plug 'bash-lsp/bash-language-server'
 Plug 'jreybert/vimagit'
 " markdown preview
 Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() } }
@@ -380,6 +381,7 @@ vnoremap <leader>gv :GV!<CR>
 let g:ale_linters = {
 \  'javascript': ['eslint'],
 \  'javascript.jsx': ['eslint'],
+\  'sh': ['language_server'],
 \}
 let g:ale_fixers = {
 \   'javascript': ['prettier'],
@@ -391,6 +393,7 @@ let g:ale_fixers = {
 \   'scss': ['prettier'],
 \   'less': ['prettier'],
 \   'sass': ['prettier'],
+\   'sh': ['shfmt'],
 \}
 
 " @see https://prettier.io/docs/en/vim.html
@@ -458,4 +461,6 @@ function! s:show_documentation()
     call CocAction('doHover')
   endif
 endfunction
+" magit
+
 " }}}
