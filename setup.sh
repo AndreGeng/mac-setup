@@ -1,9 +1,8 @@
-#!/bin/bash
-for f in $(dirname "$0")/utils/*.sh; do
-    source $f
+#!/usr/bin/env bash
+BASE_DIR=$(dirname "$0")
+for f in $BASE_DIR/utils/*.sh; do
+  source $f
 done
-base_dir=$(dirname "$0")
-log_dir=$base_dir/logs
 # restore mac config
 ./sync.sh
 
@@ -23,4 +22,4 @@ log_dir=$base_dir/logs
 open /usr/local/Caskroom/baiduinput/latest
 # install&config karabiner-elements
 ./karabiner.sh
-log 'mac setup completed' $Green
+log 'mac setup completed' $GREEN

@@ -1,4 +1,5 @@
-log() # $1: message to echo, $2: color var
-{
-    echo -e "${2-$Color_Off}$1${Color_Off}"
+#!/usr/bin/env bash
+# $1: message to echo, $2: color var
+log() {
+  echo -e "${2}$1${COLOR_OFF}"
 }

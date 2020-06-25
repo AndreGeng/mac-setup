@@ -1,6 +1,6 @@
 #!/bin/bash
 for f in $(dirname "$0")/utils/*.sh; do
-    source $f
+  source $f
 done
 
 # install realpath util

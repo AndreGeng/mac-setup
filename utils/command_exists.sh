@@ -1,5 +1,4 @@
-#!/bin/bash
-exists()
-{
-    command -v "$1" >/dev/null 2>&1
+#!/usr/bin/env bash
+exists() {
+  command -v "$1" >/dev/null 2>&1
 }
