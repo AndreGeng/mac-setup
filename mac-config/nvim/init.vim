@@ -341,11 +341,28 @@ function! ToggleVCSIgnore()
   endif
 endfunction
 nnoremap <leader>ts :call ToggleVCSIgnore()<cr>
+command! -bang -nargs=* Rg call fzf#vim#grep("rg --column --line-number --no-heading --color=always --colors 'match:bg:yellow' --colors 'match:fg:black' --colors 'match:style:nobold' --colors 'path:fg:green' --colors 'path:style:bold' --colors 'line:fg:yellow' --colors 'line:style:bold' --smart-case ".<q-args>, 1, <bang>0)
+
+" CTRL-A CTRL-Q to select all and build quickfix list
+function! s:build_quickfix_list(lines)
+  call setqflist(map(copy(a:lines), '{ "filename": v:val }'))
+  copen
+  cc
+endfunction
+
+let g:fzf_action = {
+  \ 'ctrl-q': function('s:build_quickfix_list'),
+  \ 'ctrl-t': 'tab split',
+  \ 'ctrl-x': 'split',
+  \ 'ctrl-v': 'vsplit' }
+
+let $FZF_DEFAULT_OPTS = '--bind ctrl-a:select-all'
 " Ack
-if executable('ag')
-  let g:ackprg = 'ag --vimgrep'
-endif
-nmap <leader>a :Ack -i 
+" if executable('ag')
+"   let g:ackprg = 'ag --vimgrep'
+" endif
+" nmap <leader>a :Ack -i 
+nmap <leader>a :Rg -i 
 
 " expand region shortcut 
 vmap v <Plug>(expand_region_expand)

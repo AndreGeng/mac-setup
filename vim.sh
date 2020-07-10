@@ -8,6 +8,7 @@ brewInstallIfNotExists fd
 brewInstallIfNotExists openssl
 brewInstallIfNotExists xz
 brewInstallIfNotExists the_silver_searcher
+brewInstallIfNotExists ripgrep
 
 log 'install vim-plug' $GREEN
 curl -x http://localhost:1087 -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
