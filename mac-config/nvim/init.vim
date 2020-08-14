@@ -471,5 +471,7 @@ function! s:show_documentation()
     call CocAction('doHover')
   endif
 endfunction
+imap <C-l> <Plug>(coc-snippets-expand)
+
 " magit
 " }}}
