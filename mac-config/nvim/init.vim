@@ -115,8 +115,8 @@ endfunction
 " Custom mapping {{{
 " Fast saving
 nmap <leader>w :w!<cr>
-" Quick open vimrc
-nnoremap <leader>ev :rightbelow vsplit $MYVIMRC<cr>
+" Fast eval
+nmap <leader>e :w !node<cr>
 " smart way to close pane
 nnoremap <leader>q :q<CR>
 " toggle GundoToggle
@@ -252,7 +252,7 @@ Plug 'tpope/vim-abolish'
 Plug 'troydm/zoomwintab.vim'
 
 " always download fail, install manually @see https://github.com/neoclide/coc.nvim/wiki/Install-coc.nvim#add-cocnvim-to-your-vims-runtimepath
-" Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'honza/vim-snippets'
 
 " familiar
@@ -358,9 +358,9 @@ let g:fzf_action = {
 
 let $FZF_DEFAULT_OPTS = '--bind ctrl-a:select-all'
 " Ack
-" if executable('ag')
-"   let g:ackprg = 'ag --vimgrep'
-" endif
+if executable('ag')
+  let g:ackprg = 'ag --vimgrep'
+endif
 " nmap <leader>a :Ack -i 
 nmap <leader>a :Rg -i 
 
@@ -451,13 +451,6 @@ nnoremap <silent> <leader>ss :call WindowSwap#EasyWindowSwap()<CR>
 " floaterm
 nnoremap <C-g> :FloatermToggle<CR>
 
-" neoterm
-let g:neoterm_default_mod = 'botright'
-nmap <c-c><c-c> :Topen<cr>:TREPLSendFile<cr>
-nmap <c-c><c-v> :TtoggleAll<cr>
-nmap <c-c><c-x> :Tclear<cr>
-" gundo
-nmap <leader>u :GundoToggle<cr>
 " vim-commentary jsx comment
 autocmd FileType javascript.jsx,typescript.jsx setlocal commentstring={/*\ %s\ */}
 " coc.nvim
@@ -479,5 +472,4 @@ function! s:show_documentation()
   endif
 endfunction
 " magit
-
 " }}}
