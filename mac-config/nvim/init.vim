@@ -49,7 +49,6 @@ set ignorecase
 set smartcase
 
 " fold method
-set foldmethod=syntax
 nnoremap <Space> za
 
 " diff ignore whitespace
