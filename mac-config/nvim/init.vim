@@ -230,7 +230,7 @@ Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() } }
 " allow comments in json
 Plug 'neoclide/jsonc.vim'
 " preview color
-Plug 'ap/vim-css-color'
+Plug 'gko/vim-coloresque'
 " open built-in terminal in floating window
 Plug 'voldikss/vim-floaterm'
 " multi cursor support, use <tab> to switch mode
@@ -268,7 +268,7 @@ Plug 'itchyny/lightline.vim'
 Plug 'flazz/vim-colorschemes'
 Plug 'jiangmiao/auto-pairs'
 Plug 'mattn/emmet-vim'
-Plug 'andymass/vim-matchup'
+" Plug 'andymass/vim-matchup'
 Plug 'Chiel92/vim-autoformat'
 Plug 'henrik/vim-indexed-search'
 Plug 'ConradIrwin/vim-bracketed-paste'
@@ -360,8 +360,8 @@ let $FZF_DEFAULT_OPTS = '--bind ctrl-a:select-all'
 if executable('ag')
   let g:ackprg = 'ag --vimgrep'
 endif
-" nmap <leader>a :Ack -i 
-nmap <leader>a :Rg -i 
+nmap <leader>a :Ack -i 
+" nmap <leader>a :Rg -i 
 
 " expand region shortcut 
 vmap v <Plug>(expand_region_expand)
@@ -419,7 +419,7 @@ let g:ale_linters_explicit = 1
 
 "Set this setting in vimrc if you want to fix files automatically on save.
 "This is off by default.
-let g:ale_fix_on_save = 1
+" let g:ale_fix_on_save = 1
 nmap <leader>af :ALEFix<CR>
 
 " tmux navigator: Disable tmux navigator when zooming the Vim pane
@@ -455,6 +455,8 @@ autocmd FileType javascript.jsx,typescript.jsx setlocal commentstring={/*\ %s\ *
 " coc.nvim
 " Use K to show documentation in preview window.
 nnoremap <silent> K :call <SID>show_documentation()<CR>
+nnoremap <expr><C-b> coc#util#has_float() ? coc#util#float_scroll(0) : "\<C-b>"
+
 nmap <silent> [g <Plug>(coc-diagnostic-prev)
 nmap <silent> ]g <Plug>(coc-diagnostic-next)
 " GoTo code navigation.
