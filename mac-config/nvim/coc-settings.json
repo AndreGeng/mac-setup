@@ -6,5 +6,13 @@
       "filetypes": ["sh"],
       "ignoredRootPaths": ["~"]
     }
+  },
+  "explorer.width": 30,
+  "explorer.position": "floating",
+  "explorer.icon.enableNerdfont": true,
+  "explorer.keyMappings.global": {
+    "<space>": ["expandable?", ["expanded?", "collapse", "expand"], "open"],
+    "u": "gotoParent",
+    "o": ["expandable?", ["expanded?", "collapse", "expand"], "open"],
   }
 }

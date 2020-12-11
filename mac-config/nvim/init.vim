@@ -115,7 +115,8 @@ endfunction
 " Fast saving
 nmap <leader>w :w!<cr>
 " Fast eval
-nmap <leader>e :w !node<cr>
+nmap <leader>en :w !node<cr>
+nmap <leader>et :w !ts-node<cr>
 " smart way to close pane
 nnoremap <leader>q :q<CR>
 " toggle GundoToggle
@@ -223,6 +224,7 @@ autocmd BufEnter * if &filetype == "" | setlocal ft=javascript.jsx | endif
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+Plug 'leafOfTree/vim-vue-plugin'
 Plug 'bash-lsp/bash-language-server'
 Plug 'jreybert/vimagit'
 " markdown preview
@@ -255,14 +257,12 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'honza/vim-snippets'
 
 " familiar
-Plug 'scrooloose/nerdtree'
-Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'christoomey/vim-tmux-navigator'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'mileszs/ack.vim'
 " comment stuff out
-Plug 'tpope/vim-commentary'
+Plug 'tomtom/tcomment_vim'
 Plug 'w0rp/ale'
 Plug 'itchyny/lightline.vim'
 Plug 'flazz/vim-colorschemes'
@@ -320,14 +320,6 @@ let g:VM_maps["Select l"]           = '<m-l>'       " start selecting left
 let g:VM_maps["Select h"]           = '<m-h>'        " start selecting right
 let g:VM_maps["Select Cursor Down"] = '<m-j>'      " start selecting down
 let g:VM_maps["Select Cursor Up"]   = '<m-k>'        " start selecting up
-" nerdtree mapping
-let g:NERDTreeWinPos = "right"
-map <leader>nn :NERDTreeToggle<cr>
-map <leader>nf :NERDTreeFind<cr>
-" enable ctrl+j/k to switch panel in nerdtree
-let g:NERDTreeMapJumpNextSibling = '<Nop>'
-let g:NERDTreeMapJumpPrevSibling = '<Nop>'
-let NERDTreeAutoDeleteBuffer=1
 " fzf
 nmap <leader>f :Files<CR>
 function! ToggleVCSIgnore()
@@ -464,6 +456,19 @@ nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
+
+" Use CTRL-S for selections ranges.
+" Requires 'textDocument/selectionRange' support of language server.
+nmap <silent> <C-s> <Plug>(coc-range-select)
+xmap <silent> <C-s> <Plug>(coc-range-select)
+" coc-explorer
+let g:coc_explorer_global_presets = {
+\   'right': {
+\     'position': 'right',
+\   },
+\ }
+nmap <leader>ee :CocCommand explorer<CR>
+nmap <leader>er :CocCommand explorer --preset right<CR>
 
 function! s:show_documentation()
   if (index(['vim','help'], &filetype) >= 0)
