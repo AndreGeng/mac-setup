@@ -9,6 +9,8 @@ brewInstallIfNotExists openssl
 brewInstallIfNotExists xz
 brewInstallIfNotExists the_silver_searcher
 brewInstallIfNotExists ripgrep
+brew tap homebrew/cask-fonts
+brewInstallIfNotExists font-hack-nerd-font
 
 log 'install vim-plug' $GREEN
 curl -x http://localhost:1087 -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
