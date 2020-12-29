@@ -5,9 +5,9 @@ for f in $(dirname "$0")/utils/*.sh; do
 done
 
 # install GNU coreutils
-brewInstallIfNotExists coreutils
-brewInstallIfNotExists nginx
-brewInstallIfNotExists shfmt
+brewI coreutils
+brewI nginx
+brewI shfmt
 
 # brew installs
 

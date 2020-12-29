@@ -3,14 +3,14 @@ for f in $(dirname "$0")/utils/*.sh; do
   source $f
 done
 
-brewInstallIfNotExists neovim
-brewInstallIfNotExists fd
-brewInstallIfNotExists openssl
-brewInstallIfNotExists xz
-brewInstallIfNotExists the_silver_searcher
-brewInstallIfNotExists ripgrep
+brewI neovim
+brewI fd
+brewI openssl
+brewI xz
+brewI the_silver_searcher
+brewI ripgrep
 brew tap homebrew/cask-fonts
-brewInstallIfNotExists font-hack-nerd-font
+brewI font-hack-nerd-font
 
 log 'install vim-plug' $GREEN
 curl -x http://localhost:1087 -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
