@@ -3,12 +3,9 @@ for f in $(dirname "$0")/utils/*.sh; do
   source $f
 done
 
-# install realpath util
-brewInstallIfNotExists coreutils
-
 # download .zshrc
 log 'linking .zshrc' $GREEN
-ln -sf $(realpath $(dirname "$0"))/mac-config/.zshrc ~
+ln -sf $(realpath_osx $(dirname "$0"))/mac-config/.zshrc ~
 
 brewInstallIfNotExists zsh
 brewInstallIfNotExists zsh-completions

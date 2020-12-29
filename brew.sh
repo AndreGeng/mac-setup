@@ -4,6 +4,8 @@ for f in $(dirname "$0")/utils/*.sh; do
   source $f
 done
 
+# install GNU coreutils
+brewInstallIfNotExists coreutils
 brewInstallIfNotExists nginx
 brewInstallIfNotExists shfmt
 
