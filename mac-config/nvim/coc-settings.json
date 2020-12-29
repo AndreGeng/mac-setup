@@ -15,5 +15,6 @@
     "<space>": ["expandable?", ["expanded?", "collapse", "expand"], "open"],
     "u": "gotoParent",
     "o": ["expandable?", ["expanded?", "collapse", "expand"], "open"],
+    "df": "delete"
   }
 }
