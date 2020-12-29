@@ -203,9 +203,7 @@ function! ToggleList(bufname, pfx)
   endif
 endfunction
 
-" nmap <silent> <leader>l :call ToggleList("Location", 'l')<CR>
-" nmap <silent> <leader>q :call ToggleList("Quickfix", 'c')<CR>
-nmap <silent> <leader>l :call ToggleList("Location", 'l')<CR>
+nmap <silent> <leader>n :call ToggleList("Location", 'l')<CR>
 nmap <silent> <leader>k :call ToggleList("Quickfix", 'c')<CR>
 "toggle quickfixlist/locationlist -- end
 
@@ -380,6 +378,8 @@ let g:lightline = {
       \ 'subseparator': { 'left': ' ', 'right': ' ' }
       \ }
 " autoformat
+let g:formatters_jsonc=['jsbeautify_json']
+
 map <leader>af :Autoformat<CR>
 " gv.vim
 nnoremap <leader>gv :GV!<CR>
@@ -468,7 +468,7 @@ let g:coc_explorer_global_presets = {
 \   },
 \ }
 nmap <leader>ee :CocCommand explorer<CR>
-nmap <leader>er :CocCommand explorer --preset right<CR>
+nmap <leader>ef :CocCommand explorer --no-toggle --preset right<CR>
 
 function! s:show_documentation()
   if (index(['vim','help'], &filetype) >= 0)
@@ -479,5 +479,16 @@ function! s:show_documentation()
 endfunction
 imap <C-l> <Plug>(coc-snippets-expand)
 
-" magit
+" netrw
+" 修复<ctrl-l>被netrw覆盖的问题
+augroup netrw_mapping
+  autocmd!
+  autocmd filetype netrw call NetrwMapping()
+augroup END
+
+function! NetrwMapping()
+  nnoremap <silent> <buffer> <c-l> :TmuxNavigateRight<CR>
+endfunction
+" 禁止netrw保存history or bookmarks
+let g:netrw_dirhistmax = 0
 " }}}

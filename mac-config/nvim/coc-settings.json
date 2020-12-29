@@ -7,6 +7,7 @@
       "ignoredRootPaths": ["~"]
     }
   },
+  "explorer.openAction.strategy":"previousWindow",
   "explorer.width": 30,
   "explorer.position": "floating",
   "explorer.icon.enableNerdfont": true,
