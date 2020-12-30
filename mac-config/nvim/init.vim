@@ -48,9 +48,6 @@ set tabstop=2
 set ignorecase
 set smartcase
 
-" fold method
-nnoremap <Space> za
-
 " diff ignore whitespace
 set diffopt+=iwhite,vertical
 
@@ -78,8 +75,6 @@ au FocusGained * :checktime
 " default updatetime 4000ms is not good for async update
 set updatetime=100
 
-" terminal
-tnoremap <C-g> <C-\><C-n>
 " }}}
 
 " FileType specific setting {{{
@@ -96,6 +91,10 @@ autocmd BufEnter *.json :setlocal filetype=jsonc
 " }}}
 
 " Custom mapping {{{
+" fold shortcut
+nnoremap <Space> za
+" terminal
+tnoremap <C-g> <C-\><C-n>
 " Fast saving
 nmap <leader>w :w!<cr>
 " Fast eval
