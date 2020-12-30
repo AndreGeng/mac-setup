@@ -97,33 +97,15 @@ nnoremap <Space> za
 tnoremap <C-g> <C-\><C-n>
 " Fast saving
 nmap <leader>w :w!<cr>
+" smart way to close pane
+nnoremap <leader>q :q<CR>
 " Fast eval
 nmap <leader>en :w !node<cr>
 nmap <leader>et :w !ts-node<cr>
-" smart way to close pane
-nnoremap <leader>q :q<CR>
-" toggle GundoToggle
-nnoremap <leader>u :GundoToggle<CR>
 
 " git shortcut
 nnoremap <leader>gs :G<CR>
 nnoremap <leader>gb :Gblame<CR>
-nnoremap <leader>gm :GitMessenger<CR>
-" show git log patches
-nnoremap <leader>sp :call ShowPatch()<cr>
-" view changes of current file made by me
-" helpful when resolving mege conflicts
-nnoremap <leader>cm :call ShowChangesByMe()<cr>
-function! ShowChangesByMe()
-  let username = system('git config user.name')
-  let name = substitute(username, '\%x00', '', 'g')
-  execute 'on|vs|Git!log master.. --author="'.name.'" -- %'
-  execute 'wincmd l|vs|Git!log master.. --author="'.name.'" -p -- %'
-  execute 'wincmd l'
-endfunction
-function! ShowPatch()
-  execute '0Glog --no-merges --'
-endfunction
 " fold git log patches in order to highlight filenames
 autocmd FileType git call FoldAll()
 function! FoldAll()
