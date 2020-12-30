@@ -91,23 +91,7 @@ autocmd BufEnter *.wxss :setlocal filetype=css
 autocmd BufEnter *.md,*.mdx :setlocal filetype=markdown
 autocmd BufEnter *.js,*.jsx :setlocal filetype=javascript.jsx
 autocmd BufEnter *.ts,*.tsx :setlocal filetype=typescript.tsx
-autocmd BufEnter *.json set filetype=jsonc
-" fold style
-""""""""""""""""""""""""""""""
-" => JavaScript section
-"""""""""""""""""""""""""""""""
-autocmd FileType javascript,javascript.jsx call JavaScriptFold()
-
-function! JavaScriptFold() 
-    setl foldmethod=syntax
-    setl foldlevelstart=1
-    syn region foldBraces start=/{/ end=/}/ transparent fold keepend extend
-
-    function! FoldText()
-        return substitute(getline(v:foldstart), '{.*', '{...}', '')
-    endfunction
-    setl foldtext=FoldText()
-endfunction
+autocmd BufEnter *.json :setlocal filetype=jsonc
 
 " }}}
 
@@ -222,6 +206,8 @@ autocmd BufEnter * if &filetype == "" | setlocal ft=javascript.jsx | endif
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+" language packs for vim
+Plug 'sheerun/vim-polyglot'
 Plug 'leafOfTree/vim-vue-plugin'
 Plug 'bash-lsp/bash-language-server'
 Plug 'jreybert/vimagit'
@@ -491,4 +477,18 @@ function! NetrwMapping()
 endfunction
 " 禁止netrw保存history or bookmarks
 let g:netrw_dirhistmax = 0
+
+" vim-javascript
+let g:javascript_plugin_jsdoc = 1
+augroup javascript_folding
+    au!
+    au FileType javascript,javascript.jsx,typescript,typescript.tsx setlocal foldmethod=syntax
+augroup END
+
+" vim fold
+augroup vim_folding
+    au!
+    au FileType vim setlocal foldmethod=marker
+augroup END
+
 " }}}
