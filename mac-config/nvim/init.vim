@@ -75,6 +75,12 @@ au FocusGained * :checktime
 " default updatetime 4000ms is not good for async update
 set updatetime=100
 
+" folding
+augroup folding
+    au!
+    au FileType git,javascript,javascript.jsx,typescript,typescript.tsx setlocal foldmethod=syntax
+augroup END
+
 " }}}
 
 " FileType specific setting {{{
@@ -106,12 +112,6 @@ nmap <leader>et :w !ts-node<cr>
 " git shortcut
 nnoremap <leader>gs :G<CR>
 nnoremap <leader>gb :Gblame<CR>
-" fold git log patches in order to highlight filenames
-autocmd FileType git call FoldAll()
-function! FoldAll()
-  :setlocal foldlevelstart=0
-  execute "normal zM"
-endfunction
 
 " buffer explorer
 nnoremap <leader>be :Buffers<CR>
@@ -120,12 +120,12 @@ nnoremap <leader>be :Buffers<CR>
 cnoremap <C-A> <Home>
 
 " Move a line of text using ALT+[io], @see https://vim.fandom.com/wiki/Moving_lines_up_or_down
-nnoremap <A-i> :m .+1<CR>==
-nnoremap <A-o> :m .-2<CR>==
-inoremap <A-i> <Esc>:m .+1<CR>==gi
-inoremap <A-o> <Esc>:m .-2<CR>==gi
-vnoremap <A-i> :m '>+1<CR>gv=gv
-vnoremap <A-o> :m '<-2<CR>gv=gv
+nnoremap <A-j> :m .+1<CR>==
+nnoremap <A-k> :m .-2<CR>==
+inoremap <A-j> <Esc>:m .+1<CR>==gi
+inoremap <A-k> <Esc>:m .-2<CR>==gi
+vnoremap <A-j> :m '>+1<CR>gv=gv
+vnoremap <A-k> :m '<-2<CR>gv=gv
 
 " Useful mappings for managing tabs
 map <leader>tn :tabnew<cr>
@@ -461,10 +461,6 @@ let g:netrw_dirhistmax = 0
 
 " vim-javascript
 let g:javascript_plugin_jsdoc = 1
-augroup javascript_folding
-    au!
-    au FileType javascript,javascript.jsx,typescript,typescript.tsx setlocal foldmethod=syntax
-augroup END
 
 " vim fold
 augroup vim_folding
