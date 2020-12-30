@@ -172,12 +172,6 @@ nmap <silent> <leader>n :call ToggleList("Location", 'l')<CR>
 nmap <silent> <leader>k :call ToggleList("Quickfix", 'c')<CR>
 "toggle quickfixlist/locationlist -- end
 
-" always open quickfix window at bottom
-augroup DragQuickfixWindowDown
-  autocmd!
-  autocmd FileType qf wincmd J
-augroup end
-
 " auto resize window size when container window size changed
 autocmd VimResized * wincmd =
 
