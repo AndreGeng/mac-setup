@@ -281,17 +281,9 @@ let g:VM_maps["Select Cursor Down"] = '<m-j>'      " start selecting down
 let g:VM_maps["Select Cursor Up"]   = '<m-k>'        " start selecting up
 " fzf
 nmap <leader>f :Files<CR>
-function! ToggleVCSIgnore()
-  if $FZF_DEFAULT_COMMAND !~# 'no-ignore-vcs'
-    let $FZF_DEFAULT_COMMAND = 'fd --type f --no-ignore-vcs'
-    echom 'all'
-  else
-    let $FZF_DEFAULT_COMMAND = 'fd --type f'
-    echom 'ignore'
-  endif
-endfunction
-nnoremap <leader>ts :call ToggleVCSIgnore()<cr>
-command! -bang -nargs=* Rg call fzf#vim#grep("rg --column --line-number --no-heading --color=always --colors 'match:bg:yellow' --colors 'match:fg:black' --colors 'match:style:nobold' --colors 'path:fg:green' --colors 'path:style:bold' --colors 'line:fg:yellow' --colors 'line:style:bold' --smart-case ".<q-args>, 1, <bang>0)
+let $FZF_DEFAULT_COMMAND = 'fd -i --type f'
+" search all files, including hidden files and vsc ignored files
+nmap <leader>gf :call fzf#run(fzf#wrap({'source': 'fd -i --type f --hidden -I'}))<CR>
 
 " CTRL-A CTRL-Q to select all and build quickfix list
 function! s:build_quickfix_list(lines)
