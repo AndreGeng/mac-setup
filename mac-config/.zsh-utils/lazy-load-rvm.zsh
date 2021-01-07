@@ -3,7 +3,7 @@
 RVM_DIR="$HOME/.rvm"
 
 if [ -d $RVM_DIR ]; then
-  RVM_GLOBALS=(`find ./.rvm/{bin,rubies/**/bin}/* -type l -o -type f -print0 | xargs -0 basename | sort | uniq`)
+  RVM_GLOBALS=(`find $HOME/.rvm/{bin,rubies/**/bin}/* -type l -o -type f -print0 | xargs -0 basename | sort | uniq`)
 fi
 
 load_rvm () {
