@@ -79,6 +79,7 @@ set updatetime=100
 augroup folding
     au!
     au FileType git,javascript,javascript.jsx,typescript,typescript.tsx setlocal foldmethod=syntax
+    au FileType zsh,vim setlocal foldmethod=marker
 augroup END
 
 " }}}
@@ -447,11 +448,5 @@ let g:netrw_dirhistmax = 0
 
 " vim-javascript
 let g:javascript_plugin_jsdoc = 1
-
-" vim fold
-augroup vim_folding
-    au!
-    au FileType vim setlocal foldmethod=marker
-augroup END
 
 " }}}
