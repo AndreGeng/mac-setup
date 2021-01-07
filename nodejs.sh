@@ -9,7 +9,8 @@ echo $NVM_DIR
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
 # source ~/.zshrc
 nvm install --lts
-nvm alias default lts/*
+# 采用当前环境下的node(最新的lts版本)为default版本
+nvm alias default node
 npm install -g js-beautify # vim autoformat json
 npm install -g prettier # also for code format
 npm install -g typescript
