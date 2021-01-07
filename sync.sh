@@ -11,6 +11,7 @@ ln -sf $(realpath_osx $(dirname "$0"))/mac-config/karabiner ~/.config/
 ln -sf $(realpath_osx $(dirname "$0"))/mac-config/nvim ~/.config/
 ln -sf $(realpath_osx $(dirname "$0"))/mac-config/tmuxinator ~/.config/
 ln -sf $(realpath_osx $(dirname "$0"))/mac-config/.hammerspoon ~/
+ln -sf $(realpath_osx $(dirname "$0"))/mac-config/.zsh-utils ~/.config/
 ln -sf $(realpath_osx $(dirname "$0"))/mac-config/.zshrc ~/
 ln -sf $(realpath_osx $(dirname "$0"))/mac-config/.tmux.conf ~/
 ln -sf $(realpath_osx $(dirname "$0"))/mac-config/.agignore ~/

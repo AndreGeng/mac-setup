@@ -5,6 +5,7 @@ done
 
 # download .zshrc
 log 'linking .zshrc start' $GREEN
+ln -sf $(realpath_osx $(dirname "$0"))/mac-config/.zsh-utils ~/.config/
 ln -sf $(realpath_osx $(dirname "$0"))/mac-config/.zshrc ~
 log 'linking .zshrc done' $GREEN
 
