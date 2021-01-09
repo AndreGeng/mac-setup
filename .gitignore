@@ -2,3 +2,4 @@
 !/logs/.gitkeep
 /tags
 .netrwhist
+.DS_Store
