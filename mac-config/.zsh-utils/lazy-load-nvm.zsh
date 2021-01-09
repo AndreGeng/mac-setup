@@ -29,6 +29,7 @@ load_nvm () {
 
   # Load NVM
   [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
   # (Optional) Set the version of node to use from ~/.nvmrc if available
   nvm use 2> /dev/null 1>&2 || true

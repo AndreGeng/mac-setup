@@ -15,4 +15,5 @@ npm install -g js-beautify # vim autoformat json
 npm install -g prettier # also for code format
 npm install -g typescript
 npm install -g javascript-typescript-langserver
+npm install -g bash-language-server
 sudo ln -s "$(which node)" /usr/local/bin/node

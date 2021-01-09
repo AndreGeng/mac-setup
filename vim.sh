@@ -45,3 +45,9 @@ pyenv deactivate neovim2
 
 # download nvim config
 cp -R $(dirname "$0")/mac-config/nvim ~/.config
+
+# install Xkbswitch
+mkdir -p ~/Documents/playground && cd $_ && git clone https://github.com/myshov/xkbswitch-macosx.git
+cp ~/Documents/playground/xkbswitch-macosx/bin/xkbswitch /usr/local/bin
+mkdir -p ~/Documents/playground && cd $_ && git clone https://github.com/myshov/libxkbswitch-macosx.git
+cp ~/Documents/playground/libxkbswitch-macosx/bin/libxkbswitch.dylib /usr/local/lib
