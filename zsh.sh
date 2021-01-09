@@ -7,6 +7,7 @@ done
 log 'linking .zshrc start' $GREEN
 ln -sf $(realpath_osx $(dirname "$0"))/mac-config/.zsh-utils ~/.config/
 ln -sf $(realpath_osx $(dirname "$0"))/mac-config/.zshrc ~
+ln -sf $(realpath_osx $(dirname "$0"))/mac-config/.p10k.zsh ~/
 log 'linking .zshrc done' $GREEN
 
 brewI zsh

@@ -13,27 +13,27 @@ brewI shfmt
 
 # homebrew cask apps
 # develop
-brew cask install karabiner-elements --force
-brew cask install iterm2 --force
-brew cask install alacritty --force
-brew cask install hammerspoon --force
-brew cask install visual-studio-code --force
-brew cask install sourcetree --force
-brew cask install gas-mask --force # host管理
-brew cask install shadowsocksx-ng --force
-brew cask install alfred --force
-# brew cask install docker
-# brew cask install charles
+brew tap homebrew/cask-fonts
+brew install --cask font-hack-nerd-font
+brew install --cask --force karabiner-elements
+brew install --cask --force iterm2
+brew install --cask --force hammerspoon
+brew install --cask --force visual-studio-code
+brew install --cask --force sourcetree
+brew install --cask --force gas-mask # host管理
+brew install --cask --force shadowsocksx-ng
+brew install --cask --force alfred
+# brew install --cask docker
+# brew install --cask charles
 # apps
-brew cask install google-chrome --force
-brew cask install evernote --force
-brew cask install appcleaner --force
-brew cask install android-file-transfer --force
-brew cask install baiduinput --force
-brew cask install qq --force
-brew cask install wechat --force
-brew cask install notion --force
-brew cask install youdaodict --force # 有道词典
-brew cask install drawio --force
-brew cask install postman --force
-brew cask install keycastr --force
+brew install --cask google-chrome
+brew install --cask appcleaner
+brew install --cask android-file-transfer
+brew install --cask baiduinput
+brew install --cask qq
+brew install --cask wechat
+brew install --cask notion
+brew install --cask youdaodict # 有道词典
+brew install --cask drawio
+brew install --cask postman
+brew install --cask keycastr
