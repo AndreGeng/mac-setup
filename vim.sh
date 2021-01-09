@@ -27,11 +27,11 @@ eval "$(pyenv virtualenv-init -)"
 
 unset ALL_PROXY
 if test ! "$(pyenv versions | grep 'neovim2')"; then
-  yes | pyenv install 2.7.11
+  yes | (v=2.7.11;mkdir -p ~/.pyenv/cache && cd $_ && curl -L -O "https://npm.taobao.org/mirrors/python/$v/Python-$v.tar.xz";pyenv install "$v")
   pyenv virtualenv -f 2.7.11 neovim2
 fi
 if test ! "$(pyenv versions | grep 'neovim3')"; then
-  yes | pyenv install 3.6.4
+  yes | (v=3.6.4;mkdir -p ~/.pyenv/cache && cd $_ && curl -L -O "https://npm.taobao.org/mirrors/python/$v/Python-$v.tar.xz";pyenv install "$v")
   pyenv virtualenv -f 3.6.4 neovim3
 fi
 
