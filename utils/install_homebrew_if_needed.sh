@@ -6,6 +6,6 @@ if exists brew; then
   log "homebrew already exists!" $GREEN
 else
   log "Installing Homebrew Now"
-  /bin/bash -c "$(curl -fsSL https://gitee.com/cunkai/HomebrewCN/raw/master/Homebrew.sh)"
+  /bin/zsh -c "$(curl -fsSL https://gitee.com/cunkai/HomebrewCN/raw/master/Homebrew.sh)"
 fi
 export HOMEBREW_FORCE_BREWED_CURL=1
