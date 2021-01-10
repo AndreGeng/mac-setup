@@ -129,11 +129,11 @@ vnoremap <A-j> :m '>+1<CR>gv=gv
 vnoremap <A-k> :m '<-2<CR>gv=gv
 
 " Useful mappings for managing tabs
-map <leader>tn :tabnew<cr>
+map <leader>tt :tabnew<cr>
 map <leader>to :tabonly<cr>
 map <leader>tc :tabclose<cr>
-map <leader>tl :tabnext<cr>
-map <leader>th :tabp<cr> 
+map <leader>tn :tabnext<cr>
+map <leader>tp :tabp<cr> 
 
 " always use very magic when search
 nnoremap / /\v

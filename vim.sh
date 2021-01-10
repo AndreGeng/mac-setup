@@ -27,12 +27,12 @@ eval "$(pyenv virtualenv-init -)"
 
 unset ALL_PROXY
 if test ! "$(pyenv versions | grep 'neovim2')"; then
-  yes | (v=2.7.11;mkdir -p ~/.pyenv/cache && cd $_ && curl -L -O "https://npm.taobao.org/mirrors/python/$v/Python-$v.tar.xz";pyenv install "$v")
-  pyenv virtualenv -f 2.7.11 neovim2
+  yes | (v=2.7.18;mkdir -p ~/.pyenv/cache && cd $_ && curl -L -O "https://npm.taobao.org/mirrors/python/$v/Python-$v.tar.xz";pyenv install "$v")
+  pyenv virtualenv -f 2.7.18 neovim2
 fi
 if test ! "$(pyenv versions | grep 'neovim3')"; then
-  yes | (v=3.6.4;mkdir -p ~/.pyenv/cache && cd $_ && curl -L -O "https://npm.taobao.org/mirrors/python/$v/Python-$v.tar.xz";pyenv install "$v")
-  pyenv virtualenv -f 3.6.4 neovim3
+  yes | (v=3.8.5;mkdir -p ~/.pyenv/cache && cd $_ && curl -L -O "https://npm.taobao.org/mirrors/python/$v/Python-$v.tar.xz";pyenv install "$v")
+  pyenv virtualenv -f 3.8.5 neovim3
 fi
 
 pyenv activate neovim2
@@ -41,7 +41,8 @@ pyenv deactivate neovim2
 
 pyenv activate neovim3
 yes | pip install pynvim
-pyenv deactivate neovim2
+yes | pip install neovim-remote
+pyenv deactivate neovim3
 
 # download nvim config
 cp -R $(dirname "$0")/mac-config/nvim ~/.config
