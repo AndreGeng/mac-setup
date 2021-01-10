@@ -1,12 +1,5 @@
 {
-  "languageserver": {
-    "bash": {
-      "command": "bash-language-server",
-      "args": ["start"],
-      "filetypes": ["sh"],
-      "ignoredRootPaths": ["~"]
-    }
-  },
+  "languageserver": {},
   "npm.binPath":"~/.nvm/versions/node/v14.15.4/bin/npm",
   "explorer.openAction.strategy":"previousWindow",
   "explorer.width": 30,
