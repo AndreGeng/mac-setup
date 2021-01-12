@@ -20,7 +20,5 @@ load_rvm () {
 }
 
 for cmd in "${RVM_GLOBALS[@]}"; do
-  if ! which ${cmd} &>/dev/null; then
-    eval "${cmd}() { unset -f ${cmd} &>/dev/null; [ -z \${RVM_LOADED+x} ] && load_rvm; ${cmd} \$@; }"
-  fi
+  eval "${cmd}() { unset -f ${cmd} &>/dev/null; [ -z \${RVM_LOADED+x} ] && load_rvm; ${cmd} \$@; }"
 done

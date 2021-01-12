@@ -24,6 +24,7 @@ fi
 NODE_GLOBALS+=("nvm")
 
 load_nvm () {
+  echo "within load_nvm"
   # Unset placeholder functions
   for cmd in "${NODE_GLOBALS[@]}"; do unset -f ${cmd} &>/dev/null; done
 
@@ -39,8 +40,5 @@ load_nvm () {
 }
 
 for cmd in "${NODE_GLOBALS[@]}"; do
-  # Skip defining the function if the binary is already in the PATH
-  if ! which ${cmd} &>/dev/null; then
-    eval "${cmd}() { unset -f ${cmd} &>/dev/null; [ -z \${NVM_LOADED+x} ] && load_nvm; ${cmd} \$@; }"
-  fi
+  eval "${cmd}() { unset -f ${cmd} &>/dev/null; [ -z \${NVM_LOADED+x} ] && load_nvm; ${cmd} \$@; }"
 done
