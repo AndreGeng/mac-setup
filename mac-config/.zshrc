@@ -74,7 +74,7 @@ export PATH="/usr/local/sbin:$PATH"
 # HomeBrew END
 
 # 添加ssh key到ssh-agent
-# ssh-add -A 1>/dev/null 2>&1
+ssh-add -A 1>/dev/null 2>&1
 
 # }}}
 

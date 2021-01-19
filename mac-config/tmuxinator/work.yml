@@ -1,7 +1,6 @@
 # ~/.config/tmuxinator/work.yml
 
 name: work
-root: ~/
 
 # Optional tmux socket
 # socket_name: foo
@@ -46,12 +45,12 @@ root: ~/
 
 windows:
   - vim:
-      root: ~/mac-setup/
-      layout: 4a97,271x70,0,0{135x70,0,0,18,135x70,136,0[135x35,136,0,20,135x34,136,36,21]}
+      root: ~/mac-setup
+      layout: 0a6e,271x70,0,0{135x70,0,0,0,135x70,136,0[135x35,136,0,1,135x34,136,36,2]}
       # Synchronize all panes of this window, can be enabled before or after the pane commands run.
       # 'before' represents legacy functionality and will be deprecated in a future release, in favour of 'after'
       # synchronize: after
       panes:
         - vim ./mac-config/nvim/init.vim
-        - vim /usr/local/etc/nginx/
+        -
         -
