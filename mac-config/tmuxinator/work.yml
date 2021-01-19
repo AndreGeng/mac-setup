@@ -51,6 +51,6 @@ windows:
       # 'before' represents legacy functionality and will be deprecated in a future release, in favour of 'after'
       # synchronize: after
       panes:
-        - vim ./mac-config/nvim/init.vim
+        - vim ~/mac-setup/mac-config/nvim/init.vim
         -
         -
