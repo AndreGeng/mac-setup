@@ -241,8 +241,6 @@ Plug 'editorconfig/editorconfig-vim'
 Plug 'tpope/vim-surround'
 Plug 'nelstrom/vim-visual-star-search'
 Plug 'wesQ3/vim-windowswap'
-" fix: can't use vim command under chinese input source
-Plug 'lyokha/vim-xkbswitch'
 " gist -- start
 Plug 'mattn/gist-vim'
 Plug 'mattn/webapi-vim'
