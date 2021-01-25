@@ -121,12 +121,12 @@ nnoremap <leader>be :Buffers<CR>
 cnoremap <C-A> <Home>
 
 " Move a line of text using ALT+[io], @see https://vim.fandom.com/wiki/Moving_lines_up_or_down
-nnoremap <A-j> :m .+1<CR>==
-nnoremap <A-k> :m .-2<CR>==
-inoremap <A-j> <Esc>:m .+1<CR>==gi
-inoremap <A-k> <Esc>:m .-2<CR>==gi
-vnoremap <A-j> :m '>+1<CR>gv=gv
-vnoremap <A-k> :m '<-2<CR>gv=gv
+nnoremap <A-m> :m .+1<CR>==
+nnoremap <A-,> :m .-2<CR>==
+inoremap <A-m> <Esc>:m .+1<CR>==gi
+inoremap <A-,> <Esc>:m .-2<CR>==gi
+vnoremap <A-m> :m '>+1<CR>gv=gv
+vnoremap <A-,> :m '<-2<CR>gv=gv
 
 " Useful mappings for managing tabs
 map <leader>tt :tabnew<cr>
@@ -274,10 +274,13 @@ autocmd BufEnter,SourcePre * highlight Search guibg=none guifg=#50FA7B gui=under
 " multi
 let g:VM_manual_infoline = 1
 let g:VM_maps = {}
-let g:VM_maps["Select l"]           = '<m-l>'       " start selecting left
-let g:VM_maps["Select h"]           = '<m-h>'        " start selecting right
-let g:VM_maps["Select Cursor Down"] = '<m-j>'      " start selecting down
-let g:VM_maps["Select Cursor Up"]   = '<m-k>'        " start selecting up
+let g:VM_maps["Add Cursor Down"] = '<M-j>'      " start selecting down
+let g:VM_maps["Add Cursor Up"]   = '<M-k>'        " start selecting up
+let g:VM_maps["Undo"] = 'u'
+let g:VM_maps["Redo"] = '<C-r>'
+let g:VM_highlight_matches = 'underline'
+let g:VM_theme = 'iceblue'
+let g:VM_leader = ',,'
 " fzf
 nmap <leader>f :Files<CR>
 let $FZF_DEFAULT_COMMAND = 'fd -i --type f'
@@ -399,7 +402,8 @@ autocmd FileType javascript.jsx,typescript.jsx setlocal commentstring={/*\ %s\ *
 " coc.nvim
 " Use K to show documentation in preview window.
 nnoremap <silent> K :call <SID>show_documentation()<CR>
-nnoremap <expr><C-b> coc#util#has_float() ? coc#util#float_scroll(0) : "\<C-b>"
+" Symbol renaming.
+nmap <leader>rn <Plug>(coc-rename)
 
 nmap <silent> [g <Plug>(coc-diagnostic-prev)
 nmap <silent> ]g <Plug>(coc-diagnostic-next)
