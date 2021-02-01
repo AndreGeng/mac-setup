@@ -1,7 +1,6 @@
 {
   "languageserver": {},
   "npm.binPath":"~/.nvm/versions/node/v14.15.4/bin/npm",
-  "explorer.openAction.strategy":"previousWindow",
   "explorer.width": 60,
   "explorer.position": "floating",
   "explorer.icon.enableNerdfont": true,

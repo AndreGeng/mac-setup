@@ -452,6 +452,6 @@ let g:netrw_dirhistmax = 0
 let g:javascript_plugin_jsdoc = 1
 
 " coc.vim
-let g:coc_global_extensions = ['coc-json', 'coc-tsserver', 'coc-explorer', 'coc-git', 'coc-sh']
+let g:coc_global_extensions = ['coc-json', 'coc-tsserver', 'coc-explorer', 'coc-git', 'coc-sh', 'coc-snippets']
 
 " }}}
