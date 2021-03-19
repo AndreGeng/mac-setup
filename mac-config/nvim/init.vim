@@ -474,5 +474,7 @@ let g:javascript_plugin_jsdoc = 1
 
 " coc.vim
 let g:coc_global_extensions = ['coc-json', 'coc-tsserver', 'coc-explorer', 'coc-git', 'coc-sh', 'coc-snippets']
+" dirvish
+let g:dirvish_mode = ':sort ,^.*[\/],'
 
 " }}}
