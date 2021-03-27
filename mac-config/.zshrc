@@ -89,6 +89,8 @@ alias mux='tmuxinator'
 alias ctags="`brew --prefix`/bin/ctags"
 alias proxy='export ALL_PROXY=http://127.0.0.1:1087'
 alias unproxy='unset ALL_PROXY'
+alias lg='lazygit'
+alias work='mux work-local'
 
 # }}}
 

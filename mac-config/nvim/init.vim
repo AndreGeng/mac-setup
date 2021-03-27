@@ -111,7 +111,7 @@ nmap <leader>en :w !node<cr>
 nmap <leader>et :w !ts-node<cr>
 
 " git shortcut
-nnoremap <leader>gs :G<CR>
+nnoremap <leader>gs :G<CR>:on<CR>
 nnoremap <leader>gb :Gblame<CR>
 
 " buffer explorer
@@ -193,6 +193,9 @@ nnoremap <silent> <C-U> :call GoBackToRecentBuffer()<Enter>
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+Plug 'yuttie/comfortable-motion.vim'
+Plug 'tpope/vim-repeat'
+Plug 'gcmt/wildfire.vim'
 " language packs for vim
 Plug 'justinmk/vim-dirvish'
 Plug 'sheerun/vim-polyglot'
@@ -473,7 +476,7 @@ let g:netrw_dirhistmax = 0
 let g:javascript_plugin_jsdoc = 1
 
 " coc.vim
-let g:coc_global_extensions = ['coc-json', 'coc-tsserver', 'coc-explorer', 'coc-git', 'coc-sh', 'coc-snippets']
+let g:coc_global_extensions = ['coc-json', 'coc-tsserver', 'coc-explorer', 'coc-git', 'coc-sh', 'coc-snippets', 'coc-css']
 " dirvish
 let g:dirvish_mode = ':sort ,^.*[\/],'
 
