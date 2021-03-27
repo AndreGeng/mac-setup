@@ -488,5 +488,16 @@ let g:coc_global_extensions = [
       \]
 " dirvish
 let g:dirvish_mode = ':sort ,^.*[\/],'
+" integrage lazygit into vim
+nnoremap <C-a> :tabnew<CR>:-tabmove<CR>:term lazygit<CR>a
+augroup terminal_settings
+  autocmd!
+  " Ignore various filetypes as those will close terminal automatically
+  " Ignore fzf, ranger, coc
+  autocmd TermClose term://*
+        \ if (expand('<afile>') !~ "fzf") && (expand('<afile>') !~ "ranger") && (expand('<afile>') !~ "coc") |
+        \   call nvim_input('<CR>')  |
+        \ endif
+augroup END
 
 " }}}
