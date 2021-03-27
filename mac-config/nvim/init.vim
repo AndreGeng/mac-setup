@@ -77,9 +77,9 @@ set updatetime=100
 
 " folding
 augroup folding
-    au!
-    au FileType git,javascript,javascript.jsx,typescript,typescript.tsx setlocal foldmethod=syntax
-    au FileType zsh,vim setlocal foldmethod=marker
+  au!
+  au FileType git,javascript,javascript.jsx,typescript,typescript.tsx setlocal foldmethod=syntax
+  au FileType zsh,vim setlocal foldmethod=marker
 augroup END
 
 " }}}
@@ -89,6 +89,7 @@ augroup END
 autocmd BufEnter *.less.module :setlocal filetype=less
 autocmd BufEnter *.pcss :setlocal filetype=scss
 autocmd BufEnter *.wxml :setlocal filetype=html
+autocmd BufEnter *.ejs :setlocal filetype=html
 autocmd BufEnter *.wxss :setlocal filetype=css
 autocmd BufEnter *.md,*.mdx :setlocal filetype=markdown
 autocmd BufEnter *.js,*.jsx :setlocal filetype=javascript.jsx
@@ -133,7 +134,7 @@ map <leader>tt :tabnew<cr>
 map <leader>to :tabonly<cr>
 map <leader>tc :tabclose<cr>
 map <leader>tn :tabnext<cr>
-map <leader>tp :tabp<cr> 
+map <leader>tp :tabp<cr>
 
 " always use very magic when search
 nnoremap / /\v
@@ -310,20 +311,20 @@ function! s:build_quickfix_list(lines)
 endfunction
 
 let g:fzf_action = {
-  \ 'ctrl-q': function('s:build_quickfix_list'),
-  \ 'ctrl-t': 'tab split',
-  \ 'ctrl-x': 'split',
-  \ 'ctrl-v': 'vsplit' }
+      \ 'ctrl-q': function('s:build_quickfix_list'),
+      \ 'ctrl-t': 'tab split',
+      \ 'ctrl-x': 'split',
+      \ 'ctrl-v': 'vsplit' }
 
 let $FZF_DEFAULT_OPTS = '--bind ctrl-a:select-all'
 " Ack
 if executable('rg')
   let g:ackprg = 'rg --vimgrep'
 endif
-nmap <leader>a :Ack -i 
-" nmap <leader>a :Rg -i 
+nmap <leader>a :Ack -i
+" nmap <leader>a :Rg -i
 
-" expand region shortcut 
+" expand region shortcut
 vmap v <Plug>(expand_region_expand)
 vmap V <Plug>(expand_region_shrink)
 " lightline
@@ -357,22 +358,22 @@ vnoremap <leader>gv :GV!<CR>
 
 " ALE
 let g:ale_linters = {
-\  'javascript': ['eslint'],
-\  'javascript.jsx': ['eslint'],
-\  'sh': ['language_server'],
-\}
+      \  'javascript': ['eslint'],
+      \  'javascript.jsx': ['eslint'],
+      \  'sh': ['language_server'],
+      \}
 let g:ale_fixers = {
-\   'javascript': ['prettier'],
-\   'json': ['prettier'],
-\   'jsonc': ['prettier'],
-\   'javascript.jsx': ['prettier'],
-\   'typescript': ['prettier'],
-\   'css': ['prettier'],
-\   'scss': ['prettier'],
-\   'less': ['prettier'],
-\   'sass': ['prettier'],
-\   'sh': ['shfmt'],
-\}
+      \   'javascript': ['prettier'],
+      \   'json': ['prettier'],
+      \   'jsonc': ['prettier'],
+      \   'javascript.jsx': ['prettier'],
+      \   'typescript': ['prettier'],
+      \   'css': ['prettier'],
+      \   'scss': ['prettier'],
+      \   'less': ['prettier'],
+      \   'sass': ['prettier'],
+      \   'sh': ['shfmt'],
+      \}
 
 " @see https://prettier.io/docs/en/vim.html
 let g:ale_linters_explicit = 1
@@ -401,10 +402,10 @@ let g:indexed_search_max_lines = 1.0e6
 imap <expr> <tab> emmet#expandAbbrIntelligent("\<c-i>")
 " enable emmet for ts/tsx
 let g:user_emmet_settings = {
-\ 'typescript' : {
-\     'extends' : 'jsx',
-\ },
-\}
+      \ 'typescript' : {
+      \     'extends' : 'jsx',
+      \ },
+      \}
 
 " WindowSwap.vim
 let g:windowswap_map_keys = 0 "prevent default bindings
@@ -443,10 +444,10 @@ nmap <silent> <C-s> <Plug>(coc-range-select)
 xmap <silent> <C-s> <Plug>(coc-range-select)
 " coc-explorer
 let g:coc_explorer_global_presets = {
-\   'right': {
-\     'position': 'right',
-\   },
-\ }
+      \   'right': {
+      \     'position': 'right',
+      \   },
+      \ }
 nmap <leader>ee :CocCommand explorer<CR>
 nmap <leader>ef :CocCommand explorer --no-toggle --preset right<CR>
 
@@ -476,7 +477,15 @@ let g:netrw_dirhistmax = 0
 let g:javascript_plugin_jsdoc = 1
 
 " coc.vim
-let g:coc_global_extensions = ['coc-json', 'coc-tsserver', 'coc-explorer', 'coc-git', 'coc-sh', 'coc-snippets', 'coc-css']
+let g:coc_global_extensions = [
+      \'coc-json',
+      \'coc-tsserver',
+      \'coc-explorer',
+      \'coc-git',
+      \'coc-sh',
+      \'coc-snippets',
+      \'coc-css'
+      \]
 " dirvish
 let g:dirvish_mode = ':sort ,^.*[\/],'
 
