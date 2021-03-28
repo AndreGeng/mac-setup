@@ -321,7 +321,7 @@ let $FZF_DEFAULT_OPTS = '--bind ctrl-a:select-all'
 if executable('rg')
   let g:ackprg = 'rg --vimgrep'
 endif
-nmap <leader>a :Ack -i
+nmap <leader>a :Ack -i 
 " nmap <leader>a :Rg -i
 
 " expand region shortcut
