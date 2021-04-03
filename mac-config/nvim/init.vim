@@ -165,6 +165,7 @@ function! ToggleList(bufname, pfx)
   endif
   let winnr = winnr()
   exec(a:pfx.'open')
+  wincmd J
   if winnr() != winnr
     wincmd p
   endif
@@ -194,7 +195,6 @@ nnoremap <silent> <C-U> :call GoBackToRecentBuffer()<Enter>
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
-Plug 'yuttie/comfortable-motion.vim'
 Plug 'tpope/vim-repeat'
 Plug 'gcmt/wildfire.vim'
 " language packs for vim
@@ -500,4 +500,8 @@ augroup terminal_settings
         \ endif
 augroup END
 
+"
+let g:qfenter_keymap = {}
+let g:qfenter_keymap.vopen = ['<C-v>']
+let g:qfenter_keymap.hopen = ['<C-s>']
 " }}}
