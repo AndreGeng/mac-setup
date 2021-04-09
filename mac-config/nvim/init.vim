@@ -78,10 +78,12 @@ set updatetime=100
 " folding
 augroup folding
   au!
-  au FileType git,javascript,javascript.jsx,typescript,typescript.tsx setlocal foldmethod=syntax
+  au FileType git,javascript,javascript.jsx,typescript,typescript.tsx setlocal foldmethod=indent
   au FileType zsh,vim setlocal foldmethod=marker
 augroup END
 
+" disable matchparen plugin
+let g:loaded_matchparen=1
 " }}}
 
 " FileType specific setting {{{
@@ -199,7 +201,6 @@ Plug 'tpope/vim-repeat'
 Plug 'gcmt/wildfire.vim'
 " language packs for vim
 Plug 'justinmk/vim-dirvish'
-Plug 'sheerun/vim-polyglot'
 Plug 'leafOfTree/vim-vue-plugin'
 Plug 'bash-lsp/bash-language-server'
 Plug 'jreybert/vimagit'
@@ -265,7 +266,6 @@ Plug 'mattn/webapi-vim'
 Plug 'pangloss/vim-javascript'
 Plug 'leafgarland/typescript-vim'
 Plug 'othree/html5.vim'
-Plug 'maxmellon/vim-jsx-pretty'
 Plug 'ekalinin/Dockerfile.vim'
 Plug 'stephpy/vim-yaml'
 Plug 'tpope/vim-dotenv'
