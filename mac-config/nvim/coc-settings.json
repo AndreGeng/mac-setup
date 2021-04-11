@@ -8,5 +8,7 @@
     "<space>": ["expandable?", ["expanded?", "collapse", "expand"], "open"],
     "u": "gotoParent",
     "df": "delete"
-  }
+  },
+  "coc.preferences.colorSupport": false,
+  "diagnostic.enableHighlightLineNumber": false
 }

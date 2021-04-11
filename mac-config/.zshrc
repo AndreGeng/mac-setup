@@ -83,6 +83,7 @@ ssh-add -A 1>/dev/null 2>&1
 alias chrome="open -a 'Google Chrome'"
 alias vi='nvim'
 alias vim='nvim'
+alias v='nvim .'
 alias dvim=$'docker run -it -v $(pwd):/$(basename $(pwd)) andregeng/neovim /bin/bash -c "nvim -c \'cd /$(basename $(pwd))\' /$(basename $(pwd))"'
 alias ovim='\vim'
 alias mux='tmuxinator'
@@ -91,6 +92,7 @@ alias proxy='export ALL_PROXY=http://127.0.0.1:1087'
 alias unproxy='unset ALL_PROXY'
 alias lg='lazygit'
 alias work='mux work-local'
+alias r='ranger'
 
 # }}}
 

@@ -84,6 +84,8 @@ augroup END
 
 " disable matchparen plugin
 let g:loaded_matchparen=1
+" disable syntax highlight for large file
+autocmd BufWinEnter * if line2byte(line("$") + 1) > 1000000 | syntax clear | endif
 " }}}
 
 " FileType specific setting {{{
@@ -197,6 +199,8 @@ nnoremap <silent> <C-U> :call GoBackToRecentBuffer()<Enter>
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+Plug 'francoiscabrol/ranger.vim'
+Plug 'rbgrouleff/bclose.vim'
 Plug 'tpope/vim-repeat'
 Plug 'gcmt/wildfire.vim'
 " language packs for vim
@@ -350,6 +354,7 @@ let g:lightline = {
       \ }
 " autoformat
 let g:formatters_jsonc=['jsbeautify_json']
+let g:formatters_javascript=['jsbeautify_javascript']
 
 map <leader>af :Autoformat<CR>
 " gv.vim
@@ -500,8 +505,12 @@ augroup terminal_settings
         \ endif
 augroup END
 
-"
+" quickfix easy open
 let g:qfenter_keymap = {}
 let g:qfenter_keymap.vopen = ['<C-v>']
 let g:qfenter_keymap.hopen = ['<C-s>']
+" ranger
+let g:ranger_map_keys = 0
+nmap <c-e> :Ranger<CR>
+let g:ranger_replace_netrw = 1
 " }}}
