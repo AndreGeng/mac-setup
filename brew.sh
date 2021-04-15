@@ -4,10 +4,13 @@ for f in $(dirname "$0")/utils/*.sh; do
   source $f
 done
 
+brew install jesseduffield/lazygit/lazygit
+brewI lazygit
 # install GNU coreutils
 brewI coreutils
 brewI nginx
 brewI shfmt
+brewI ranger
 
 # brew installs
 
@@ -19,21 +22,20 @@ brew install --cask --force karabiner-elements
 brew install --cask --force iterm2
 brew install --cask --force hammerspoon
 brew install --cask --force visual-studio-code
-brew install --cask --force sourcetree
 brew install --cask --force gas-mask # host管理
 brew install --cask --force shadowsocksx-ng
 brew install --cask --force alfred
 # brew install --cask docker
 # brew install --cask charles
 # apps
-brew install --cask google-chrome
-brew install --cask appcleaner
-brew install --cask android-file-transfer
-brew install --cask baiduinput
-brew install --cask qq
-brew install --cask wechat
-brew install --cask notion
-brew install --cask youdaodict # 有道词典
-brew install --cask drawio
-brew install --cask postman
-brew install --cask keycastr
+brew install --cask --force google-chrome
+brew install --cask --force appcleaner
+brew install --cask --force android-file-transfer
+brew install --cask --force baiduinput
+brew install --cask --force qq
+brew install --cask --force wechat
+brew install --cask --force notion
+brew install --cask --force youdaodict # 有道词典
+brew install --cask --force drawio
+brew install --cask --force postman
+brew install --cask --force keycastr

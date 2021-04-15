@@ -96,8 +96,10 @@ autocmd BufEnter *.wxml :setlocal filetype=html
 autocmd BufEnter *.ejs :setlocal filetype=html
 autocmd BufEnter *.wxss :setlocal filetype=css
 autocmd BufEnter *.md,*.mdx :setlocal filetype=markdown
-autocmd BufEnter *.js,*.jsx :setlocal filetype=javascript.jsx
-autocmd BufEnter *.ts,*.tsx :setlocal filetype=typescript.tsx
+autocmd BufEnter *.jsx :setlocal filetype=javascript.jsx
+autocmd BufEnter *.js :setlocal filetype=javascript
+autocmd BufEnter *.tsx :setlocal filetype=typescript.tsx
+autocmd BufEnter *.ts :setlocal filetype=typescript
 autocmd BufEnter *.json :setlocal filetype=jsonc
 
 " }}}
