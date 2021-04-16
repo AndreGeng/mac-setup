@@ -214,8 +214,6 @@ Plug 'jreybert/vimagit'
 Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() } }
 " allow comments in json
 Plug 'neoclide/jsonc.vim'
-" preview color
-Plug 'gko/vim-coloresque'
 " open built-in terminal in floating window
 Plug 'voldikss/vim-floaterm'
 " multi cursor support, use <tab> to switch mode
@@ -385,7 +383,7 @@ let g:ale_fixers = {
 
 " @see https://prettier.io/docs/en/vim.html
 let g:ale_linters_explicit = 1
-" let g:ale_fix_on_save = 1
+let g:ale_fix_on_save = 1
 
 
 "Set this setting in vimrc if you want to fix files automatically on save.
