@@ -70,7 +70,7 @@ autocmd FileChangedShell * execute
 
 " autoread
 set autoread
-au FocusGained * :checktime
+au CursorHold,CursorHoldI,FocusGained * :checktime
 
 " default updatetime 4000ms is not good for async update
 set updatetime=100
@@ -371,10 +371,11 @@ let g:ale_linters = {
       \}
 let g:ale_fixers = {
       \   'javascript': ['prettier'],
-      \   'json': ['prettier'],
-      \   'jsonc': ['prettier'],
       \   'javascript.jsx': ['prettier'],
       \   'typescript': ['prettier'],
+      \   'typescript.tsx': ['prettier'],
+      \   'json': ['prettier'],
+      \   'jsonc': ['prettier'],
       \   'css': ['prettier'],
       \   'scss': ['prettier'],
       \   'less': ['prettier'],

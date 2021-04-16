@@ -31,6 +31,7 @@ brew install --cask --force alfred
 brew install --cask --force google-chrome
 brew install --cask --force appcleaner
 brew install --cask --force android-file-transfer
+brew install --cask --force android-platform-tools
 brew install --cask --force baiduinput
 brew install --cask --force qq
 brew install --cask --force wechat

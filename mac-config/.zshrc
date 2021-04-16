@@ -29,6 +29,7 @@ export PATH="$PATH:/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 export EDITOR=nvim
 export LC_CTYPE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
+export RANGER_LOAD_DEFAULT_RC=false
 
 # }}}
 
