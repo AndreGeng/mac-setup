@@ -64,6 +64,8 @@ set backupcopy=yes
 " Maintain undo history between sessions
 set undofile
 
+set encoding=utf-8 fileencodings=ucs-bom,utf-8,cp936
+
 " Disable vim E211: File no longer available @see
 " https://stackoverflow.com/questions/52780939/disable-vim-e211-file-no-longer-available
 autocmd FileChangedShell * execute
@@ -115,6 +117,7 @@ nmap <leader>w :w!<cr>
 nnoremap <leader>q :q<CR>
 " Fast eval
 nmap <leader>en :w !node<cr>
+nmap <leader>em :w !node --experimental-modules --input-type=module --es-module-specifier-resolution=node<cr>
 nmap <leader>et :w !ts-node<cr>
 
 " git shortcut
@@ -127,7 +130,7 @@ nnoremap <leader>be :Buffers<CR>
 " cmdline mapping
 cnoremap <C-A> <Home>
 
-" Move a line of text using ALT+[io], @see https://vim.fandom.com/wiki/Moving_lines_up_or_down
+" Move a line of text using ALT+[m,], @see https://vim.fandom.com/wiki/Moving_lines_up_or_down
 nnoremap <A-m> :m .+1<CR>==
 nnoremap <A-,> :m .-2<CR>==
 inoremap <A-m> <Esc>:m .+1<CR>==gi
@@ -201,6 +204,8 @@ nnoremap <silent> <C-U> :call GoBackToRecentBuffer()<Enter>
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+Plug 'AndrewRadev/tagalong.vim'
+Plug 'pechorin/any-jump.vim'
 Plug 'francoiscabrol/ranger.vim'
 Plug 'rbgrouleff/bclose.vim'
 Plug 'tpope/vim-repeat'
@@ -243,7 +248,9 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'mileszs/ack.vim'
 " comment stuff out
-Plug 'tomtom/tcomment_vim'
+Plug 'tpope/vim-commentary'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
+Plug 'JoosepAlviste/nvim-ts-context-commentstring'
 Plug 'w0rp/ale'
 Plug 'itchyny/lightline.vim'
 Plug 'flazz/vim-colorschemes'
@@ -304,6 +311,7 @@ let g:VM_leader = ',,'
 " fzf
 nmap <leader>f :Files<CR>
 let $FZF_DEFAULT_COMMAND = 'fd -i --type f'
+let g:fzf_preview_window = []
 " search all files, including hidden files and vsc ignored files
 nmap <leader>gf :call fzf#run(fzf#wrap({'source': 'fd -i --type f --hidden -I'}))<CR>
 
@@ -365,6 +373,8 @@ vnoremap <leader>gv :GV!<CR>
 let g:ale_linters = {
       \  'javascript': ['eslint'],
       \  'javascript.jsx': ['eslint'],
+      \  'typescript': ['eslint'],
+      \  'typescript.tsx': ['eslint'],
       \  'sh': ['language_server'],
       \}
 let g:ale_fixers = {
@@ -419,8 +429,6 @@ nnoremap <silent> <leader>ss :call WindowSwap#EasyWindowSwap()<CR>
 " floaterm
 nnoremap <C-g> :FloatermToggle<CR>
 
-" vim-commentary jsx comment
-autocmd FileType javascript.jsx,typescript.jsx setlocal commentstring={/*\ %s\ */}
 " coc.nvim
 " Use K to show documentation in preview window.
 nnoremap <silent> K :call <SID>show_documentation()<CR>
@@ -455,7 +463,7 @@ let g:coc_explorer_global_presets = {
       \   },
       \ }
 nmap <leader>ee :CocCommand explorer<CR>
-nmap <leader>ef :CocCommand explorer --no-toggle --preset right<CR>
+nnoremap <Leader>ef :CocCommand explorer --no-toggle --preset right<CR> :call CocAction('runCommand', 'explorer.doAction', 'closest', ['reveal:0'], [['relative', 0, 'file']])<CR>
 
 function! s:show_documentation()
   if (index(['vim','help'], &filetype) >= 0)
@@ -513,4 +521,20 @@ let g:qfenter_keymap.hopen = ['<C-s>']
 " ranger
 let g:ranger_map_keys = 0
 nmap <c-e> :Ranger<CR>
+" nvim-treesitter
+lua <<EOF
+require'nvim-treesitter.configs'.setup {
+  ensure_installed = "maintained", -- one of "all", "maintained" (parsers with maintainers), or a list of languages
+  ignore_install = {}, -- List of parsers to ignore installing
+  highlight = {
+    enable = true,              -- false will disable the whole extension
+    disable = {},  -- list of language that will be disabled
+  },
+}
+require'nvim-treesitter.configs'.setup {
+  context_commentstring = {
+    enable = true
+  }
+}
+EOF
 " }}}
