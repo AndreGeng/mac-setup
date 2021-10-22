@@ -187,7 +187,7 @@ nmap <silent> <leader>k :call ToggleList("Quickfix", 'c')<CR>
 " auto resize window size when container window size changed
 autocmd VimResized * wincmd =
 
-" <C-u>: go back to previous buffer
+" <C-t>: go back to previous buffer
 function! GoBackToRecentBuffer()
   let startName = bufname('%')
   while 1
@@ -199,11 +199,15 @@ function! GoBackToRecentBuffer()
   endwhile
 endfunction
 
-nnoremap <silent> <C-U> :call GoBackToRecentBuffer()<Enter>
+nnoremap <silent> <C-t> :call GoBackToRecentBuffer()<Enter>
 "}}}
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+Plug 'sindrets/diffview.nvim'
+Plug 'Asheq/close-buffers.vim'
+Plug 'norcalli/nvim-colorizer.lua'
+Plug 'karb94/neoscroll.nvim'
 Plug 'AndrewRadev/tagalong.vim'
 Plug 'pechorin/any-jump.vim'
 Plug 'francoiscabrol/ranger.vim'
@@ -416,6 +420,8 @@ let g:indexed_search_max_lines = 1.0e6
 
 " emmet
 imap <expr> <tab> emmet#expandAbbrIntelligent("\<c-i>")
+" useless
+let g:user_emmet_leader_key='<C-\>'
 " enable emmet for ts/tsx
 let g:user_emmet_settings = {
       \ 'typescript' : {
@@ -443,14 +449,12 @@ nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 " Remap <C-f> and <C-b> for scroll float windows/popups.
-if has('nvim-0.4.0') || has('patch-8.2.0750')
-  nnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-  nnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
-  inoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<cr>" : "\<Right>"
-  inoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<cr>" : "\<Left>"
-  vnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-  vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
-endif
+nnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+nnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+inoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<cr>" : "\<Right>"
+inoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<cr>" : "\<Left>"
+vnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
 
 " Use CTRL-S for selections ranges.
 " Requires 'textDocument/selectionRange' support of language server.
@@ -520,7 +524,7 @@ let g:qfenter_keymap.vopen = ['<C-v>']
 let g:qfenter_keymap.hopen = ['<C-s>']
 " ranger
 let g:ranger_map_keys = 0
-nmap <c-e> :Ranger<CR>
+nnoremap <leader>r :Ranger<CR>
 " nvim-treesitter
 lua <<EOF
 require'nvim-treesitter.configs'.setup {
@@ -535,6 +539,30 @@ require'nvim-treesitter.configs'.setup {
   context_commentstring = {
     enable = true
   }
+}
+EOF
+" neoscroll
+lua require('neoscroll').setup()
+" color highlight
+lua require'colorizer'.setup()
+nnoremap <leader>dn :Bdelete! nameless<CR>
+" diffview
+nnoremap <leader>dh :DiffviewFileHistory<CR>
+cnoreabbrev do DiffviewOpen
+cnoreabbrev dfh DiffviewFileHistory
+lua <<EOF
+-- Lua
+local cb = require'diffview.config'.diffview_callback
+
+require'diffview'.setup {
+  key_bindings = {
+    file_panel = {
+      ["j"]             = cb("select_next_entry"),           -- Bring the cursor to the next file entry
+      ["<down>"]        = cb("select_next_entry"),
+      ["k"]             = cb("select_prev_entry"),           -- Bring the cursor to the previous file entry.
+      ["<up>"]          = cb("select_prev_entry"),
+    },
+  },
 }
 EOF
 " }}}
