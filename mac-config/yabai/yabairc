@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -x
+
+# =========Variables=======================
+declare -A gaps
+declare -A color
+
+gaps["top"]="10"
+gaps["bottom"]="30"
+gaps["left"]="10"
+gaps["right"]="30"
+gaps["inner"]="10"
+
+yabai -m config layout bsp
+yabai -m config top_padding "${gaps["top"]}"
+yabai -m config bottom_padding "${gaps["bottom"]}"
+yabai -m config left_padding "${gaps["left"]}"
+yabai -m config right_padding "${gaps["right"]}"
+yabai -m config window_gap "${gaps["inner"]}"
+
+yabai -m config window_border off
+
+yabai -m rule --add app="^Google Chrome$" title="^DevTools" manage=off
+otherApp='^(iTerm2|Finder|WeChat|Feishu|Lark|Activity Monitor|System Preferences|Hammerspoon)$'
+yabai -m rule --add app="${otherApp}" sticky=on layer=above manage=off

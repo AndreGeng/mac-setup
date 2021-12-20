@@ -1,6 +1,7 @@
 local hyperKey = require('hyperKey')
 local windowManagementModal = hs.hotkey.modal.new({}, "F17")
 
+local indicator = -1
 windowManagementModal:bind({}, 'escape', function()
   windowManagementModal:exit()
 end, nil)
@@ -10,11 +11,14 @@ hyperKey:bind({}, "W", function()
 end, nil)
 
 windowManagementModal.entered = function()
-  modalIndicator.show('WM')
+  if (indicator == -1) then
+    indicator = hs.alert.show('WM', 60*10);
+  end
 end
 
 windowManagementModal.exited = function()
-  modalIndicator.hide()
+  hs.alert.closeSpecific(indicator);
+  indicator = -1;
 end
 
 function resize_win(direction)
@@ -63,18 +67,6 @@ windowManagementModal:bind({}, "S", function() resize_win('halfdown') end, nil, 
 windowManagementModal:bind({}, "A", function() resize_win('halfleft') end, nil, function() resize_win('halfleft') end)
 windowManagementModal:bind({}, "D", function() resize_win('halfright') end, nil, function() resize_win('halfright') end)
 
--- ikbc
-
--- switch tabs
-local nextTab = function()
-    hs.eventtap.keyStroke({'cmd', 'shift'}, ']')
-end
-hyperKey:bind({}, string.lower("k"), nextTab, nil)
-local previousTab = function()
-    hs.eventtap.keyStroke({'cmd', 'shift'}, '[')
-end
-hyperKey:bind({}, string.lower("j"), previousTab , nil)
-
 -- toggle window within different monitor
 function sendWindowNextMonitor()
   local win = hs.window.focusedWindow()
@@ -82,14 +74,3 @@ function sendWindowNextMonitor()
   win:moveToScreen(nextScreen)
 end
 hyperKey:bind({}, ";", sendWindowNextMonitor, nil)
--- ikbc
--- hs.hotkey.bind({}, 'home', sendWindowNextMonitor, nil)
-
--- toggle window
-function toggleAppWindows()
-  -- local switcher = hs.window.switcher.new({hs.application.frontmostApplication():name()})
-  -- switcher:next()
-  hs.eventtap.keyStroke({'cmd'}, '`', 20000)
-  print('toggleAppWindows')
-end
-hyperKey:bind({}, 'n',toggleAppWindows , nil)

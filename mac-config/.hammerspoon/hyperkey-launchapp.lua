@@ -1,12 +1,3 @@
 local hyperKey = require('hyperKey')
 hyperKey:bind({}, "C", function() hs.application.launchOrFocus("Google Chrome") end, nil)
-hyperKey:bind({}, "L", function() hs.application.launchOrFocus("Lark") end, nil)
-hyperKey:bind({}, "N", function() hs.application.launchOrFocus("Notion") end, nil)
 hyperKey:bind({}, "i", function() hs.application.launchOrFocus("iTerm") end, nil)
-hyperKey:bind({}, "Q", function() hs.application.launchOrFocus("QQ") end, nil)
-hyperKey:bind({}, "S", function() hs.application.launchOrFocus("SourceTree") end, nil)
-hyperKey:bind({}, "T", function() hs.application.launchOrFocus("Thunder") end, nil)
-hyperKey:bind({}, "V", function() hs.application.launchOrFocus("Visual Studio Code") end, nil)
-
-hyperKey:bind({}, "H", function() hs.application.launchOrFocus("Charles") end, nil)
-hyperKey:bind({}, "E", function() hs.application.launchOrFocus("WeChat") end, nil)
