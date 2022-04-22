@@ -188,6 +188,7 @@ nnoremap <silent> <C-t> :call GoBackToRecentBuffer()<Enter>
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+Plug 'simeji/winresizer'
 Plug 'neovim/nvim-lspconfig'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
@@ -200,23 +201,26 @@ Plug 'rafamadriz/friendly-snippets'
 Plug 'kyazdani42/nvim-web-devicons'
 Plug 'kyazdani42/nvim-tree.lua'
 Plug 'phaazon/hop.nvim'
+" lua functions utils
 Plug 'nvim-lua/plenary.nvim'
 Plug 'sindrets/diffview.nvim'
 Plug 'lewis6991/gitsigns.nvim'
 Plug 'Asheq/close-buffers.vim'
 Plug 'norcalli/nvim-colorizer.lua'
 Plug 'karb94/neoscroll.nvim'
+" rename closing HTML/XML tags
 Plug 'AndrewRadev/tagalong.vim'
+" find definition and reference
 Plug 'pechorin/any-jump.vim'
 Plug 'francoiscabrol/ranger.vim'
 Plug 'rbgrouleff/bclose.vim'
 Plug 'tpope/vim-repeat'
+" quickly select the closest text object
 Plug 'gcmt/wildfire.vim'
 " language packs for vim
 Plug 'justinmk/vim-dirvish'
 Plug 'leafOfTree/vim-vue-plugin'
 Plug 'bash-lsp/bash-language-server'
-Plug 'jreybert/vimagit'
 " markdown preview
 Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() } }
 " allow comments in json
@@ -389,12 +393,12 @@ let g:ale_fixers = {
 
 " @see https://prettier.io/docs/en/vim.html
 let g:ale_linters_explicit = 1
-let g:ale_fix_on_save = 1
+" let g:ale_fix_on_save = 1
 
 
 "Set this setting in vimrc if you want to fix files automatically on save.
 "This is off by default.
-" let g:ale_fix_on_save = 1
+let g:ale_fix_on_save = 1
 nmap <leader>af :ALEFix<CR>
 
 " tmux navigator: Disable tmux navigator when zooming the Vim pane
@@ -526,13 +530,13 @@ lua require('gitsigns').setup();
 " hop
 lua <<EOF
 -- Lua
-require'hop'.setup();
-vim.api.nvim_set_keymap('n', 'f', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = true })<cr>", {})
-vim.api.nvim_set_keymap('n', 'F', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = true })<cr>", {})
-vim.api.nvim_set_keymap('o', 'f', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = true, inclusive_jump = true })<cr>", {})
-vim.api.nvim_set_keymap('o', 'F', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = true, inclusive_jump = true })<cr>", {})
-vim.api.nvim_set_keymap('', 't', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = true })<cr>", {})
-vim.api.nvim_set_keymap('', 'T', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = true })<cr>", {})
+  require'hop'.setup();
+  vim.api.nvim_set_keymap('n', 'f', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = true })<cr>", {})
+  vim.api.nvim_set_keymap('n', 'F', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = true })<cr>", {})
+  vim.api.nvim_set_keymap('o', 'f', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = true, inclusive_jump = true })<cr>", {})
+  vim.api.nvim_set_keymap('o', 'F', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = true, inclusive_jump = true })<cr>", {})
+  vim.api.nvim_set_keymap('', 't', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = true })<cr>", {})
+  vim.api.nvim_set_keymap('', 'T', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = true })<cr>", {})
 EOF
 nnoremap s :HopChar1<cr>
 nnoremap gl :HopLine<cr>
@@ -588,6 +592,20 @@ cmp.setup({
     -- Accept currently selected item. If none selected, `select` first item.
     -- Set `select` to `false` to only confirm explicitly selected items.
     ['<CR>'] = cmp.mapping.confirm({ select = true }),
+    ["<C-n>"] = cmp.mapping(function()
+        if cmp.visible() then
+            cmp.select_next_item()
+        else
+            cmp.complete()
+        end
+    end, { 'i', 'c' }),
+    ["<C-p>"] = cmp.mapping(function()
+        if cmp.visible() then
+            cmp.select_prev_item()
+        else
+            cmp.complete()
+        end
+    end, { 'i', 'c' }),
   },
   sources = cmp.config.sources({
     { name = 'nvim_lsp' },
@@ -627,4 +645,5 @@ for _, lsp in ipairs(servers) do
   }
 end
 EOF
+
 " }}}
