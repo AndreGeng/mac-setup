@@ -58,11 +58,6 @@ PERL_LOCAL_LIB_ROOT="/Users/andregeng/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_
 PERL_MB_OPT="--install_base \"/Users/andregeng/perl5\""; export PERL_MB_OPT;
 PERL_MM_OPT="INSTALL_BASE=/Users/andregeng/perl5"; export PERL_MM_OPT;
 
-# nvm
-NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
 # fzf
 export FZF_DEFAULT_COMMAND='fd --type f'
 export FZF_CTRL_R_OPTS='--reverse'
@@ -74,6 +69,12 @@ export PATH="$PATH:/Applications/SourceTree.app/Contents/Resources/stree"
 export PATH="/usr/local/bin:$PATH"
 export PATH="/usr/local/sbin:$PATH"
 # HomeBrew END
+#
+# nvm
+NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
 
 # 添加ssh key到ssh-agent
 ssh-add -A 1>/dev/null 2>&1

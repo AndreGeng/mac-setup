@@ -188,7 +188,6 @@ nnoremap <silent> <C-t> :call GoBackToRecentBuffer()<Enter>
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
-Plug 'simeji/winresizer'
 Plug 'neovim/nvim-lspconfig'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
@@ -197,28 +196,78 @@ Plug 'hrsh7th/cmp-cmdline'
 Plug 'hrsh7th/nvim-cmp'
 Plug 'hrsh7th/cmp-vsnip'
 Plug 'hrsh7th/vim-vsnip'
-Plug 'rafamadriz/friendly-snippets'
-Plug 'kyazdani42/nvim-web-devicons'
+" directory viewer
 Plug 'kyazdani42/nvim-tree.lua'
+" easy motion
 Plug 'phaazon/hop.nvim'
+" icons
+Plug 'kyazdani42/nvim-web-devicons'
+" gitgutter
+Plug 'lewis6991/gitsigns.nvim'
+Plug 'justinmk/vim-dirvish'
+" add vim command to dirvish
+Plug 'roginfarrer/vim-dirvish-dovish', {'branch': 'main'}
+" git
+Plug 'tpope/vim-fugitive'
+" show git history for specific range
+Plug 'junegunn/gv.vim'
+" Vim plugin that provides additional text objects
+Plug 'wellle/targets.vim'
+" common used mappings [q,]q fro :cnext, :cprevious
+Plug 'tpope/vim-unimpaired'
+Plug 'christoomey/vim-tmux-navigator'
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
+Plug 'mileszs/ack.vim'
+" comment stuff out
+Plug 'tpope/vim-commentary'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
+Plug 'JoosepAlviste/nvim-ts-context-commentstring'
+Plug 'w0rp/ale'
+Plug 'Chiel92/vim-autoformat'
+Plug 'henrik/vim-indexed-search'
+" cusom textobj
+Plug 'kana/vim-textobj-user'
+" dae
+Plug 'kana/vim-textobj-entire'
+" dal
+Plug 'kana/vim-textobj-line'
+" dai
+Plug 'kana/vim-textobj-indent'
+" da/
+Plug 'kana/vim-textobj-lastpat'
+" dac
+Plug 'glts/vim-textobj-comment'
+" da, delete function parameter
+Plug 'sgur/vim-textobj-parameter'
+" dax, delete xml attr
+Plug 'whatyouhide/vim-textobj-xmlattr'
+Plug 'itchyny/lightline.vim'
+Plug 'tpope/vim-surround'
+Plug 'nelstrom/vim-visual-star-search'
+
+
+Plug 'kevinhwang91/rnvimr'
+" <leader>dn delete nameless buffers
+Plug 'Asheq/close-buffers.vim'
+" resize window
+Plug 'simeji/winresizer'
+" swap window
+Plug 'wesQ3/vim-windowswap'
 " lua functions utils
 Plug 'nvim-lua/plenary.nvim'
 Plug 'sindrets/diffview.nvim'
-Plug 'lewis6991/gitsigns.nvim'
-Plug 'Asheq/close-buffers.vim'
+" color highlighter
 Plug 'norcalli/nvim-colorizer.lua'
 Plug 'karb94/neoscroll.nvim'
-" rename closing HTML/XML tags
+" auto rename closing HTML/XML tags
 Plug 'AndrewRadev/tagalong.vim'
 " find definition and reference
 Plug 'pechorin/any-jump.vim'
-Plug 'francoiscabrol/ranger.vim'
-Plug 'rbgrouleff/bclose.vim'
 Plug 'tpope/vim-repeat'
 " quickly select the closest text object
 Plug 'gcmt/wildfire.vim'
-" language packs for vim
-Plug 'justinmk/vim-dirvish'
+" Vim syntax and indent plugin for .vue files
 Plug 'leafOfTree/vim-vue-plugin'
 Plug 'bash-lsp/bash-language-server'
 " markdown preview
@@ -229,50 +278,17 @@ Plug 'neoclide/jsonc.vim'
 Plug 'voldikss/vim-floaterm'
 " multi cursor support, use <tab> to switch mode
 Plug 'mg979/vim-visual-multi'
-" git
-Plug 'tpope/vim-fugitive'
-" show git history for specific range
-Plug 'junegunn/gv.vim'
-" Vim plugin that provides additional text objects
-Plug 'wellle/targets.vim'
-" common used mappings [q,]q fro :cnext, :cprevious
-Plug 'tpope/vim-unimpaired'
 " quick rename var: crs(snake_case), crm(MixedCase),crc(camelCase),cru(UPPER_CASE),cr-(dash-case),cr.(dot.case),cr<space>(space case),crt(Title Case)
 Plug 'tpope/vim-abolish'
 " zoom window using <c-w>o
 Plug 'troydm/zoomwintab.vim'
-
-" familiar
-Plug 'christoomey/vim-tmux-navigator'
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
-Plug 'mileszs/ack.vim'
-" comment stuff out
-Plug 'tpope/vim-commentary'
-Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
-Plug 'JoosepAlviste/nvim-ts-context-commentstring'
-Plug 'w0rp/ale'
-Plug 'itchyny/lightline.vim'
 Plug 'flazz/vim-colorschemes'
+" Insert or delete brackets, parens, quotes in pair
 Plug 'jiangmiao/auto-pairs'
 Plug 'mattn/emmet-vim'
-" Plug 'andymass/vim-matchup'
-Plug 'Chiel92/vim-autoformat'
-Plug 'henrik/vim-indexed-search'
-Plug 'ConradIrwin/vim-bracketed-paste'
-Plug 'kana/vim-textobj-user'
-Plug 'kana/vim-textobj-entire'
-Plug 'kana/vim-textobj-line'
-Plug 'kana/vim-textobj-indent'
-Plug 'kana/vim-textobj-lastpat'
+" extend %
+Plug 'andymass/vim-matchup'
 Plug 'editorconfig/editorconfig-vim'
-Plug 'tpope/vim-surround'
-Plug 'nelstrom/vim-visual-star-search'
-Plug 'wesQ3/vim-windowswap'
-" gist -- start
-Plug 'mattn/gist-vim'
-Plug 'mattn/webapi-vim'
-" gist -- end
 " syntax -- start
 Plug 'pangloss/vim-javascript'
 Plug 'leafgarland/typescript-vim'
@@ -282,7 +298,7 @@ Plug 'stephpy/vim-yaml'
 Plug 'tpope/vim-dotenv'
 " syntax -- end
 " seldom used -- start
-" open items in quickfix window wherever you wish, <leader><enter> vertical split, <leader><space> horizontal split
+" open items in quickfix window wherever you wish, <leader><v> vertical split, <leader><s> horizontal split
 Plug 'yssl/QFEnter'
 " gf jump to file
 Plug 'moll/vim-node'
@@ -393,12 +409,8 @@ let g:ale_fixers = {
 
 " @see https://prettier.io/docs/en/vim.html
 let g:ale_linters_explicit = 1
-" let g:ale_fix_on_save = 1
-
-
-"Set this setting in vimrc if you want to fix files automatically on save.
-"This is off by default.
 let g:ale_fix_on_save = 1
+let g:ale_echo_cursor = 0
 nmap <leader>af :ALEFix<CR>
 
 " tmux navigator: Disable tmux navigator when zooming the Vim pane
@@ -463,15 +475,21 @@ augroup END
 
 " quickfix easy open
 let g:qfenter_keymap = {}
-let g:qfenter_keymap.vopen = ['<C-v>']
-let g:qfenter_keymap.hopen = ['<C-s>']
+let g:qfenter_keymap.vopen = ['<leader>v']
+let g:qfenter_keymap.hopen = ['<leader>s']
 " ranger
-let g:ranger_map_keys = 0
-nnoremap <leader>r :Ranger<CR>
+nnoremap <silent> <leader>r :RnvimrToggle<CR>
+tnoremap <silent> <leader>r <C-\><C-n>:RnvimrToggle<CR>
+tnoremap <silent> <M-i> <C-\><C-n>:RnvimrResize<CR>
+" Make Ranger replace Netrw and be the file explorer
+" let g:rnvimr_enable_ex = 1
+
+" Make Ranger to be hidden after picking a file
+let g:rnvimr_enable_picker = 1
 " nvim-treesitter
 lua <<EOF
 require'nvim-treesitter.configs'.setup {
-  ensure_installed = "maintained", -- one of "all", "maintained" (parsers with maintainers), or a list of languages
+ensure_installed = { "typescript", "javascript", "bash", "go", "comment", "css", "html", "http", "jsdoc", "json", "json5", "lua", "pug", "scss", "rust", "svelte", "tsx", "vim", "vue", "yaml" }, -- one of "all", "maintained" (parsers with maintainers), or a list of languages
   ignore_install = {}, -- List of parsers to ignore installing
   highlight = {
     enable = false,              -- false will disable the whole extension
@@ -526,19 +544,37 @@ nnoremap <leader>ef :NvimTreeFindFile<CR>
 nnoremap <leader>ee :NvimTreeToggle<CR>
 let g:nvim_tree_quit_on_open = 1
 " gitsigns
-lua require('gitsigns').setup();
+lua <<EOF
+require('gitsigns').setup({
+  on_attach = function(bufnr)
+    local gs = package.loaded.gitsigns
+    local function map(mode, l, r, opts)
+      opts = opts or {}
+      opts.buffer = bufnr
+      vim.keymap.set(mode, l, r, opts)
+    end
+    -- Navigation
+    map('n', ']c', function()
+      if vim.wo.diff then return ']c' end
+      vim.schedule(function() gs.next_hunk() end)
+      return '<Ignore>'
+    end, {expr=true})
+
+    map('n', '[c', function()
+      if vim.wo.diff then return '[c' end
+      vim.schedule(function() gs.prev_hunk() end)
+      return '<Ignore>'
+    end, {expr=true})
+  end
+});
+EOF
+
 " hop
 lua <<EOF
 -- Lua
   require'hop'.setup();
-  vim.api.nvim_set_keymap('n', 'f', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = true })<cr>", {})
-  vim.api.nvim_set_keymap('n', 'F', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = true })<cr>", {})
-  vim.api.nvim_set_keymap('o', 'f', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = true, inclusive_jump = true })<cr>", {})
-  vim.api.nvim_set_keymap('o', 'F', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = true, inclusive_jump = true })<cr>", {})
-  vim.api.nvim_set_keymap('', 't', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.AFTER_CURSOR, current_line_only = true })<cr>", {})
-  vim.api.nvim_set_keymap('', 'T', "<cmd>lua require'hop'.hint_char1({ direction = require'hop.hint'.HintDirection.BEFORE_CURSOR, current_line_only = true })<cr>", {})
 EOF
-nnoremap s :HopChar1<cr>
+nnoremap f :HopChar1<cr>
 nnoremap gl :HopLine<cr>
 
 " lspconfig
