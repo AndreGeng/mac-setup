@@ -44,6 +44,7 @@ set complete+=i
 
 " fix webpack watch option
 set backupcopy=yes
+set nobackup
 
 " Maintain undo history between sessions
 set undofile
@@ -64,7 +65,7 @@ set updatetime=100
 " folding
 augroup folding
   au!
-  au FileType git,javascript,javascript.jsx,typescript,typescript.tsx setlocal foldmethod=indent
+  au FileType git,javascript,javascript.jsx,typescript,typescript.tsx,go setlocal foldmethod=indent
   au FileType zsh,vim setlocal foldmethod=marker
 augroup END
 
@@ -105,8 +106,7 @@ nmap <leader>em :w !node --experimental-modules --input-type=module --es-module-
 nmap <leader>et :w !ts-node<cr>
 
 " git shortcut
-nnoremap <leader>gs :G<CR>:on<CR>
-nnoremap <leader>gb :Gblame<CR>
+nnoremap <leader>gb :Git blame<CR>
 
 " buffer explorer
 nnoremap <leader>be :Buffers<CR>
@@ -188,6 +188,13 @@ nnoremap <silent> <C-t> :call GoBackToRecentBuffer()<Enter>
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+" All the lua functions I don't want to write twice
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.1' }
+Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
+Plug 'folke/trouble.nvim'
+" WhichKey is a lua plugin for Neovim 0.5 that displays a popup with possible key bindings of the command you started typing
+Plug 'folke/which-key.nvim'
 Plug 'neovim/nvim-lspconfig'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
@@ -255,7 +262,6 @@ Plug 'simeji/winresizer'
 " swap window
 Plug 'wesQ3/vim-windowswap'
 " lua functions utils
-Plug 'nvim-lua/plenary.nvim'
 Plug 'sindrets/diffview.nvim'
 " color highlighter
 Plug 'norcalli/nvim-colorizer.lua'
@@ -298,8 +304,6 @@ Plug 'stephpy/vim-yaml'
 Plug 'tpope/vim-dotenv'
 " syntax -- end
 " seldom used -- start
-" open items in quickfix window wherever you wish, <leader><v> vertical split, <leader><s> horizontal split
-Plug 'yssl/QFEnter'
 " gf jump to file
 Plug 'moll/vim-node'
 " seldom used -- end
@@ -325,11 +329,11 @@ let g:VM_highlight_matches = 'underline'
 let g:VM_theme = 'iceblue'
 let g:VM_leader = ',,'
 " fzf
-nmap <leader>f :Files<CR>
+nmap <leader>fo :Files<CR>
 let $FZF_DEFAULT_COMMAND = 'fd -i --type f'
 let g:fzf_preview_window = []
 " search all files, including hidden files and vsc ignored files
-nmap <leader>gf :call fzf#run(fzf#wrap({'source': 'fd -i --type f --hidden -I'}))<CR>
+nmap <leader>fa :call fzf#run(fzf#wrap({'source': 'fd -i --type f --hidden -I'}))<CR>
 
 " CTRL-A CTRL-Q to select all and build quickfix list
 function! s:build_quickfix_list(lines)
@@ -352,6 +356,45 @@ endif
 nmap <leader>a :Ack -i 
 " nmap <leader>a :Rg -i
 
+" Telescope
+lua <<EOF
+require('telescope').setup{
+  defaults = {
+    -- Default configuration for telescope goes here:
+    -- config_key = value,
+    mappings = {
+      i = {
+        -- map actions.which_key to <C-h> (default: <C-/>)
+        -- actions.which_key shows the mappings for your picker,
+        -- e.g. git_{create, delete, ...}_branch for the git_branches picker
+      }
+    }
+  },
+  pickers = {
+    -- Default configuration for builtin pickers goes here:
+    -- picker_name = {
+    --   picker_config_key = value,
+    --   ...
+    -- }
+    -- Now the picker_config_key will be applied every time you call this
+    -- builtin picker
+  },
+  extensions = {
+    -- Your extension configuration goes here:
+    -- extension_name = {
+    --   extension_config_key = value,
+    -- }
+    -- please take a look at the readme of the extension you want to configure
+  }
+}
+-- To get fzf loaded and working with telescope, you need to call
+-- load_extension, somewhere after setup function:
+require('telescope').load_extension('fzf')
+EOF
+nnoremap <leader>ff <cmd>lua require('telescope.builtin').find_files()<cr>
+nnoremap <leader>fg <cmd>lua require('telescope.builtin').live_grep()<cr>
+nnoremap <leader>fb <cmd>lua require('telescope.builtin').buffers()<cr>
+nnoremap <leader>fh <cmd>lua require('telescope.builtin').help_tags()<cr>
 " expand region shortcut
 vmap v <Plug>(expand_region_expand)
 vmap V <Plug>(expand_region_shrink)
@@ -366,12 +409,12 @@ let g:lightline = {
       \ 'component': {
       \   'readonly': '%{&filetype=="help"?"":&readonly?"🔒":""}',
       \   'modified': '%{&filetype=="help"?"":&modified?"+":&modifiable?"":"-"}',
-      \   'fugitive': '%{exists("*fugitive#head")?fugitive#head():""}'
+      \   'fugitive': '%{exists("*FugitiveHead")?FugitiveHead():""}'
       \ },
       \ 'component_visible_condition': {
       \   'readonly': '(&filetype!="help"&& &readonly)',
       \   'modified': '(&filetype!="help"&&(&modified||!&modifiable))',
-      \   'fugitive': '(exists("*fugitive#head") && ""!=fugitive#head())'
+      \   'fugitive': '(exists("*FugitiveHead") && ""!=FugitiveHead())'
       \ },
       \ 'separator': { 'left': ' ', 'right': ' ' },
       \ 'subseparator': { 'left': ' ', 'right': ' ' }
@@ -394,10 +437,10 @@ let g:ale_linters = {
       \  'sh': ['language_server'],
       \}
 let g:ale_fixers = {
-      \   'javascript': ['prettier'],
-      \   'javascript.jsx': ['prettier'],
-      \   'typescript': ['prettier'],
-      \   'typescript.tsx': ['prettier'],
+      \   'javascript': ['eslint', 'prettier'],
+      \   'javascript.jsx': ['eslint', 'prettier'],
+      \   'typescript': ['eslint', 'prettier'],
+      \   'typescript.tsx': ['eslint', 'prettier'],
       \   'json': ['prettier'],
       \   'jsonc': ['prettier'],
       \   'css': ['prettier'],
@@ -411,8 +454,9 @@ let g:ale_fixers = {
 let g:ale_linters_explicit = 1
 let g:ale_fix_on_save = 1
 let g:ale_echo_cursor = 0
+let g:ale_floating_preview = 1
+let g:ale_cursor_detail = 1
 nmap <leader>af :ALEFix<CR>
-
 " tmux navigator: Disable tmux navigator when zooming the Vim pane
 let g:tmux_navigator_disable_when_zoomed = 1
 
@@ -481,6 +525,7 @@ let g:qfenter_keymap.hopen = ['<leader>s']
 nnoremap <silent> <leader>r :RnvimrToggle<CR>
 tnoremap <silent> <leader>r <C-\><C-n>:RnvimrToggle<CR>
 tnoremap <silent> <M-i> <C-\><C-n>:RnvimrResize<CR>
+tnoremap <A-f> fzf_select
 " Make Ranger replace Netrw and be the file explorer
 " let g:rnvimr_enable_ex = 1
 
@@ -531,7 +576,7 @@ EOF
 lua <<EOF
 -- Lua
 require'nvim-tree'.setup {
-  update_to_buf_dir = {
+  hijack_directories = {
     enable = false
   },
   view = {
@@ -671,7 +716,7 @@ cmp.setup.cmdline(':', {
 })
 
 -- Setup lspconfig.
-local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
+local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
 -- Enable the following language servers
 local servers = { 'tsserver' }
 for _, lsp in ipairs(servers) do
@@ -680,6 +725,27 @@ for _, lsp in ipairs(servers) do
     capabilities = capabilities
   }
 end
+EOF
+
+" which key
+lua << EOF
+  require("which-key").setup {
+    -- your configuration comes here
+    -- or leave it empty to use the default settings
+    -- refer to the configuration section below
+  }
+EOF
+
+" trouble
+nmap <leader>tt :TroubleToggle workspace_diagnostics<cr>
+nmap <leader>tl :TroubleToggle loclist<cr>
+nmap <leader>tn :lua require("trouble").next({skip_groups = true, jump = true})<cr>
+lua << EOF
+  require("trouble").setup {
+    -- your configuration comes here
+    -- or leave it empty to use the default settings
+    -- refer to the configuration section below
+  }
 EOF
 
 " }}}

@@ -110,11 +110,6 @@ font:
   # screens and make reading text a little easier.
   scale_with_dpi: true
 
-  # Thin stroke font rendering (OS X only)
-  #
-  # Thin strokes are suitable for retina displays, but for non-retina screens
-  # it is recommended to set `use_thin_strokes` to `false`
-  use_thin_strokes: true
 
 # Use custom cursor colors. If `true`, the `colors.cursor.foreground` and
 # `colors.cursor.background` colors will be used to display the cursor.
@@ -178,7 +173,7 @@ bell:
   duration: 0
 
 # Background opacity
-background_opacity: 1.0
+window.opacity: 1.0
 
 # Mouse bindings
 #
