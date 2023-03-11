@@ -737,9 +737,9 @@ lua << EOF
 EOF
 
 " trouble
-nmap <leader>tt :TroubleToggle workspace_diagnostics<cr>
-nmap <leader>tl :TroubleToggle loclist<cr>
-nmap <leader>tn :lua require("trouble").next({skip_groups = true, jump = true})<cr>
+nmap <leader>bt :TroubleToggle workspace_diagnostics<cr>
+nmap <leader>bl :TroubleToggle loclist<cr>
+nmap <leader>bn :lua require("trouble").next({skip_groups = true, jump = true})<cr>
 lua << EOF
   require("trouble").setup {
     -- your configuration comes here
