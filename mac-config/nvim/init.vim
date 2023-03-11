@@ -190,7 +190,7 @@ nnoremap <silent> <C-t> :call GoBackToRecentBuffer()<Enter>
 call plug#begin('~/.vim/plugged')
 " All the lua functions I don't want to write twice
 Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.1' }
+Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
 Plug 'folke/trouble.nvim'
 " WhichKey is a lua plugin for Neovim 0.5 that displays a popup with possible key bindings of the command you started typing
@@ -204,16 +204,13 @@ Plug 'hrsh7th/nvim-cmp'
 Plug 'hrsh7th/cmp-vsnip'
 Plug 'hrsh7th/vim-vsnip'
 " directory viewer
-Plug 'kyazdani42/nvim-tree.lua'
+Plug 'nvim-tree/nvim-tree.lua'
 " easy motion
 Plug 'phaazon/hop.nvim'
 " icons
 Plug 'kyazdani42/nvim-web-devicons'
 " gitgutter
-Plug 'lewis6991/gitsigns.nvim'
-Plug 'justinmk/vim-dirvish'
-" add vim command to dirvish
-Plug 'roginfarrer/vim-dirvish-dovish', {'branch': 'main'}
+Plug 'lewis6991/gitsigns.nvim', { 'branch': 'release' }
 " git
 Plug 'tpope/vim-fugitive'
 " show git history for specific range
@@ -485,6 +482,9 @@ let g:user_emmet_settings = {
 let g:windowswap_map_keys = 0 "prevent default bindings
 nnoremap <silent> <leader>ss :call WindowSwap#EasyWindowSwap()<CR>
 " floaterm
+let g:floaterm_width = 900
+let g:floaterm_height = 900
+
 nnoremap <C-g> :FloatermToggle<CR>
 
 " netrw
@@ -503,10 +503,10 @@ let g:netrw_dirhistmax = 0
 " vim-javascript
 let g:javascript_plugin_jsdoc = 1
 
-" dirvish
-let g:dirvish_mode = ':sort ,^.*[\/],'
 " integrage lazygit into vim
-nnoremap <C-a> :tabnew<CR>:-tabmove<CR>:term lazygit<CR>a
+command! LAZYGIT FloatermNew lazygit
+nnoremap <C-a> :LAZYGIT<cr>
+" nnoremap <C-a> :tabnew<CR>:-tabmove<CR>:term lazygit<CR>a
 augroup terminal_settings
   autocmd!
   " Ignore various filetypes as those will close terminal automatically
@@ -575,18 +575,26 @@ EOF
 " nvim-tree
 lua <<EOF
 -- Lua
+local function open_nvim_tree()
+  -- open the tree
+  require("nvim-tree.api").tree.open()
+end
+vim.api.nvim_create_autocmd({ "VimEnter" }, { callback = open_nvim_tree })
 require'nvim-tree'.setup {
-  hijack_directories = {
-    enable = false
-  },
   view = {
     width = 50,
-    side = 'right'
+    side = 'right',
+    mappings = {
+      list = {
+        { key = "<CR>", action = "edit_in_place" }
+      }
+    }
   },
 }
 EOF
 nnoremap <leader>ef :NvimTreeFindFile<CR>
 nnoremap <leader>ee :NvimTreeToggle<CR>
+nnoremap - :on<cr>:lua require"nvim-tree".open_replacing_current_buffer()<cr>
 let g:nvim_tree_quit_on_open = 1
 " gitsigns
 lua <<EOF
