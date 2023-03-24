@@ -211,6 +211,9 @@ Plug 'phaazon/hop.nvim'
 Plug 'kyazdani42/nvim-web-devicons'
 " gitgutter
 Plug 'lewis6991/gitsigns.nvim', { 'branch': 'release' }
+Plug 'justinmk/vim-dirvish'
+" add vim command to dirvish
+Plug 'roginfarrer/vim-dirvish-dovish', {'branch': 'main'}
 " git
 Plug 'tpope/vim-fugitive'
 " show git history for specific range
@@ -503,6 +506,8 @@ let g:netrw_dirhistmax = 0
 " vim-javascript
 let g:javascript_plugin_jsdoc = 1
 
+" dirvish
+let g:dirvish_mode = ':sort ,^.*[\/],'
 " integrage lazygit into vim
 command! LAZYGIT FloatermNew lazygit
 nnoremap <C-a> :LAZYGIT<cr>
@@ -524,7 +529,7 @@ let g:qfenter_keymap.hopen = ['<leader>s']
 " ranger
 nnoremap <silent> <leader>r :RnvimrToggle<CR>
 tnoremap <silent> <leader>r <C-\><C-n>:RnvimrToggle<CR>
-tnoremap <silent> <M-i> <C-\><C-n>:RnvimrResize<CR>
+tnoremap <silent> <C-i> <C-\><C-n>:RnvimrResize<CR>
 tnoremap <A-f> fzf_select
 " Make Ranger replace Netrw and be the file explorer
 " let g:rnvimr_enable_ex = 1
@@ -581,20 +586,17 @@ local function open_nvim_tree()
 end
 vim.api.nvim_create_autocmd({ "VimEnter" }, { callback = open_nvim_tree })
 require'nvim-tree'.setup {
+  hijack_directories = {
+    enable = false
+  },
   view = {
     width = 50,
     side = 'right',
-    mappings = {
-      list = {
-        { key = "<CR>", action = "edit_in_place" }
-      }
-    }
   },
 }
 EOF
 nnoremap <leader>ef :NvimTreeFindFile<CR>
 nnoremap <leader>ee :NvimTreeToggle<CR>
-nnoremap - :on<cr>:lua require"nvim-tree".open_replacing_current_buffer()<cr>
 let g:nvim_tree_quit_on_open = 1
 " gitsigns
 lua <<EOF
