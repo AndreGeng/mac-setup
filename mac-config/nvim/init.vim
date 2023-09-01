@@ -211,9 +211,6 @@ Plug 'phaazon/hop.nvim'
 Plug 'kyazdani42/nvim-web-devicons'
 " gitgutter
 Plug 'lewis6991/gitsigns.nvim', { 'branch': 'release' }
-Plug 'justinmk/vim-dirvish'
-" add vim command to dirvish
-Plug 'roginfarrer/vim-dirvish-dovish', {'branch': 'main'}
 " git
 Plug 'tpope/vim-fugitive'
 " show git history for specific range
@@ -282,15 +279,14 @@ Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() } }
 Plug 'neoclide/jsonc.vim'
 " open built-in terminal in floating window
 Plug 'voldikss/vim-floaterm'
-" multi cursor support, use <tab> to switch mode
-Plug 'mg979/vim-visual-multi'
 " quick rename var: crs(snake_case), crm(MixedCase),crc(camelCase),cru(UPPER_CASE),cr-(dash-case),cr.(dot.case),cr<space>(space case),crt(Title Case)
 Plug 'tpope/vim-abolish'
 " zoom window using <c-w>o
 Plug 'troydm/zoomwintab.vim'
 Plug 'flazz/vim-colorschemes'
 " Insert or delete brackets, parens, quotes in pair
-Plug 'jiangmiao/auto-pairs'
+" Plug 'jiangmiao/auto-pairs'
+Plug 'cohama/lexima.vim'
 Plug 'mattn/emmet-vim'
 " extend %
 Plug 'andymass/vim-matchup'
@@ -318,16 +314,6 @@ colorscheme evening
 autocmd BufEnter,SourcePre * highlight Search guibg=none guifg=#50FA7B gui=underline
 " autocmd FilterWritePre * if &diff | colorscheme apprentice | endif
 
-" multi
-let g:VM_manual_infoline = 1
-let g:VM_maps = {}
-let g:VM_maps["Add Cursor Down"] = '<M-j>'      " start selecting down
-let g:VM_maps["Add Cursor Up"]   = '<M-k>'        " start selecting up
-let g:VM_maps["Undo"] = 'u'
-let g:VM_maps["Redo"] = '<C-r>'
-let g:VM_highlight_matches = 'underline'
-let g:VM_theme = 'iceblue'
-let g:VM_leader = ',,'
 " fzf
 nmap <leader>fo :Files<CR>
 let $FZF_DEFAULT_COMMAND = 'fd -i --type f'
@@ -471,7 +457,7 @@ let g:indexed_search_max_hits = 1.0e6
 let g:indexed_search_max_lines = 1.0e6
 
 " emmet
-imap <expr> <tab> emmet#expandAbbrIntelligent("\<c-i>")
+imap <tab> <plug>(emmet-expand-abbr)
 " useless
 let g:user_emmet_leader_key='<C-\>'
 " enable emmet for ts/tsx
@@ -506,10 +492,8 @@ let g:netrw_dirhistmax = 0
 " vim-javascript
 let g:javascript_plugin_jsdoc = 1
 
-" dirvish
-let g:dirvish_mode = ':sort ,^.*[\/],'
 " integrage lazygit into vim
-command! LAZYGIT FloatermNew lazygit
+command! LAZYGIT FloatermNew --height=0.99 lazygit
 nnoremap <C-a> :LAZYGIT<cr>
 " nnoremap <C-a> :tabnew<CR>:-tabmove<CR>:term lazygit<CR>a
 augroup terminal_settings

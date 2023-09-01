@@ -180,3 +180,8 @@ zstyle :bracketed-paste-magic paste-finish pastefinish
 # }}}
 
 # zprof
+
+# pnpm
+export PNPM_HOME="/Users/admin/Library/pnpm"
+export PATH="$PNPM_HOME:$PATH"
+# pnpm end
