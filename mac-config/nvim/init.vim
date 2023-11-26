@@ -188,6 +188,7 @@ nnoremap <silent> <C-t> :call GoBackToRecentBuffer()<Enter>
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+Plug 'stefandtw/quickfix-reflector.vim'
 Plug 'yssl/QFEnter'
 " All the lua functions I don't want to write twice
 Plug 'nvim-lua/plenary.nvim'
@@ -530,6 +531,10 @@ ensure_installed = { "typescript", "javascript", "bash", "go", "comment", "css",
     enable = false,              -- false will disable the whole extension
     disable = {},  -- list of language that will be disabled
   },
+  indent = {
+    enable = true,
+    disable = { 'python', 'c'}
+  }
 }
 require'nvim-treesitter.configs'.setup {
   context_commentstring = {
