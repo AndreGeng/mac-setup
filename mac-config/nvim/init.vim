@@ -188,6 +188,7 @@ nnoremap <silent> <C-t> :call GoBackToRecentBuffer()<Enter>
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+Plug 'yssl/QFEnter'
 " All the lua functions I don't want to write twice
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
