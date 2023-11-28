@@ -188,6 +188,7 @@ nnoremap <silent> <C-t> :call GoBackToRecentBuffer()<Enter>
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
+Plug 'stevearc/oil.nvim'
 Plug 'stefandtw/quickfix-reflector.vim'
 Plug 'yssl/QFEnter'
 " All the lua functions I don't want to write twice
@@ -271,7 +272,7 @@ Plug 'AndrewRadev/tagalong.vim'
 Plug 'pechorin/any-jump.vim'
 Plug 'tpope/vim-repeat'
 " quickly select the closest text object
-Plug 'gcmt/wildfire.vim'
+" Plug 'gcmt/wildfire.vim'
 " Vim syntax and indent plugin for .vue files
 Plug 'leafOfTree/vim-vue-plugin'
 Plug 'bash-lsp/bash-language-server'
@@ -315,6 +316,32 @@ set background=dark
 colorscheme evening
 autocmd BufEnter,SourcePre * highlight Search guibg=none guifg=#50FA7B gui=underline
 " autocmd FilterWritePre * if &diff | colorscheme apprentice | endif
+
+" oil
+lua <<EOF
+require("oil").setup({
+  default_file_explorer = false,
+  keymaps = {
+    ["g?"] = "actions.show_help",
+    ["<CR>"] = "actions.select",
+    ["<C-v>"] = "actions.select_vsplit",
+    ["<C-x>"] = "actions.select_split",
+    ["<C-s>"] = "actions.select_split",
+    ["<ESC>"] = "actions.close",
+    ["<C-r>"] = "actions.refresh",
+    ["-"] = "actions.parent",
+    ["<C-[>"] = "actions.parent",
+    ["<C-]>"] = "actions.cd",
+    ["tc"] = "actions.tcd",
+    ["gs"] = "actions.open_external",
+    ["g."] = "actions.toggle_hidden",
+    ["g\\"] = "actions.toggle_trash",
+  },
+  -- Set to false to disable all of the above keymaps
+  use_default_keymaps = false,
+})
+vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
+EOF
 
 " fzf
 nmap <leader>fo :Files<CR>
