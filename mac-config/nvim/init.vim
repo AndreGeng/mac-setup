@@ -1,35 +1,7 @@
 lua require("main")
 
 " Basic configurations {{{
-" copy to system clipboard
-set clipboard+=unnamedplus
 language zh_CN.UTF-8
-
-" jump between unsaved buffers without the E37
-set hidden
-
-" set lazyredraw, makes nvim smooth in tmux
-set lazyredraw
-
-" show number column
-set number
-set relativenumber
-
-" indent
-set autoindent
-" use whitespace insteadof tab
-set expandtab
-" set shiftround, used to auto indent
-set shiftround
-set shiftwidth=2
-
-" set tab width
-set softtabstop=2
-set tabstop=2
-
-" search
-set ignorecase
-set smartcase
 
 " diff ignore whitespace
 set diffopt+=iwhite,vertical
