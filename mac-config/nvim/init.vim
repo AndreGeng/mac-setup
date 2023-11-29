@@ -1,7 +1,6 @@
+lua require("main")
+
 " Basic configurations {{{
-" With a map leader it's possible to do extra key combinations
-" like <leader>w saves the current file
-let mapleader = ","
 " copy to system clipboard
 set clipboard+=unnamedplus
 language zh_CN.UTF-8
