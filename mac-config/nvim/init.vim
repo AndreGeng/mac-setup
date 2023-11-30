@@ -3,35 +3,15 @@ lua require("main")
 " Basic configurations {{{
 language zh_CN.UTF-8
 
-" diff ignore whitespace
-set diffopt+=iwhite,vertical
-
 " setup nvim with python support
 let g:python_host_prog = $HOME.'/.pyenv/versions/neovim2/bin/python'
 let g:python3_host_prog = $HOME.'/.pyenv/versions/neovim3/bin/python'
-
-" complete setting
-set complete+=i
-
-" fix webpack watch option
-set backupcopy=yes
-set nobackup
-
-" Maintain undo history between sessions
-set undofile
-
-set encoding=utf-8 fileencodings=ucs-bom,utf-8,cp936
 
 " Disable vim E211: File no longer available @see
 " https://stackoverflow.com/questions/52780939/disable-vim-e211-file-no-longer-available
 autocmd FileChangedShell * execute
 
-" autoread
-set autoread
 au CursorHold,CursorHoldI,FocusGained * :checktime
-
-" default updatetime 4000ms is not good for async update
-set updatetime=100
 
 " folding
 augroup folding
@@ -282,8 +262,6 @@ call plug#end()
 
 " Plugin configurations {{{
 " color scheme
-set termguicolors
-set background=dark
 colorscheme evening
 autocmd BufEnter,SourcePre * highlight Search guibg=none guifg=#50FA7B gui=underline
 " autocmd FilterWritePre * if &diff | colorscheme apprentice | endif
