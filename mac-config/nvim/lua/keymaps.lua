@@ -45,3 +45,7 @@ vim.keymap.set('n', '<leader>tp', ':tabp<cr>', { noremap = true })
 -- always use very magic when search
 vim.keymap.set('n', '/', '/\\v', { noremap = true })
 
+-- toggle quickfixlist/locationlist
+vim.keymap.set('n', '<leader>k', ':call ToggleList("Quickfix", "c")<cr>', { noremap = true })
+vim.keymap.set('n', '<leader>l', ':call ToggleList("Location", "l")<cr>', { noremap = true })
+
