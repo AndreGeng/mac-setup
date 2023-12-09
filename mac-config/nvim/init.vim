@@ -43,45 +43,6 @@ autocmd BufEnter *.json :setlocal filetype=jsonc
 " }}}
 
 " Custom mapping {{{
-" fold shortcut
-nnoremap <Space> za
-" terminal
-tnoremap <C-g> <C-\><C-n>
-" Fast saving
-nmap <leader>w :w!<cr>
-" smart way to close pane
-nnoremap <leader>q :q<CR>
-" Fast eval
-nmap <leader>en :w !node<cr>
-nmap <leader>em :w !node --experimental-modules --input-type=module --es-module-specifier-resolution=node<cr>
-nmap <leader>et :w !ts-node<cr>
-
-" git shortcut
-nnoremap <leader>gb :Git blame<CR>
-
-" buffer explorer
-nnoremap <leader>be :Buffers<CR>
-
-" cmdline mapping
-cnoremap <C-A> <Home>
-
-" Move a line of text using ALT+[m,], @see https://vim.fandom.com/wiki/Moving_lines_up_or_down
-nnoremap <A-m> :m .+1<CR>==
-nnoremap <A-,> :m .-2<CR>==
-inoremap <A-m> <Esc>:m .+1<CR>==gi
-inoremap <A-,> <Esc>:m .-2<CR>==gi
-vnoremap <A-m> :m '>+1<CR>gv=gv
-vnoremap <A-,> :m '<-2<CR>gv=gv
-
-" Useful mappings for managing tabs
-map <leader>tt :tabnew<cr>
-map <leader>to :tabonly<cr>
-map <leader>tc :tabclose<cr>
-map <leader>tn :tabnext<cr>
-map <leader>tp :tabp<cr>
-
-" always use very magic when search
-nnoremap / /\v
 
 "toggle quickfixlist/locationlist -- start
 function! GetBufferList()
@@ -164,7 +125,7 @@ Plug 'phaazon/hop.nvim'
 " icons
 Plug 'kyazdani42/nvim-web-devicons'
 " gitgutter
-Plug 'lewis6991/gitsigns.nvim', { 'branch': 'release' }
+Plug 'lewis6991/gitsigns.nvim'
 " git
 Plug 'tpope/vim-fugitive'
 " show git history for specific range
@@ -512,11 +473,8 @@ ensure_installed = { "typescript", "javascript", "bash", "go", "comment", "css",
     disable = { 'python', 'c'}
   }
 }
-require'nvim-treesitter.configs'.setup {
-  context_commentstring = {
-    enable = true
-  }
-}
+require'nvim-treesitter.configs'.setup {}
+vim.g.skip_ts_context_commentstring_module = true
 EOF
 " neoscroll
 lua require('neoscroll').setup()
@@ -724,4 +682,5 @@ lua << EOF
   }
 EOF
 
-" }}}
+
+"}}}
