@@ -24,6 +24,10 @@ require("lazy").setup({
   -- quickly select the closest text object
   -- 'gcmt/wildfire.vim'
 
+  -- color highlighter
+  'norcalli/nvim-colorizer.lua',
+  -- <leader>dn delete nameless buffers
+  'Asheq/close-buffers.vim',
   -- auto rename closing HTML/XML tags
   'AndrewRadev/tagalong.vim',
   -- All the lua functions I don't want to write twice
@@ -74,7 +78,7 @@ require("lazy").setup({
   -- find definition and reference
   'pechorin/any-jump.vim',
   -- a smooth scrolling neovim plugin written in lua
-  'karb94/neoscroll.nvim'
+  'karb94/neoscroll.nvim',
 })
 
 
@@ -86,3 +90,6 @@ require('plugins.floaterm')
 require('plugins.gv')
 require('plugins.ack')
 require('plugins.hop')
+require('plugins.colorizer')
+require('plugins.neoscroll')
+require('plugins.close-buffers')

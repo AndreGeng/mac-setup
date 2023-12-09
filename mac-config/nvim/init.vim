@@ -97,16 +97,12 @@ Plug 'nelstrom/vim-visual-star-search'
 
 
 Plug 'kevinhwang91/rnvimr'
-" <leader>dn delete nameless buffers
-Plug 'Asheq/close-buffers.vim'
 " resize window
 Plug 'simeji/winresizer'
 " swap window
 Plug 'wesQ3/vim-windowswap'
 " lua functions utils
 Plug 'sindrets/diffview.nvim'
-" color highlighter
-Plug 'norcalli/nvim-colorizer.lua'
 Plug 'bash-lsp/bash-language-server'
 call plug#end()
 " }}}
@@ -326,11 +322,7 @@ ensure_installed = { "typescript", "javascript", "bash", "go", "comment", "css",
 require'nvim-treesitter.configs'.setup {}
 vim.g.skip_ts_context_commentstring_module = true
 EOF
-" neoscroll
-lua require('neoscroll').setup()
-" color highlight
-lua require'colorizer'.setup()
-nnoremap <leader>dn :Bdelete! nameless<CR>
+
 " diffview
 nnoremap <leader>dh :DiffviewFileHistory<CR>
 cnoreabbrev do DiffviewOpen
