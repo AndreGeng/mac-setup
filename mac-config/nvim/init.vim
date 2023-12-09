@@ -51,16 +51,9 @@ autocmd VimResized * wincmd =
 
 " Plugins {{{
 call plug#begin('~/.vim/plugged')
-Plug 'stevearc/oil.nvim'
-Plug 'stefandtw/quickfix-reflector.vim'
-Plug 'yssl/QFEnter'
-" All the lua functions I don't want to write twice
-Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
 Plug 'folke/trouble.nvim'
-" WhichKey is a lua plugin for Neovim 0.5 that displays a popup with possible key bindings of the command you started typing
-Plug 'folke/which-key.nvim'
 Plug 'neovim/nvim-lspconfig'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
@@ -71,31 +64,18 @@ Plug 'hrsh7th/cmp-vsnip'
 Plug 'hrsh7th/vim-vsnip'
 " directory viewer
 Plug 'nvim-tree/nvim-tree.lua'
-" easy motion
-Plug 'phaazon/hop.nvim'
 " icons
 Plug 'kyazdani42/nvim-web-devicons'
 " gitgutter
 Plug 'lewis6991/gitsigns.nvim'
-" git
-Plug 'tpope/vim-fugitive'
-" show git history for specific range
-Plug 'junegunn/gv.vim'
 " Vim plugin that provides additional text objects
 Plug 'wellle/targets.vim'
-" common used mappings [q,]q fro :cnext, :cprevious
-Plug 'tpope/vim-unimpaired'
-Plug 'christoomey/vim-tmux-navigator'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
-Plug 'mileszs/ack.vim'
-" comment stuff out
-Plug 'tpope/vim-commentary'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
 Plug 'JoosepAlviste/nvim-ts-context-commentstring'
 Plug 'w0rp/ale'
 Plug 'Chiel92/vim-autoformat'
-Plug 'henrik/vim-indexed-search'
 " cusom textobj
 Plug 'kana/vim-textobj-user'
 " dae
@@ -113,7 +93,6 @@ Plug 'sgur/vim-textobj-parameter'
 " dax, delete xml attr
 Plug 'whatyouhide/vim-textobj-xmlattr'
 Plug 'itchyny/lightline.vim'
-Plug 'tpope/vim-surround'
 Plug 'nelstrom/vim-visual-star-search'
 
 
@@ -128,47 +107,7 @@ Plug 'wesQ3/vim-windowswap'
 Plug 'sindrets/diffview.nvim'
 " color highlighter
 Plug 'norcalli/nvim-colorizer.lua'
-Plug 'karb94/neoscroll.nvim'
-" auto rename closing HTML/XML tags
-Plug 'AndrewRadev/tagalong.vim'
-" find definition and reference
-Plug 'pechorin/any-jump.vim'
-Plug 'tpope/vim-repeat'
-" quickly select the closest text object
-" Plug 'gcmt/wildfire.vim'
-" Vim syntax and indent plugin for .vue files
-Plug 'leafOfTree/vim-vue-plugin'
 Plug 'bash-lsp/bash-language-server'
-" markdown preview
-Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() } }
-" allow comments in json
-Plug 'neoclide/jsonc.vim'
-" open built-in terminal in floating window
-Plug 'voldikss/vim-floaterm'
-" quick rename var: crs(snake_case), crm(MixedCase),crc(camelCase),cru(UPPER_CASE),cr-(dash-case),cr.(dot.case),cr<space>(space case),crt(Title Case)
-Plug 'tpope/vim-abolish'
-" zoom window using <c-w>o
-Plug 'troydm/zoomwintab.vim'
-Plug 'flazz/vim-colorschemes'
-" Insert or delete brackets, parens, quotes in pair
-" Plug 'jiangmiao/auto-pairs'
-Plug 'cohama/lexima.vim'
-Plug 'mattn/emmet-vim'
-" extend %
-Plug 'andymass/vim-matchup'
-Plug 'editorconfig/editorconfig-vim'
-" syntax -- start
-Plug 'pangloss/vim-javascript'
-Plug 'leafgarland/typescript-vim'
-Plug 'othree/html5.vim'
-Plug 'ekalinin/Dockerfile.vim'
-Plug 'stephpy/vim-yaml'
-Plug 'tpope/vim-dotenv'
-" syntax -- end
-" seldom used -- start
-" gf jump to file
-Plug 'moll/vim-node'
-" seldom used -- end
 call plug#end()
 " }}}
 
@@ -177,32 +116,6 @@ call plug#end()
 colorscheme evening
 autocmd BufEnter,SourcePre * highlight Search guibg=none guifg=#50FA7B gui=underline
 " autocmd FilterWritePre * if &diff | colorscheme apprentice | endif
-
-" oil
-lua <<EOF
-require("oil").setup({
-  default_file_explorer = false,
-  keymaps = {
-    ["g?"] = "actions.show_help",
-    ["<CR>"] = "actions.select",
-    ["<C-v>"] = "actions.select_vsplit",
-    ["<C-x>"] = "actions.select_split",
-    ["<C-s>"] = "actions.select_split",
-    ["<ESC>"] = "actions.close",
-    ["<C-r>"] = "actions.refresh",
-    ["-"] = "actions.parent",
-    ["<C-[>"] = "actions.parent",
-    ["<C-]>"] = "actions.cd",
-    ["tc"] = "actions.tcd",
-    ["gs"] = "actions.open_external",
-    ["g."] = "actions.toggle_hidden",
-    ["g\\"] = "actions.toggle_trash",
-  },
-  -- Set to false to disable all of the above keymaps
-  use_default_keymaps = false,
-})
-vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
-EOF
 
 " fzf
 nmap <leader>fo :Files<CR>
@@ -225,12 +138,6 @@ let g:fzf_action = {
       \ 'ctrl-v': 'vsplit' }
 
 let $FZF_DEFAULT_OPTS = '--bind ctrl-a:select-all'
-" Ack
-if executable('rg')
-  let g:ackprg = 'rg --vimgrep'
-endif
-nmap <leader>a :Ack -i 
-" nmap <leader>a :Rg -i
 
 " Telescope
 lua <<EOF
@@ -300,9 +207,6 @@ let g:formatters_jsonc=['jsbeautify_json']
 let g:formatters_javascript=['jsbeautify_javascript']
 
 map <leader>af :Autoformat<CR>
-" gv.vim
-nnoremap <leader>gv :GV!<CR>
-vnoremap <leader>gv :GV!<CR>
 
 " ALE
 let g:ale_linters = {
@@ -360,11 +264,6 @@ let g:user_emmet_settings = {
 " WindowSwap.vim
 let g:windowswap_map_keys = 0 "prevent default bindings
 nnoremap <silent> <leader>ss :call WindowSwap#EasyWindowSwap()<CR>
-" floaterm
-let g:floaterm_width = 900
-let g:floaterm_height = 900
-
-nnoremap <C-g> :FloatermToggle<CR>
 
 " netrw
 " 修复<ctrl-l>被netrw覆盖的问题
@@ -498,14 +397,6 @@ require('gitsigns').setup({
   end
 });
 EOF
-
-" hop
-lua <<EOF
--- Lua
-  require'hop'.setup();
-EOF
-nnoremap f :HopChar1<cr>
-nnoremap gl :HopLine<cr>
 
 " lspconfig
 lua <<EOF
