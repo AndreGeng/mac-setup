@@ -49,3 +49,6 @@ vim.keymap.set('n', '/', '/\\v', { noremap = true })
 vim.keymap.set('n', '<leader>k', ':call ToggleList("Quickfix", "c")<cr>', { noremap = true })
 vim.keymap.set('n', '<leader>l', ':call ToggleList("Location", "l")<cr>', { noremap = true })
 
+-- <C-t>: go back to previous buffer
+vim.keymap.set('n', '<C-t>', ':call GoBackToRecentBuffer()<cr>', { noremap = true })
+

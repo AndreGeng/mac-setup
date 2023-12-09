@@ -47,19 +47,6 @@ autocmd BufEnter *.json :setlocal filetype=jsonc
 " auto resize window size when container window size changed
 autocmd VimResized * wincmd =
 
-" <C-t>: go back to previous buffer
-function! GoBackToRecentBuffer()
-  let startName = bufname('%')
-  while 1
-    exe "normal! \<c-o>"
-    let nowName = bufname('%')
-    if nowName != startName
-      break
-    endif
-  endwhile
-endfunction
-
-nnoremap <silent> <C-t> :call GoBackToRecentBuffer()<Enter>
 "}}}
 
 " Plugins {{{

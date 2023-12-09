@@ -1,3 +1,4 @@
 require("options")
 require("keymaps")
-require("plugins.quickfix")
+require("functions.quickfix")
+require("functions.navigate")
