@@ -23,11 +23,11 @@ require("lazy").setup({
   'andymass/vim-matchup',
   -- quickly select the closest text object
   -- 'gcmt/wildfire.vim'
-
   -- color highlighter
   'norcalli/nvim-colorizer.lua',
   -- <leader>dn delete nameless buffers
   'Asheq/close-buffers.vim',
+
   -- auto rename closing HTML/XML tags
   'AndrewRadev/tagalong.vim',
   -- All the lua functions I don't want to write twice
@@ -52,6 +52,12 @@ require("lazy").setup({
   'mileszs/ack.vim',
   -- emmet-vim is a vim plug-in which provides support for expanding abbreviations similar to emmet.
   'mattn/emmet-vim',
+  -- directory viewer
+  'nvim-tree/nvim-tree.lua',
+  -- icons
+  'kyazdani42/nvim-web-devicons',
+  -- gitgutter
+  'lewis6991/gitsigns.nvim',
 
   -- syntax
   'pangloss/vim-javascript',
@@ -79,6 +85,52 @@ require("lazy").setup({
   'pechorin/any-jump.vim',
   -- a smooth scrolling neovim plugin written in lua
   'karb94/neoscroll.nvim',
+
+  -- extend text objects
+  -- Vim plugin that provides additional text objects
+  'wellle/targets.vim',
+  -- cusom textobj
+  'kana/vim-textobj-user',
+  -- dae
+  { 'kana/vim-textobj-entire', dependencies = {
+    'kana/vim-textobj-user',
+  }},
+  -- dal
+  {  'kana/vim-textobj-line', dependencies = {
+    'kana/vim-textobj-user',
+  }},
+  -- dai
+  { 'kana/vim-textobj-indent', dependencies = {
+    'kana/vim-textobj-user',
+  }},
+  -- da/
+  { 'kana/vim-textobj-lastpat', dependencies = {
+    'kana/vim-textobj-user',
+  }},
+  -- dac
+  { 'glts/vim-textobj-comment', dependencies = {
+    'kana/vim-textobj-user',
+  }},
+  -- da, delete function parameter
+  { 'sgur/vim-textobj-parameter', dependencies = {
+    'kana/vim-textobj-user',
+  }},
+  -- dax, delete xml attr
+  { 'whatyouhide/vim-textobj-xmlattr', dependencies = {
+    'kana/vim-textobj-user',
+  }},
+
+  -- lsp
+  "williamboman/mason.nvim",
+  "williamboman/mason-lspconfig.nvim",
+  'neovim/nvim-lspconfig',
+  'hrsh7th/nvim-cmp',
+  'hrsh7th/cmp-nvim-lsp',
+  'hrsh7th/cmp-buffer',
+  'hrsh7th/cmp-path',
+  'hrsh7th/cmp-cmdline',
+  'hrsh7th/cmp-vsnip',
+  'hrsh7th/vim-vsnip',
 })
 
 
@@ -93,3 +145,11 @@ require('plugins.hop')
 require('plugins.colorizer')
 require('plugins.neoscroll')
 require('plugins.close-buffers')
+require('plugins.nvim-tree')
+require('plugins.gitsigns')
+require('plugins.which-key')
+require('plugins.qf-enter')
+require('plugins.tmux-navigator')
+require('plugins.lazygit')
+require('plugins.cmp')
+require('plugins.lsp')

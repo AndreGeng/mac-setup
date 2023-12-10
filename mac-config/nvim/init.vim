@@ -53,48 +53,13 @@ autocmd VimResized * wincmd =
 call plug#begin('~/.vim/plugged')
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
-Plug 'folke/trouble.nvim'
-Plug 'neovim/nvim-lspconfig'
-Plug 'hrsh7th/cmp-nvim-lsp'
-Plug 'hrsh7th/cmp-buffer'
-Plug 'hrsh7th/cmp-path'
-Plug 'hrsh7th/cmp-cmdline'
-Plug 'hrsh7th/nvim-cmp'
-Plug 'hrsh7th/cmp-vsnip'
-Plug 'hrsh7th/vim-vsnip'
-" directory viewer
-Plug 'nvim-tree/nvim-tree.lua'
-" icons
-Plug 'kyazdani42/nvim-web-devicons'
-" gitgutter
-Plug 'lewis6991/gitsigns.nvim'
-" Vim plugin that provides additional text objects
-Plug 'wellle/targets.vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
 Plug 'JoosepAlviste/nvim-ts-context-commentstring'
 Plug 'w0rp/ale'
 Plug 'Chiel92/vim-autoformat'
-" cusom textobj
-Plug 'kana/vim-textobj-user'
-" dae
-Plug 'kana/vim-textobj-entire'
-" dal
-Plug 'kana/vim-textobj-line'
-" dai
-Plug 'kana/vim-textobj-indent'
-" da/
-Plug 'kana/vim-textobj-lastpat'
-" dac
-Plug 'glts/vim-textobj-comment'
-" da, delete function parameter
-Plug 'sgur/vim-textobj-parameter'
-" dax, delete xml attr
-Plug 'whatyouhide/vim-textobj-xmlattr'
-Plug 'itchyny/lightline.vim'
 Plug 'nelstrom/vim-visual-star-search'
-
 
 Plug 'kevinhwang91/rnvimr'
 " resize window
@@ -177,27 +142,7 @@ nnoremap <leader>fh <cmd>lua require('telescope.builtin').help_tags()<cr>
 " expand region shortcut
 vmap v <Plug>(expand_region_expand)
 vmap V <Plug>(expand_region_shrink)
-" lightline
-let g:lightline = {
-      \ 'colorscheme': 'wombat',
-      \ 'active': {
-      \   'left': [ ['mode', 'paste'],
-      \             ['fugitive', 'readonly', 'relativepath', 'modified', 'filetype'] ],
-      \   'right': [ [ 'lineinfo' ], ['percent'] ]
-      \ },
-      \ 'component': {
-      \   'readonly': '%{&filetype=="help"?"":&readonly?"🔒":""}',
-      \   'modified': '%{&filetype=="help"?"":&modified?"+":&modifiable?"":"-"}',
-      \   'fugitive': '%{exists("*FugitiveHead")?FugitiveHead():""}'
-      \ },
-      \ 'component_visible_condition': {
-      \   'readonly': '(&filetype!="help"&& &readonly)',
-      \   'modified': '(&filetype!="help"&&(&modified||!&modifiable))',
-      \   'fugitive': '(exists("*FugitiveHead") && ""!=FugitiveHead())'
-      \ },
-      \ 'separator': { 'left': ' ', 'right': ' ' },
-      \ 'subseparator': { 'left': ' ', 'right': ' ' }
-      \ }
+
 " autoformat
 let g:formatters_jsonc=['jsbeautify_json']
 let g:formatters_javascript=['jsbeautify_javascript']
@@ -233,18 +178,6 @@ let g:ale_echo_cursor = 0
 let g:ale_floating_preview = 1
 let g:ale_cursor_detail = 1
 nmap <leader>af :ALEFix<CR>
-" tmux navigator: Disable tmux navigator when zooming the Vim pane
-let g:tmux_navigator_disable_when_zoomed = 1
-
-" xkbswitch
-let g:XkbSwitchEnabled = 1
-
-" bufexplorer
-let g:bufExplorerShowRelativePath=1
-
-" vim-indexed-search
-let g:indexed_search_max_hits = 1.0e6
-let g:indexed_search_max_lines = 1.0e6
 
 " emmet
 imap <tab> <plug>(emmet-expand-abbr)
@@ -277,10 +210,6 @@ let g:netrw_dirhistmax = 0
 " vim-javascript
 let g:javascript_plugin_jsdoc = 1
 
-" integrage lazygit into vim
-command! LAZYGIT FloatermNew --height=0.99 lazygit
-nnoremap <C-a> :LAZYGIT<cr>
-" nnoremap <C-a> :tabnew<CR>:-tabmove<CR>:term lazygit<CR>a
 augroup terminal_settings
   autocmd!
   " Ignore various filetypes as those will close terminal automatically
@@ -291,10 +220,6 @@ augroup terminal_settings
         \ endif
 augroup END
 
-" quickfix easy open
-let g:qfenter_keymap = {}
-let g:qfenter_keymap.vopen = ['<leader>v']
-let g:qfenter_keymap.hopen = ['<leader>s']
 " ranger
 nnoremap <silent> <leader>r :RnvimrToggle<CR>
 tnoremap <silent> <leader>r <C-\><C-n>:RnvimrToggle<CR>
@@ -342,179 +267,5 @@ require'diffview'.setup {
   },
 }
 EOF
-
-" nvim-tree
-lua <<EOF
--- Lua
-local function open_nvim_tree()
-  -- open the tree
-  require("nvim-tree.api").tree.open()
-end
-vim.api.nvim_create_autocmd({ "VimEnter" }, { callback = open_nvim_tree })
-require'nvim-tree'.setup {
-  hijack_directories = {
-    enable = false
-  },
-  view = {
-    width = 50,
-    side = 'right',
-  },
-}
-EOF
-nnoremap <leader>ef :NvimTreeFindFile<CR>
-nnoremap <leader>ee :NvimTreeToggle<CR>
-let g:nvim_tree_quit_on_open = 1
-" gitsigns
-lua <<EOF
-require('gitsigns').setup({
-  on_attach = function(bufnr)
-    local gs = package.loaded.gitsigns
-    local function map(mode, l, r, opts)
-      opts = opts or {}
-      opts.buffer = bufnr
-      vim.keymap.set(mode, l, r, opts)
-    end
-    -- Navigation
-    map('n', ']c', function()
-      if vim.wo.diff then return ']c' end
-      vim.schedule(function() gs.next_hunk() end)
-      return '<Ignore>'
-    end, {expr=true})
-
-    map('n', '[c', function()
-      if vim.wo.diff then return '[c' end
-      vim.schedule(function() gs.prev_hunk() end)
-      return '<Ignore>'
-    end, {expr=true})
-  end
-});
-EOF
-
-" lspconfig
-lua <<EOF
-local nvim_lsp = require 'lspconfig'
-local on_attach = function(_, bufnr)
-  vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-
-  local opts = { noremap = true, silent = true }
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>K', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>e', '<cmd>lua vim.diagnostic.open_float()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>Q', '<cmd>lua vim.diagnostic.setloclist()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>so', [[<cmd>lua require('telescope.builtin').lsp_document_symbols()<CR>]], opts)
-  vim.cmd [[ command! Format execute 'lua vim.lsp.buf.formatting()' ]]
-end
--- setup nvim-cmp
-local cmp = require'cmp'
-
-cmp.setup({
-  snippet = {
-    -- REQUIRED - you must specify a snippet engine
-    expand = function(args)
-      vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
-      -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
-      -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
-      -- require'snippy'.expand_snippet(args.body) -- For `snippy` users.
-    end,
-  },
-  mapping = {
-    ['<C-b>'] = cmp.mapping(cmp.mapping.scroll_docs(-4), { 'i', 'c' }),
-    ['<C-f>'] = cmp.mapping(cmp.mapping.scroll_docs(4), { 'i', 'c' }),
-    ['<C-Space>'] = cmp.mapping(cmp.mapping.complete(), { 'i', 'c' }),
-    ['<C-y>'] = cmp.config.disable, -- Specify `cmp.config.disable` if you want to remove the default `<C-y>` mapping.
-    ['<C-e>'] = cmp.mapping({
-      i = cmp.mapping.abort(),
-      c = cmp.mapping.close(),
-    }),
-    -- Accept currently selected item. If none selected, `select` first item.
-    -- Set `select` to `false` to only confirm explicitly selected items.
-    ['<CR>'] = cmp.mapping.confirm({ select = true }),
-    ["<C-n>"] = cmp.mapping(function()
-        if cmp.visible() then
-            cmp.select_next_item()
-        else
-            cmp.complete()
-        end
-    end, { 'i', 'c' }),
-    ["<C-p>"] = cmp.mapping(function()
-        if cmp.visible() then
-            cmp.select_prev_item()
-        else
-            cmp.complete()
-        end
-    end, { 'i', 'c' }),
-  },
-  sources = cmp.config.sources({
-    { name = 'nvim_lsp' },
-    { name = 'vsnip' }, -- For vsnip users.
-    -- { name = 'luasnip' }, -- For luasnip users.
-    -- { name = 'ultisnips' }, -- For ultisnips users.
-    -- { name = 'snippy' }, -- For snippy users.
-  }, {
-    { name = 'buffer' },
-  })
-})
-
--- Use buffer source for `/` (if you enabled `native_menu`, this won't work anymore).
-cmp.setup.cmdline('/', {
-  sources = {
-    { name = 'buffer' }
-  }
-})
-
--- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-cmp.setup.cmdline(':', {
-  sources = cmp.config.sources({
-    { name = 'path' }
-  }, {
-    { name = 'cmdline' }
-  })
-})
-
--- Setup lspconfig.
-local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
--- Enable the following language servers
-local servers = { 'tsserver' }
-for _, lsp in ipairs(servers) do
-  nvim_lsp[lsp].setup {
-    on_attach = on_attach,
-    capabilities = capabilities
-  }
-end
-EOF
-
-" which key
-lua << EOF
-  require("which-key").setup {
-    -- your configuration comes here
-    -- or leave it empty to use the default settings
-    -- refer to the configuration section below
-  }
-EOF
-
-" trouble
-nmap <leader>bt :TroubleToggle workspace_diagnostics<cr>
-nmap <leader>bl :TroubleToggle loclist<cr>
-nmap <leader>bn :lua require("trouble").next({skip_groups = true, jump = true})<cr>
-lua << EOF
-  require("trouble").setup {
-    -- your configuration comes here
-    -- or leave it empty to use the default settings
-    -- refer to the configuration section below
-  }
-EOF
-
 
 "}}}
