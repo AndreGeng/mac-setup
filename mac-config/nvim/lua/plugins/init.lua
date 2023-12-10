@@ -28,10 +28,23 @@ require("lazy").setup({
   -- <leader>dn delete nameless buffers
   'Asheq/close-buffers.vim',
 
-  -- auto rename closing HTML/XML tags
-  'AndrewRadev/tagalong.vim',
   -- All the lua functions I don't want to write twice
   'nvim-lua/plenary.nvim',
+  -- Rnvimr is a NeoVim plugin that allows you to use Ranger in a floating window.
+  'kevinhwang91/rnvimr',
+  -- resize window
+  {
+    'simeji/winresizer',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+    }
+  },
+  -- swap window
+  'wesQ3/vim-windowswap',
+  -- Single tabpage interface for easily cycling through diffs for all modified files for any git rev.
+  'sindrets/diffview.nvim',
+  -- auto rename closing HTML/XML tags
+  'AndrewRadev/tagalong.vim',
   -- open built-in terminal in floating window
   'voldikss/vim-floaterm',
   -- easy motion
@@ -58,6 +71,17 @@ require("lazy").setup({
   'kyazdani42/nvim-web-devicons',
   -- gitgutter
   'lewis6991/gitsigns.nvim',
+  -- fuzzy find
+  {
+    'nvim-telescope/telescope.nvim',
+    dependencies = {
+      'nvim-lua/plenary.nvim'
+    }
+  },
+  { 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' },
+  { 'junegunn/fzf',                             dir = '~/.fzf',                                                                                                                        build = './install --all' },
+  'junegunn/fzf.vim',
+
 
   -- basic
   'tpope/vim-dotenv',
@@ -85,6 +109,11 @@ require("lazy").setup({
     build = ":TSUpdate",
   },
   'JoosepAlviste/nvim-ts-context-commentstring',
+  {
+    'stevearc/conform.nvim',
+    opts = {},
+  },
+  'mfussenegger/nvim-lint',
 
   -- extend text objects
   -- Vim plugin that provides additional text objects
@@ -92,33 +121,54 @@ require("lazy").setup({
   -- cusom textobj
   'kana/vim-textobj-user',
   -- dae
-  { 'kana/vim-textobj-entire', dependencies = {
-    'kana/vim-textobj-user',
-  }},
+  {
+    'kana/vim-textobj-entire',
+    dependencies = {
+      'kana/vim-textobj-user',
+    }
+  },
   -- dal
-  {  'kana/vim-textobj-line', dependencies = {
-    'kana/vim-textobj-user',
-  }},
+  {
+    'kana/vim-textobj-line',
+    dependencies = {
+      'kana/vim-textobj-user',
+    }
+  },
   -- dai
-  { 'kana/vim-textobj-indent', dependencies = {
-    'kana/vim-textobj-user',
-  }},
+  {
+    'kana/vim-textobj-indent',
+    dependencies = {
+      'kana/vim-textobj-user',
+    }
+  },
   -- da/
-  { 'kana/vim-textobj-lastpat', dependencies = {
-    'kana/vim-textobj-user',
-  }},
+  {
+    'kana/vim-textobj-lastpat',
+    dependencies = {
+      'kana/vim-textobj-user',
+    }
+  },
   -- dac
-  { 'glts/vim-textobj-comment', dependencies = {
-    'kana/vim-textobj-user',
-  }},
+  {
+    'glts/vim-textobj-comment',
+    dependencies = {
+      'kana/vim-textobj-user',
+    }
+  },
   -- da, delete function parameter
-  { 'sgur/vim-textobj-parameter', dependencies = {
-    'kana/vim-textobj-user',
-  }},
+  {
+    'sgur/vim-textobj-parameter',
+    dependencies = {
+      'kana/vim-textobj-user',
+    }
+  },
   -- dax, delete xml attr
-  { 'whatyouhide/vim-textobj-xmlattr', dependencies = {
-    'kana/vim-textobj-user',
-  }},
+  {
+    'whatyouhide/vim-textobj-xmlattr',
+    dependencies = {
+      'kana/vim-textobj-user',
+    }
+  },
 
   -- lsp
   "williamboman/mason.nvim",
@@ -155,3 +205,12 @@ require('plugins.lazygit')
 require('plugins.cmp')
 require('plugins.lsp')
 require('plugins.treesitter')
+require('plugins.diffview')
+require('plugins.windowswap')
+require('plugins.emmet')
+require('plugins.winresizer')
+require('plugins.ranger')
+require('plugins.telescope')
+require('plugins.fzf')
+require('plugins.conform')
+require('plugins.nvim-lint')
