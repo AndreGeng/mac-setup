@@ -1,0 +1,7 @@
+require("global-var")
+require("options")
+require("keymaps")
+require("functions.quickfix")
+require("functions.navigate")
+require("autocmd")
+require("plugins")
