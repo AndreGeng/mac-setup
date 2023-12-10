@@ -16,7 +16,7 @@ au CursorHold,CursorHoldI,FocusGained * :checktime
 " folding
 augroup folding
   au!
-  au FileType git,javascript,javascript.jsx,typescript,typescript.tsx,go setlocal foldmethod=indent
+  au FileType git,javascript,javascript.jsx,typescript,typescriptreact,go setlocal foldmethod=indent
   au FileType zsh,vim setlocal foldmethod=marker
 augroup END
 
@@ -36,7 +36,6 @@ autocmd BufEnter *.wxss :setlocal filetype=css
 autocmd BufEnter *.md,*.mdx :setlocal filetype=markdown
 autocmd BufEnter *.jsx :setlocal filetype=javascript.jsx
 autocmd BufEnter *.js :setlocal filetype=javascript
-autocmd BufEnter *.tsx :setlocal filetype=typescript.tsx
 autocmd BufEnter *.ts :setlocal filetype=typescript
 autocmd BufEnter *.json :setlocal filetype=jsonc
 
@@ -55,8 +54,6 @@ Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
-Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
-Plug 'JoosepAlviste/nvim-ts-context-commentstring'
 Plug 'w0rp/ale'
 Plug 'Chiel92/vim-autoformat'
 Plug 'nelstrom/vim-visual-star-search'
@@ -68,7 +65,6 @@ Plug 'simeji/winresizer'
 Plug 'wesQ3/vim-windowswap'
 " lua functions utils
 Plug 'sindrets/diffview.nvim'
-Plug 'bash-lsp/bash-language-server'
 call plug#end()
 " }}}
 
@@ -154,14 +150,14 @@ let g:ale_linters = {
       \  'javascript': ['eslint'],
       \  'javascript.jsx': ['eslint'],
       \  'typescript': ['eslint'],
-      \  'typescript.tsx': ['eslint'],
+      \  'typescriptreact': ['eslint'],
       \  'sh': ['language_server'],
       \}
 let g:ale_fixers = {
       \   'javascript': ['eslint', 'prettier'],
       \   'javascript.jsx': ['eslint', 'prettier'],
       \   'typescript': ['eslint', 'prettier'],
-      \   'typescript.tsx': ['eslint', 'prettier'],
+      \   'typescriptreact': ['eslint', 'prettier'],
       \   'json': ['prettier'],
       \   'jsonc': ['prettier'],
       \   'css': ['prettier'],
@@ -230,23 +226,6 @@ tnoremap <A-f> fzf_select
 
 " Make Ranger to be hidden after picking a file
 let g:rnvimr_enable_picker = 1
-" nvim-treesitter
-lua <<EOF
-require'nvim-treesitter.configs'.setup {
-ensure_installed = { "typescript", "javascript", "bash", "go", "comment", "css", "html", "http", "jsdoc", "json", "json5", "lua", "pug", "scss", "rust", "svelte", "tsx", "vim", "vue", "yaml" }, -- one of "all", "maintained" (parsers with maintainers), or a list of languages
-  ignore_install = {}, -- List of parsers to ignore installing
-  highlight = {
-    enable = false,              -- false will disable the whole extension
-    disable = {},  -- list of language that will be disabled
-  },
-  indent = {
-    enable = true,
-    disable = { 'python', 'c'}
-  }
-}
-require'nvim-treesitter.configs'.setup {}
-vim.g.skip_ts_context_commentstring_module = true
-EOF
 
 " diffview
 nnoremap <leader>dh :DiffviewFileHistory<CR>

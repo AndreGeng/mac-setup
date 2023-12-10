@@ -28,7 +28,7 @@ end
 -- Setup lspconfig.
 local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
 -- Enable the following language servers
-local servers = { 'tsserver', 'lua_ls', 'emmet_language_server' }
+local servers = { 'tsserver', 'lua_ls', 'emmet_language_server', 'bashls', 'html' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,

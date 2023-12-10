@@ -59,13 +59,6 @@ require("lazy").setup({
   -- gitgutter
   'lewis6991/gitsigns.nvim',
 
-  -- syntax
-  'pangloss/vim-javascript',
-  'leafgarland/typescript-vim',
-  'othree/html5.vim',
-  -- Vim syntax and indent plugin for .vue files
-  'leafOfTree/vim-vue-plugin',
-
   -- basic
   'tpope/vim-dotenv',
   'editorconfig/editorconfig-vim',
@@ -85,6 +78,13 @@ require("lazy").setup({
   'pechorin/any-jump.vim',
   -- a smooth scrolling neovim plugin written in lua
   'karb94/neoscroll.nvim',
+  -- Neovim setup for init.lua and plugin development with full signature help, docs and completion for the nvim lua API.
+  'folke/neodev.nvim',
+  {
+    "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate",
+  },
+  'JoosepAlviste/nvim-ts-context-commentstring',
 
   -- extend text objects
   -- Vim plugin that provides additional text objects
@@ -136,7 +136,8 @@ require("lazy").setup({
 
 vim.keymap.set('n', '<C-t>', ':call GoBackToRecentBuffer()<cr>', { noremap = true })
 
-
+-- for lua, IMPORTANT: make sure to setup neodev BEFORE lspconfig
+require('plugins.neodev')
 require('plugins.oil')
 require('plugins.floaterm')
 require('plugins.gv')
@@ -153,3 +154,4 @@ require('plugins.tmux-navigator')
 require('plugins.lazygit')
 require('plugins.cmp')
 require('plugins.lsp')
+require('plugins.treesitter')
