@@ -1,4 +1,4 @@
-require'nvim-tree'.setup {
+require 'nvim-tree'.setup {
   hijack_directories = {
     enable = false
   },
@@ -6,6 +6,9 @@ require'nvim-tree'.setup {
     width = 50,
     side = 'right',
   },
+  filesystem_watchers = {
+    enable = false,
+  }
 }
 
 local function open_nvim_tree()

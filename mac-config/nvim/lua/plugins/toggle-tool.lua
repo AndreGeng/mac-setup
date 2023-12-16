@@ -1,7 +1,4 @@
--- vim.api.nvim_create_user_command('LAZYGIT',  'FloatermNew --height=0.99 --name=lazygit lazygit', {})
-
--- vim.keymap.set('n', '<C-a>', ':LAZYGIT<cr>', { noremap = true })
-
+-- using FloatermToggle to show 'lazygit'/'ranger'
 -- @see https://github.com/voldikss/vim-floaterm/issues/243
 vim.cmd([[
   function! GetBufnrUnnamed() abort
@@ -27,7 +24,7 @@ vim.cmd([[
         call floaterm#run('new', 0, [visualmode(), 0, 0, 0], '')
       else
         call floaterm#run('new', 0, [visualmode(), 0, 0, 0],
-          \ printf('--title=%s($1/$2) --name=%s %s', a:tool, a:tool, a:tool))
+          \ printf('--height=0.99 --title=%s($1/$2) --name=%s %s', a:tool, a:tool, a:tool))
       endif
     else
       call floaterm#toggle(0, a:count ? a:count : bufnr, '')
@@ -41,4 +38,6 @@ vim.cmd([[
   command! -nargs=? -count=0 ToggleTool call ToggleTool(<q-args>, <count>)
   nnoremap <silent> <C-a> <Cmd>execute v:count . 'ToggleTool lazygit'<CR>
   tnoremap <silent> <C-a> <Cmd>execute v:count . 'ToggleTool lazygit'<CR>
+  nnoremap <silent> <leader>r <Cmd>execute v:count . 'ToggleTool ranger'<CR>
+  tnoremap <silent> <leader>r <Cmd>execute v:count . 'ToggleTool ranger'<CR>
   ]])

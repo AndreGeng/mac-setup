@@ -18,3 +18,4 @@ ln -sf $(realpath_osx $(dirname "$0"))/mac-config/.zshrc ~/
 ln -sf $(realpath_osx $(dirname "$0"))/mac-config/.p10k.zsh ~/
 ln -sf $(realpath_osx $(dirname "$0"))/mac-config/.tmux.conf ~/
 ln -sf $(realpath_osx $(dirname "$0"))/mac-config/.agignore ~/
+ln -sf $(realpath_osx $(dirname "$0"))/mac-config/lazygit/config.yml ~/Library/Application\ Support/jesseduffield/lazygit/

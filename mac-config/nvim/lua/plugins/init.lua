@@ -30,8 +30,6 @@ require("lazy").setup({
 
   -- All the lua functions I don't want to write twice
   'nvim-lua/plenary.nvim',
-  -- Rnvimr is a NeoVim plugin that allows you to use Ranger in a floating window.
-  'kevinhwang91/rnvimr',
   -- resize window
   {
     'simeji/winresizer',
@@ -81,7 +79,14 @@ require("lazy").setup({
   { 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' },
   { 'junegunn/fzf',                             dir = '~/.fzf',                                                                                                                        build = './install --all' },
   'junegunn/fzf.vim',
-
+  {
+    "pmizio/typescript-tools.nvim",
+    dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
+    opts = {},
+    config = function()
+      require("plugins.typescript-tools")
+    end
+  },
 
   -- basic
   'tpope/vim-dotenv',
@@ -100,8 +105,6 @@ require("lazy").setup({
   'tpope/vim-surround',
   -- find definition and reference
   'pechorin/any-jump.vim',
-  -- a smooth scrolling neovim plugin written in lua
-  'karb94/neoscroll.nvim',
   -- Neovim setup for init.lua and plugin development with full signature help, docs and completion for the nvim lua API.
   'folke/neodev.nvim',
   {
@@ -194,14 +197,13 @@ require('plugins.gv')
 require('plugins.ack')
 require('plugins.hop')
 require('plugins.colorizer')
-require('plugins.neoscroll')
 require('plugins.close-buffers')
 require('plugins.nvim-tree')
 require('plugins.gitsigns')
 require('plugins.which-key')
 require('plugins.qf-enter')
 require('plugins.tmux-navigator')
-require('plugins.lazygit')
+require('plugins.toggle-tool')
 require('plugins.cmp')
 require('plugins.lsp')
 require('plugins.treesitter')
@@ -209,7 +211,6 @@ require('plugins.diffview')
 require('plugins.windowswap')
 require('plugins.emmet')
 require('plugins.winresizer')
-require('plugins.ranger')
 require('plugins.telescope')
 require('plugins.fzf')
 require('plugins.conform')

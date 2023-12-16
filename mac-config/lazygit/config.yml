@@ -1,0 +1,19 @@
+gui:
+  language: "en"
+quitOnTopLevelReturn: false
+refresher:
+  refreshInterval: 1 # file/submodule refresh interval in seconds
+  fetchInterval: 60 # re-fetch interval in seconds
+keybinding:
+  commits:
+    moveDownCommit: "<c-j>" # move commit down one
+    moveUpCommit: "<c-k>" # move commit up on
+git:
+  pull:
+    mode: "rebase"
+  paging:
+    colorArg: always
+    pager: delta --dark --line-numbers --paging never --diff-so-fancy
+os:
+  editPreset: "nvim"
+promptToReturnFromSubprocess: false
