@@ -69,12 +69,22 @@ require("lazy").setup({
   'kyazdani42/nvim-web-devicons',
   -- gitgutter
   'lewis6991/gitsigns.nvim',
+
+  -- find&replace
+  'nvim-pack/nvim-spectre',
+
   -- fuzzy find
   {
     'nvim-telescope/telescope.nvim',
     dependencies = {
-      'nvim-lua/plenary.nvim'
-    }
+      'nvim-lua/plenary.nvim',
+      {
+        "nvim-telescope/telescope-live-grep-args.nvim",
+        -- This will not install any breaking changes.
+        -- For major updates, this must be adjusted manually.
+        version = "^1.0.0",
+      },
+    },
   },
   { 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' },
   { 'junegunn/fzf',                             dir = '~/.fzf',                                                                                                                        build = './install --all' },
@@ -216,3 +226,4 @@ require('plugins.fzf')
 require('plugins.conform')
 require('plugins.nvim-lint')
 require('plugins.colorscheme')
+require('plugins.spectre')
