@@ -72,6 +72,7 @@ require("lazy").setup({
 
   -- find&replace
   'nvim-pack/nvim-spectre',
+  'junegunn/vim-easy-align',
 
   -- fuzzy find
   {
@@ -227,3 +228,4 @@ require('plugins.conform')
 require('plugins.nvim-lint')
 require('plugins.colorscheme')
 require('plugins.spectre')
+require('plugins.easy-align')
