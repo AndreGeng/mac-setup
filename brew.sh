@@ -11,6 +11,7 @@ brewI coreutils
 brewI nginx
 brewI shfmt
 brewI ranger
+brewI cmake
 
 # brew installs
 

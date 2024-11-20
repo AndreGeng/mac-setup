@@ -9,11 +9,13 @@ brewI openssl
 brewI xz
 brewI the_silver_searcher
 brewI ripgrep
-brew tap homebrew/cask-fonts
+brewI ack
 brewI font-hack-nerd-font
+brewI lua-language-server
+brew tap homebrew/cask-fonts
 
 log 'install vim-plug' $GREEN
-curl -x http://localhost:1087 -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
+curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
   https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 # install python3 and neovim python3 provider
 log 'install pyenv' $GREEN

@@ -16,4 +16,4 @@ brewI yarn
 brewI svn
 # install zinit
 log "installing zinit" $GREEN
-sh -c "$(curl -x http://localhost:1087 -fsSL https://raw.githubusercontent.com/zdharma/zinit/master/doc/install.sh)"
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/zdharma/zinit/master/doc/install.sh)"
