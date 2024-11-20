@@ -16,4 +16,7 @@ npm install -g prettier    # also for code format
 npm install -g typescript
 npm install -g javascript-typescript-langserver
 npm install -g bash-language-server
+npm install -g typescript-language-server
+npm install -g @olrtg/emmet-language-server
+npm install -g eslint_d
 sudo ln -s "$(which node)" /usr/local/bin/node
