@@ -125,7 +125,6 @@ zinit snippet OMZ::plugins/vi-mode/vi-mode.plugin.zsh
 zinit snippet OMZ::plugins/colored-man-pages/colored-man-pages.plugin.zsh
 zinit snippet OMZ::plugins/autojump/autojump.plugin.zsh
 zinit ice svn
-zinit snippet OMZ::lib
 zinit ice depth=1; zinit light romkatv/powerlevel10k
 zinit load zsh-users/zsh-syntax-highlighting
 zinit load zsh-users/zsh-history-substring-search

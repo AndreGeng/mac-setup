@@ -1,6 +1,6 @@
 #!/bin/bash
 for f in $(dirname "$0")/utils/*.sh; do
-    source $f
+  source $f
 done
 # install node with nvm
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | zsh
@@ -12,7 +12,8 @@ nvm install --lts
 # 采用当前环境下的node(最新的lts版本)为default版本
 nvm alias default node
 npm install -g js-beautify # vim autoformat json
-npm install -g prettier # also for code format
+npm install -g prettier    # also for code format
 npm install -g typescript
 npm install -g javascript-typescript-langserver
+npm install -g bash-language-server
 sudo ln -s "$(which node)" /usr/local/bin/node
