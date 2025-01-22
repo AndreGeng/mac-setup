@@ -1,5 +1,5 @@
 -- setup nvim-cmp
-local cmp = require'cmp'
+local cmp = require 'cmp'
 
 cmp.setup({
   snippet = {
@@ -24,22 +24,27 @@ cmp.setup({
     -- Set `select` to `false` to only confirm explicitly selected items.
     ['<CR>'] = cmp.mapping.confirm({ select = true }),
     ["<C-n>"] = cmp.mapping(function()
-        if cmp.visible() then
-            cmp.select_next_item()
-        else
-            cmp.complete()
-        end
+      if cmp.visible() then
+        cmp.select_next_item()
+      else
+        cmp.complete()
+      end
     end, { 'i', 'c' }),
     ["<C-p>"] = cmp.mapping(function()
-        if cmp.visible() then
-            cmp.select_prev_item()
-        else
-            cmp.complete()
-        end
+      if cmp.visible() then
+        cmp.select_prev_item()
+      else
+        cmp.complete()
+      end
     end, { 'i', 'c' }),
   },
   sources = cmp.config.sources({
-    { name = 'nvim_lsp' },
+    {
+      name = 'nvim_lsp',
+      entry_filter = function(entry, ctx)
+        return require('cmp.types').lsp.CompletionItemKind[entry:get_kind()] ~= 'Text'
+      end
+    },
     { name = 'vsnip' }, -- For vsnip users.
     -- { name = 'luasnip' }, -- For luasnip users.
     -- { name = 'ultisnips' }, -- For ultisnips users.
@@ -64,4 +69,3 @@ cmp.setup.cmdline(':', {
     { name = 'cmdline' }
   })
 })
-
