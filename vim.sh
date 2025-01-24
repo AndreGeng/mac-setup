@@ -29,12 +29,20 @@ eval "$(pyenv virtualenv-init -)"
 
 unset ALL_PROXY
 if test ! "$(pyenv versions | grep 'neovim2')"; then
-  yes | (v=2.7.18;mkdir -p ~/.pyenv/cache && cd $_ && curl -L -O "https://npm.taobao.org/mirrors/python/$v/Python-$v.tar.xz";pyenv install "$v")
+  yes | (
+    v=2.7.18
+    mkdir -p ~/.pyenv/cache && cd $_ && curl -L -O "https://npm.taobao.org/mirrors/python/$v/Python-$v.tar.xz"
+    pyenv install "$v"
+  )
   pyenv virtualenv -f 2.7.18 neovim2
 fi
 if test ! "$(pyenv versions | grep 'neovim3')"; then
-  yes | (v=3.8.5;mkdir -p ~/.pyenv/cache && cd $_ && curl -L -O "https://npm.taobao.org/mirrors/python/$v/Python-$v.tar.xz";pyenv install "$v")
-  pyenv virtualenv -f 3.8.5 neovim3
+  yes | (
+    v=3.9.1
+    mkdir -p ~/.pyenv/cache && cd $_ && curl -L -O "https://npm.taobao.org/mirrors/python/$v/Python-$v.tar.xz"
+    pyenv install "$v"
+  )
+  pyenv virtualenv -f 3.9.1 neovim3
 fi
 
 pyenv activate neovim2
