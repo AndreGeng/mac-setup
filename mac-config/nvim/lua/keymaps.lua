@@ -15,7 +15,8 @@ vim.keymap.set('n', '<leader>q', ':q<cr>', { noremap = true })
 
 -- Fast eval
 vim.keymap.set('n', '<leader>en', ':w !node<cr>', { noremap = true })
-vim.keymap.set('n', '<leader>em', ':w !node --experimental-modules --input-type=module --es-module-specifier-resolution=node<cr>', { noremap = true })
+vim.keymap.set('n', '<leader>em',
+  ':w !node --experimental-modules --input-type=module --es-module-specifier-resolution=node<cr>', { noremap = true })
 vim.keymap.set('n', '<leader>et', ':w !ts-node<cr>', { noremap = true })
 
 -- Git shortcut
@@ -51,4 +52,3 @@ vim.keymap.set('n', '<leader>l', ':call ToggleList("Location", "l")<cr>', { nore
 
 -- <C-t>: go back to previous buffer
 vim.keymap.set('n', '<C-t>', ':call GoBackToRecentBuffer()<cr>', { noremap = true })
-

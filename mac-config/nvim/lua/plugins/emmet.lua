@@ -1,11 +1,7 @@
--- emmet
-vim.keymap.set('i', '<tab>', '<plug>(emmet-expand-abbr)', { noremap = true })
--- useless
-vim.g.user_emmet_leader_key='<C-\\>'
--- enable emmet for ts/tsx
-vim.g.user_emmet_settings = {
-  typescript = {
-      extends = 'jsx',
+return {
+  -- emmet-vim is a vim plug-in which provides support for expanding abbreviations similar to emmet.
+  'mattn/emmet-vim',
+  keys = {
+    { '<tab>', '<plug>(emmet-expand-abbr)', mode = 'i', noremap = true }
   },
 }
-
