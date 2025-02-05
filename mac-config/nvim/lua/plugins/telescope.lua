@@ -19,7 +19,9 @@ return {
       require('telescope').load_extension('fzf')
       require("telescope").load_extension("live_grep_args")
 
-      vim.keymap.set('n', '<leader>ff', '<cmd>lua require("telescope.builtin").find_files()<cr>', { noremap = true })
+      vim.keymap.set('n', '<leader>ff',
+        '<cmd>lua require("telescope.builtin").find_files({ previewer = false })<cr>',
+        { noremap = true })
       vim.keymap.set('n', '<leader>fg', '<cmd>lua require("telescope").extensions.live_grep_args.live_grep_args()<cr>',
         { noremap = true })
       vim.keymap.set('n', '<leader>fb', '<cmd>lua require("telescope.builtin").buffers()<cr>', { noremap = true })
