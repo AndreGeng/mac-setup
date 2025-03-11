@@ -3,7 +3,7 @@ local on_attach = function(_, bufnr)
   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>rf', '<cmd>TSToolsRenameFile<CR>', opts)
   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>ri', '<cmd>TSToolsRemoveUnusedImports<CR>', opts)
   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>rs', '<cmd>TSToolsRemoveUnused<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>ai', '<cmd>TSToolsAddMissingImports<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>mi', '<cmd>TSToolsAddMissingImports<CR>', opts)
 end
 return {
   {

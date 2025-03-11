@@ -40,10 +40,13 @@ return {
           capabilities = capabilities,
           settings = {
             Lua = {
-                diagnostics = {
-                    globals = { 'vim' }
-                }
-            }
+              diagnostics = {
+                globals = { 'vim' }
+              }
+            },
+            typescript = {
+              tsserver = { maxTsServerMemory = 8192 }
+            },
           },
         }
       end

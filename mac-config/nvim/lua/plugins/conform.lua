@@ -35,7 +35,7 @@ return {
         require("conform").format({ bufnr = args.buf })
       end,
     })
-    vim.keymap.set({ "n", "v" }, "<leader>af", function()
+    vim.keymap.set({ "n", "v" }, "<leader>fa", function()
       require("conform").format({
         lsp_fallback = true,
         async = false,

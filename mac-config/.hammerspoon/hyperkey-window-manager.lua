@@ -12,7 +12,7 @@ end, nil)
 
 windowManagementModal.entered = function()
   if (indicator == -1) then
-    indicator = hs.alert.show('WM', 60*10);
+    indicator = hs.alert.show('WM', 60 * 10);
   end
 end
 
@@ -22,39 +22,94 @@ windowManagementModal.exited = function()
 end
 
 function resize_win(direction)
-    local win = hs.window.focusedWindow()
-    if win then
-        local f = win:frame()
-        local screen = win:screen()
-        local max = screen:frame()
-        local stepw = max.w/20
-        local steph = max.h/20
-        if direction == "right" then f.w = f.w+stepw end
-        if direction == "left" then f.w = f.w-stepw end
-        if direction == "up" then f.h = f.h-steph end
-        if direction == "down" then f.h = f.h+steph end
-        if direction == "halfright" then f.x = max.x + max.w/2 f.y = max.y f.w = max.w/2 f.h = max.h end
-        if direction == "halfleft" then f.x = max.x f.y = max.y f.w = max.w/2 f.h = max.h end
-        if direction == "halfup" then f.x = max.x f.y = max.y f.w = max.w f.h = max.h/2 end
-        if direction == "halfdown" then f.x = max.x f.y = max.y + max.h/2 f.w = max.w f.h = max.h/2 end
-        if direction == "cornerNE" then f.x = max.w/2 f.y = 0 f.w = max.w/2 f.h = max.h/2 end
-        if direction == "cornerSE" then f.x = max.w/2 f.y = max.h/2 f.w = max.w/2 f.h = max.h/2 end
-        if direction == "cornerNW" then f.x = 0 f.y = 0 f.w = max.w/2 f.h = max.h/2 end
-        if direction == "cornerSW" then f.x = 0 f.y = max.h/2 f.w = max.w/2 f.h = max.h/2 end
-        if direction == "center" then f.x = (max.w-f.w)/2 f.y = (max.h-f.h)/2 end
-        if direction == "fcenter" then f.x = stepw*5 f.y = steph*5 f.w = stepw*20 f.h = steph*20 end
-        if direction == "fullscreen" then f = max end
-        if direction == "shrink" then f.w = f.w-(stepw*2) f.h = f.h-(steph*2) end
-        if direction == "expand" then f.w = f.w+(stepw*2) f.h = f.h+(steph*2) end
-        if direction == "mright" then f.x = f.x+stepw end
-        if direction == "mleft" then f.x = f.x-stepw end
-        if direction == "mup" then f.y = f.y-steph end
-        if direction == "mdown" then f.y = f.y+steph end
-        win:setFrame(f)
-    else
-        hs.alert.show("No focused window!")
+  local win = hs.window.focusedWindow()
+  if win then
+    local f = win:frame()
+    local screen = win:screen()
+    local max = screen:frame()
+    local stepw = max.w / 20
+    local steph = max.h / 20
+    if direction == "right" then f.w = f.w + stepw end
+    if direction == "left" then f.w = f.w - stepw end
+    if direction == "up" then f.h = f.h - steph end
+    if direction == "down" then f.h = f.h + steph end
+    if direction == "halfright" then
+      f.x = max.x + max.w / 2
+      f.y = max.y
+      f.w = max.w / 2
+      f.h = max.h
     end
+    if direction == "halfleft" then
+      f.x = max.x
+      f.y = max.y
+      f.w = max.w / 2
+      f.h = max.h
+    end
+    if direction == "halfup" then
+      f.x = max.x
+      f.y = max.y
+      f.w = max.w
+      f.h = max.h / 2
+    end
+    if direction == "halfdown" then
+      f.x = max.x
+      f.y = max.y + max.h / 2
+      f.w = max.w
+      f.h = max.h / 2
+    end
+    if direction == "cornerNE" then
+      f.x = max.w / 2
+      f.y = 0
+      f.w = max.w / 2
+      f.h = max.h / 2
+    end
+    if direction == "cornerSE" then
+      f.x = max.w / 2
+      f.y = max.h / 2
+      f.w = max.w / 2
+      f.h = max.h / 2
+    end
+    if direction == "cornerNW" then
+      f.x = 0
+      f.y = 0
+      f.w = max.w / 2
+      f.h = max.h / 2
+    end
+    if direction == "cornerSW" then
+      f.x = 0
+      f.y = max.h / 2
+      f.w = max.w / 2
+      f.h = max.h / 2
+    end
+    if direction == "center" then
+      f.x = (max.w - f.w) / 2
+      f.y = (max.h - f.h) / 2
+    end
+    if direction == "fcenter" then
+      f.x = stepw * 5
+      f.y = steph * 5
+      f.w = stepw * 20
+      f.h = steph * 20
+    end
+    if direction == "fullscreen" then f = max end
+    if direction == "shrink" then
+      f.w = f.w - (stepw * 2)
+      f.h = f.h - (steph * 2)
+    end
+    if direction == "expand" then
+      f.w = f.w + (stepw * 2)
+      f.h = f.h + (steph * 2)
+    end
+    if direction == "mright" then f.x = f.x + stepw end
+    if direction == "mleft" then f.x = f.x - stepw end
+    if direction == "mup" then f.y = f.y - steph end
+    if direction == "mdown" then f.y = f.y + steph end
+    win:setFrame(f)
+  else
+    hs.alert.show("No focused window!")
+  end
 end
+
 windowManagementModal:bind({}, "K", function() resize_win('mup') end, nil, function() resize_win('mup') end)
 windowManagementModal:bind({}, "H", function() resize_win('mleft') end, nil, function() resize_win('mleft') end)
 windowManagementModal:bind({}, "L", function() resize_win('mright') end, nil, function() resize_win('mright') end)
@@ -69,8 +124,10 @@ windowManagementModal:bind({}, "D", function() resize_win('halfright') end, nil,
 
 -- toggle window within different monitor
 function sendWindowNextMonitor()
+  hs.alert.show("Next Monitor")
   local win = hs.window.focusedWindow()
   local nextScreen = win:screen():next()
   win:moveToScreen(nextScreen)
 end
+
 hyperKey:bind({}, ";", sendWindowNextMonitor, nil)

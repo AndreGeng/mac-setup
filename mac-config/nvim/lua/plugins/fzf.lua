@@ -8,6 +8,6 @@ return {
     vim.g.fzf_preview_window = {}
   end,
   keys = {
-    { '<leader>fa', ':call fzf#run(fzf#wrap({"source": "fd -i --type f --hidden -I"}))<cr>', noremap = true }
+    { '<leader>fi', ':call fzf#run(fzf#wrap({"source": "fd -i --type f --hidden -I"}))<cr>', noremap = true }
   }
 }
