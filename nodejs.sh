@@ -19,4 +19,5 @@ npm install -g bash-language-server
 npm install -g typescript-language-server
 npm install -g @olrtg/emmet-language-server
 npm install -g eslint_d
+npm install -g vscode-langservers-extracted
 sudo ln -s "$(which node)" /usr/local/bin/node
