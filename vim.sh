@@ -12,6 +12,7 @@ brewI ripgrep
 brewI ack
 brewI font-hack-nerd-font
 brewI lua-language-server
+brewI fzf
 brew tap homebrew/cask-fonts
 
 log 'install vim-plug' $GREEN

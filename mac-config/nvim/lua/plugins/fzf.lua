@@ -1,6 +1,6 @@
 return {
   'junegunn/fzf',
-  dir = '~/.fzf',
+  -- dir = '~/.fzf',
   build = './install --all',
   init = function()
     vim.keymap.set('n', '<leader>fo', ':Files<cr>', { noremap = true })
