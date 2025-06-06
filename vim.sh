@@ -13,16 +13,10 @@ brewI ack
 brewI font-hack-nerd-font
 brewI lua-language-server
 brewI fzf
-brew tap homebrew/cask-fonts
+brewI pyenv
+brewI pyenv-virtualenv
 
-log 'install vim-plug' $GREEN
-curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
-  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 # install python3 and neovim python3 provider
-log 'install pyenv' $GREEN
-if test ! "$(which pyenv)"; then
-  curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | zsh
-fi
 
 export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
@@ -32,7 +26,7 @@ unset ALL_PROXY
 if test ! "$(pyenv versions | grep 'neovim2')"; then
   yes | (
     v=2.7.18
-    mkdir -p ~/.pyenv/cache && cd $_ && curl -L -O "https://npm.taobao.org/mirrors/python/$v/Python-$v.tar.xz"
+    mkdir -p ~/.pyenv/cache && cd $_ && curl --insecure -L -O "https://npm.taobao.org/mirrors/python/$v/Python-$v.tar.xz"
     pyenv install "$v"
   )
   pyenv virtualenv -f 2.7.18 neovim2
@@ -40,7 +34,7 @@ fi
 if test ! "$(pyenv versions | grep 'neovim3')"; then
   yes | (
     v=3.9.1
-    mkdir -p ~/.pyenv/cache && cd $_ && curl -L -O "https://npm.taobao.org/mirrors/python/$v/Python-$v.tar.xz"
+    mkdir -p ~/.pyenv/cache && cd $_ && curl --insecure -L -O "https://npm.taobao.org/mirrors/python/$v/Python-$v.tar.xz"
     pyenv install "$v"
   )
   pyenv virtualenv -f 3.9.1 neovim3
