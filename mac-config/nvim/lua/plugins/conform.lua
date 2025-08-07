@@ -2,10 +2,14 @@ return {
   'stevearc/conform.nvim',
   opts = {
     formatters_by_ft = {
-      javascript = { "prettier" },
-      typescript = { "prettier" },
-      javascriptreact = { "prettier" },
-      typescriptreact = { "prettier" },
+      -- javascript = { "prettier" },
+      -- typescript = { "prettier" },
+      -- javascriptreact = { "prettier" },
+      -- typescriptreact = { "prettier" },
+      javascript = { "eslint_d" },
+      typescript = { "eslint_d" },
+      javascriptreact = { "eslint_d" },
+      typescriptreact = { "eslint_d" },
       svelte = { "prettier" },
       css = { "prettier" },
       html = { "prettier" },
@@ -21,7 +25,7 @@ return {
       if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then
         return
       end
-      return { timeout_ms = 500, lsp_format = "fallback" }
+      return { timeout_ms = 500, lsp_format = false }
     end
   },
   init = function()
@@ -37,7 +41,7 @@ return {
     })
     vim.keymap.set({ "n", "v" }, "<leader>fa", function()
       require("conform").format({
-        lsp_fallback = true,
+        lsp_fallback = false,
         async = false,
         timeout_ms = 500,
       })
