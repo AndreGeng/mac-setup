@@ -9,7 +9,24 @@ return {
   },
   {
     -- comment stuff out
-    'tpope/vim-commentary'
+    'numToStr/Comment.nvim',
+    dependencies = {
+      'JoosepAlviste/nvim-ts-context-commentstring',
+    },
+    config = function()
+      require('Comment').setup {
+        pre_hook = require('ts_context_commentstring.integrations.comment_nvim').create_pre_hook(),
+        padding = true,
+        sticky = true,
+        ignore = nil,
+        toggler = {
+          ---Line-comment toggle keymap
+          line = 'gcc',
+          ---Block-comment toggle keymap
+          block = 'gbc',
+        },
+      }
+    end
   },
   {
     -- common used mappings [q,]q fro :cnext, :cprevious
@@ -46,7 +63,13 @@ return {
   },
   {
     -- A Neovim plugin for setting the commentstring option based on the cursor location in the file.
+    -- Need to run "TSInstall tsx" to ensure parser exist
     'JoosepAlviste/nvim-ts-context-commentstring',
+    config = function()
+      require('ts_context_commentstring').setup {
+        enable_autocmd = false,
+      }
+    end
   },
   {
     -- extend text objects
