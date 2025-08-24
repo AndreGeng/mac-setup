@@ -1,5 +1,7 @@
 -- setup nvim with python support (using mise for version management)
 if vim then
+  -- Prepend mise shims to PATH
+  vim.env.PATH = vim.env.HOME .. "/.local/share/mise/shims:" .. vim.env.PATH
   -- 设置Python解释器路径
   vim.g.python_host_prog = os.getenv("HOME") .. '/.local/share/mise/envs/neovim2/bin/python'
   vim.g.python3_host_prog = os.getenv("HOME") .. '/.local/share/mise/envs/neovim3/bin/python'

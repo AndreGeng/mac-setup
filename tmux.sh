@@ -4,11 +4,8 @@ for f in $(dirname "$0")/utils/*.sh; do
 done
 
 brewI tmux
-
-curl -sSL https://get.rvm.io | bash -s stable
-source ~/.rvm/scripts/rvm
-rvm install ruby --latest
-rvm --default use ruby
-
+brewI mise
 brewI reattach-to-user-namespace
-sudo gem install tmuxinator
+brewI tmuxinator
+
+mise use ruby
