@@ -67,6 +67,9 @@ return {
           ghost_text = true
         }
       }
-    end
+    end,
+    dependencies = {
+      "tailwind-tools"
+    }
   },
 }

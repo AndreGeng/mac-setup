@@ -12,6 +12,7 @@ brewI nginx
 brewI shfmt
 brewI ranger
 brewI cmake
+brewI mise
 
 # brew installs
 

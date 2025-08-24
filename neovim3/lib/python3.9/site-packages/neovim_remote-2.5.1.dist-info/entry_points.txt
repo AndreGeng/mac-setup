@@ -1,0 +1,2 @@
+[console_scripts]
+nvr = nvr.nvr:main
