@@ -12,7 +12,7 @@ done
 ./vim.sh
 # tmux config
 ./tmux.sh
-# install node with nvm
+# install node with mise
 ./nodejs.sh
 # homebrew
 ./brew.sh

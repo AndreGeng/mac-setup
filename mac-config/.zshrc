@@ -206,4 +206,4 @@ zinit light-mode for \
 
 ### End of Zinit's installer chunk
 #
-eval "$(~/.local/bin/mise activate zsh)"
+eval "$($(which mise) activate zsh)"
