@@ -24,9 +24,9 @@ brew install --cask --force karabiner-elements
 brew install --cask --force iterm2
 brew install --cask --force hammerspoon
 brew install --cask --force visual-studio-code
-brew install --cask --force gas-mask # host管理
 brew install --cask --force shadowsocksx-ng
 brew install --cask --force alfred
+brew install --cask --force snipaste
 # brew install --cask docker
 # brew install --cask charles
 # apps

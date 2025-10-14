@@ -25,7 +25,7 @@ setopt    incappendhistory  #Immediately append to the history file, not just wh
 # Basic Environment Vars {{{
 
 export ZSH_DISABLE_COMPFIX=true
-export PATH="$PATH:/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH="$PATH:/usr/bin:/bin:/usr/sbin:/sbin"
 export EDITOR=nvim
 export LC_CTYPE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
@@ -68,6 +68,7 @@ export PATH="$PATH:/Applications/SourceTree.app/Contents/Resources/stree"
 # HomeBrew
 export PATH="/usr/local/bin:$PATH"
 export PATH="/usr/local/sbin:$PATH"
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
 # HomeBrew END
 #
 
@@ -175,7 +176,7 @@ zstyle :bracketed-paste-magic paste-finish pastefinish
 # zprof
 
 # pnpm
-export PNPM_HOME="/Users/admin/Library/pnpm"
+export PNPM_HOME="/Users/mac/.pnpm-global"
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
@@ -184,6 +185,7 @@ esac
 
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH="$PATH:$HOME/.rvm/bin"
+export PATH="$PATH:$PNPM_HOME/bin"
 
 # Load a few important annexes, without Turbo
 # (this is currently required for annexes)
@@ -206,4 +208,4 @@ zinit light-mode for \
 
 ### End of Zinit's installer chunk
 #
-eval "$($(which mise) activate zsh)"
+eval "$(mise activate zsh)"
