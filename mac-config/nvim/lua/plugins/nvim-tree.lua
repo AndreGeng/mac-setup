@@ -24,6 +24,6 @@ return {
   end,
   keys = {
     { '<leader>ef', ':NvimTreeFindFile<cr>', noremap = true },
-    { '<leader>ee', ':NvimTreeToggle<cr>', noremap = true },
+    { '<leader>ee', ':NvimTreeToggle<cr>',   noremap = true },
   },
 }
