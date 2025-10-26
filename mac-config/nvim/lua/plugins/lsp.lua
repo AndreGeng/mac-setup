@@ -3,7 +3,6 @@ return {
     'williamboman/mason.nvim',
     opts = {},
     init = function()
-      local nvim_lsp = require 'lspconfig'
       local on_attach = function(_, bufnr)
         vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
@@ -33,9 +32,10 @@ return {
       -- Setup lspconfig.
       local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
       -- Enable the following language servers
-      local servers = { 'ts_ls', 'lua_ls', 'emmet_language_server', 'bashls', 'html' }
+      local servers = { 'eslint_d', 'ts_ls', 'lua_ls', 'emmet_language_server', 'bashls', 'html', 'copilot' }
       for _, lsp in ipairs(servers) do
-        nvim_lsp[lsp].setup {
+        vim.lsp.enable(lsp)
+        vim.lsp.config(lsp, {
           on_attach = on_attach,
           capabilities = capabilities,
           settings = {
@@ -48,7 +48,7 @@ return {
               tsserver = { maxTsServerMemory = 8192 }
             },
           },
-        }
+        })
       end
     end,
   },

@@ -27,6 +27,7 @@ brew install --cask --force visual-studio-code
 brew install --cask --force shadowsocksx-ng
 brew install --cask --force alfred
 brew install --cask --force snipaste
+brew install --cask --force caffeine
 # brew install --cask docker
 # brew install --cask charles
 # apps
