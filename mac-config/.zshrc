@@ -209,3 +209,5 @@ zinit light-mode for \
 ### End of Zinit's installer chunk
 #
 eval "$(mise activate zsh)"
+
+. "$HOME/.local/bin/env"

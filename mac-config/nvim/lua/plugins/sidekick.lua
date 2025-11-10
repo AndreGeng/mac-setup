@@ -11,6 +11,7 @@ return {
         micode = {
           cmd = { "micode" },
         },
+        cursor = { cmd = { "cursor-agent" } }
       },
     },
   },
@@ -28,7 +29,7 @@ return {
     },
     {
       "<leader>tt",
-      function() require("sidekick.cli").toggle({ name = "micode" }) end,
+      function() require("sidekick.cli").toggle({ name = "cursor" }) end,
       desc = "Sidekick Toggle CLI",
     },
     {
