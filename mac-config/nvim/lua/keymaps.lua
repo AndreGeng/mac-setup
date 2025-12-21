@@ -61,24 +61,120 @@ vim.keymap.set('n', '<leader>ft', function()
     return
   end
 
+  -- 临时禁用 Conform 自动格式化，避免保存时触发格式化失败
+  local was_disabled = vim.g.disable_autoformat
+  vim.g.disable_autoformat = true
+  
   -- 保存文件
   vim.cmd('write')
+  
+  -- 恢复 Conform 自动格式化状态
+  vim.g.disable_autoformat = was_disabled
 
-  -- 执行 biome format
-  vim.fn.jobstart({ 'npx', '@biomejs/biome', 'format', '--write', filepath }, {
+  -- 使用 Prettier 进行临时格式化（不依赖配置文件）
+  local file_content = vim.fn.readfile(filepath)
+  local file_text = table.concat(file_content, '\n')
+  
+  -- 根据文件扩展名确定 Prettier 的 parser
+  local file_ext = vim.fn.fnamemodify(filepath, ':e'):lower()
+  local parser_map = {
+    js = 'babel',
+    jsx = 'babel',
+    ts = 'typescript',
+    tsx = 'typescript',
+    json = 'json',
+    css = 'css',
+    scss = 'scss',
+    less = 'less',
+    html = 'html',
+    htm = 'html',
+    xml = 'html',
+    md = 'markdown',
+    yaml = 'yaml',
+    yml = 'yaml',
+    graphql = 'graphql',
+    vue = 'vue',
+    svelte = 'svelte',
+  }
+  
+  local parser = parser_map[file_ext]
+  
+  -- 如果没有找到对应的 parser，尝试根据文件内容自动检测
+  if not parser then
+    -- 移除首尾空白后检查
+    local trimmed = file_text:gsub('^%s+', ''):gsub('%s+$', '')
+    if trimmed and #trimmed > 0 then
+      local first_char = trimmed:sub(1, 1)
+      -- 检查是否是 JSON（以 { 或 [ 开头）
+      if first_char == '{' or first_char == '[' then
+        parser = 'json'
+      -- 检查是否是 HTML
+      elseif first_char == '<' and (trimmed:match('<!DOCTYPE') or trimmed:match('<html') or trimmed:match('<div')) then
+        parser = 'html'
+      -- 检查是否是 Markdown（以 # 开头）
+      elseif trimmed:match('^#+%s') then
+        parser = 'markdown'
+      -- 检查是否是 YAML（以 --- 或 key: 开头）
+      elseif trimmed:match('^%-%-%-') or trimmed:match('^[%w_]+%s*:') then
+        parser = 'yaml'
+      else
+        -- 默认使用 babel（JavaScript）
+        parser = 'babel'
+      end
+    else
+      parser = 'babel'
+    end
+  end
+  
+  local error_output = {}
+  local formatted_output = {}
+  
+  -- 使用 stdin/stdout 方式，Prettier 不需要配置文件也能工作
+  local job_id = vim.fn.jobstart({ 'npx', '--yes', 'prettier', '--stdin-filepath', filepath, '--parser', parser }, {
+    stdin = 'pipe',
+    stdout_buffered = true,
+    stderr_buffered = true,
+    on_stdout = function(_, data)
+      if data and #data > 0 then
+        for _, line in ipairs(data) do
+          if line and line ~= '' then
+            table.insert(formatted_output, line)
+          end
+        end
+      end
+    end,
     on_exit = function(_, exit_code)
       if exit_code == 0 then
-        vim.notify('Biome 格式化完成', vim.log.levels.INFO, { title = 'Biome' })
-        -- 重新加载文件
-        vim.cmd('edit')
+        -- 将格式化后的内容写回文件
+        if #formatted_output > 0 then
+          local formatted_text = table.concat(formatted_output, '\n')
+          -- Prettier 会自动处理末尾换行符，保持原文件的换行符风格
+          vim.fn.writefile(vim.split(formatted_text, '\n'), filepath)
+          vim.notify('Prettier 格式化完成', vim.log.levels.INFO, { title = 'Prettier' })
+          -- 重新加载文件
+          vim.cmd('edit')
+        else
+          vim.notify('Prettier 格式化完成（无变化）', vim.log.levels.INFO, { title = 'Prettier' })
+        end
       else
-        vim.notify('Biome 格式化失败 (退出码: ' .. exit_code .. ')', vim.log.levels.ERROR, { title = 'Biome' })
+        local error_msg = #error_output > 0 and table.concat(error_output, '\n') or ('退出码: ' .. exit_code)
+        vim.notify('Prettier 格式化失败:\n' .. error_msg, vim.log.levels.ERROR, { title = 'Prettier', timeout = 5000 })
       end
     end,
     on_stderr = function(_, data)
       if data and #data > 0 then
-        vim.notify('Biome 错误: ' .. table.concat(data, ' '), vim.log.levels.ERROR, { title = 'Biome' })
+        for _, line in ipairs(data) do
+          if line and line ~= '' then
+            table.insert(error_output, line)
+          end
+        end
       end
     end,
   })
-end, { desc = 'Format file with Biome' })
+  
+  -- 通过管道发送文件内容
+  if job_id > 0 then
+    vim.fn.chansend(job_id, file_text)
+    vim.fn.chanclose(job_id, 'stdin')
+  end
+end, { desc = 'Format file with Prettier (temporary, no config)' })
