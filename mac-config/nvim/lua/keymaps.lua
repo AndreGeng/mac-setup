@@ -52,3 +52,33 @@ vim.keymap.set('n', '<leader>l', ':call ToggleList("Location", "l")<cr>', { nore
 
 -- <C-t>: go back to previous buffer
 vim.keymap.set('n', '<C-t>', ':call GoBackToRecentBuffer()<cr>', { noremap = true })
+
+-- Format with Biome (使用 <leader>ft 避免与 telescope buffers 冲突)
+vim.keymap.set('n', '<leader>ft', function()
+  local filepath = vim.api.nvim_buf_get_name(0)
+  if filepath == '' then
+    vim.notify('当前文件未保存，无法格式化', vim.log.levels.WARN)
+    return
+  end
+
+  -- 保存文件
+  vim.cmd('write')
+
+  -- 执行 biome format
+  vim.fn.jobstart({ 'npx', '@biomejs/biome', 'format', '--write', filepath }, {
+    on_exit = function(_, exit_code)
+      if exit_code == 0 then
+        vim.notify('Biome 格式化完成', vim.log.levels.INFO, { title = 'Biome' })
+        -- 重新加载文件
+        vim.cmd('edit')
+      else
+        vim.notify('Biome 格式化失败 (退出码: ' .. exit_code .. ')', vim.log.levels.ERROR, { title = 'Biome' })
+      end
+    end,
+    on_stderr = function(_, data)
+      if data and #data > 0 then
+        vim.notify('Biome 错误: ' .. table.concat(data, ' '), vim.log.levels.ERROR, { title = 'Biome' })
+      end
+    end,
+  })
+end, { desc = 'Format file with Biome' })
