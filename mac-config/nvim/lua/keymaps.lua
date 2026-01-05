@@ -48,7 +48,7 @@ vim.keymap.set('n', '/', '/\\v', { noremap = true })
 
 -- toggle quickfixlist/locationlist
 vim.keymap.set('n', '<leader>k', ':call ToggleList("Quickfix", "c")<cr>', { noremap = true })
-vim.keymap.set('n', '<leader>l', ':call ToggleList("Location", "l")<cr>', { noremap = true })
+vim.keymap.set('n', '<leader>ll', ':call ToggleList("Location", "l")<cr>', { noremap = true })
 
 -- <C-t>: go back to previous buffer
 vim.keymap.set('n', '<C-t>', ':call GoBackToRecentBuffer()<cr>', { noremap = true })
@@ -64,17 +64,17 @@ vim.keymap.set('n', '<leader>ft', function()
   -- 临时禁用 Conform 自动格式化，避免保存时触发格式化失败
   local was_disabled = vim.g.disable_autoformat
   vim.g.disable_autoformat = true
-  
+
   -- 保存文件
   vim.cmd('write')
-  
+
   -- 恢复 Conform 自动格式化状态
   vim.g.disable_autoformat = was_disabled
 
   -- 使用 Prettier 进行临时格式化（不依赖配置文件）
   local file_content = vim.fn.readfile(filepath)
   local file_text = table.concat(file_content, '\n')
-  
+
   -- 根据文件扩展名确定 Prettier 的 parser
   local file_ext = vim.fn.fnamemodify(filepath, ':e'):lower()
   local parser_map = {
@@ -96,9 +96,9 @@ vim.keymap.set('n', '<leader>ft', function()
     vue = 'vue',
     svelte = 'svelte',
   }
-  
+
   local parser = parser_map[file_ext]
-  
+
   -- 如果没有找到对应的 parser，尝试根据文件内容自动检测
   if not parser then
     -- 移除首尾空白后检查
@@ -108,13 +108,13 @@ vim.keymap.set('n', '<leader>ft', function()
       -- 检查是否是 JSON（以 { 或 [ 开头）
       if first_char == '{' or first_char == '[' then
         parser = 'json'
-      -- 检查是否是 HTML
+        -- 检查是否是 HTML
       elseif first_char == '<' and (trimmed:match('<!DOCTYPE') or trimmed:match('<html') or trimmed:match('<div')) then
         parser = 'html'
-      -- 检查是否是 Markdown（以 # 开头）
+        -- 检查是否是 Markdown（以 # 开头）
       elseif trimmed:match('^#+%s') then
         parser = 'markdown'
-      -- 检查是否是 YAML（以 --- 或 key: 开头）
+        -- 检查是否是 YAML（以 --- 或 key: 开头）
       elseif trimmed:match('^%-%-%-') or trimmed:match('^[%w_]+%s*:') then
         parser = 'yaml'
       else
@@ -125,10 +125,10 @@ vim.keymap.set('n', '<leader>ft', function()
       parser = 'babel'
     end
   end
-  
+
   local error_output = {}
   local formatted_output = {}
-  
+
   -- 使用 stdin/stdout 方式，Prettier 不需要配置文件也能工作
   local job_id = vim.fn.jobstart({ 'npx', '--yes', 'prettier', '--stdin-filepath', filepath, '--parser', parser }, {
     stdin = 'pipe',
@@ -171,7 +171,7 @@ vim.keymap.set('n', '<leader>ft', function()
       end
     end,
   })
-  
+
   -- 通过管道发送文件内容
   if job_id > 0 then
     vim.fn.chansend(job_id, file_text)

@@ -11,7 +11,7 @@ return {
         micode = {
           cmd = { "micode" },
         },
-        cursor = { cmd = { "cursor-agent" } }
+        cursor = { cmd = { "cursor-agent --model auto" } }
       },
     },
   },

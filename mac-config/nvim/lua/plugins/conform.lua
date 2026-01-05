@@ -2,14 +2,10 @@ return {
   'stevearc/conform.nvim',
   opts = {
     formatters_by_ft = {
-      -- javascript = { "prettier" },
-      -- typescript = { "prettier" },
-      -- javascriptreact = { "prettier" },
-      -- typescriptreact = { "prettier" },
-      javascript = { "eslint_d" },
-      typescript = { "eslint_d" },
-      javascriptreact = { "eslint_d" },
-      typescriptreact = { "eslint_d" },
+      javascript = { "prettier" },
+      typescript = { "prettier" },
+      javascriptreact = { "prettier" },
+      typescriptreact = { "prettier" },
       svelte = { "prettier" },
       css = { "prettier" },
       html = { "prettier" },
@@ -25,7 +21,7 @@ return {
       if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then
         return
       end
-      return { timeout_ms = 500, lsp_format = false }
+      return { timeout_ms = 10000, lsp_format = false } -- 增加到10秒，适合大文件
     end
   },
   init = function()
@@ -36,14 +32,17 @@ return {
         if vim.g.disable_autoformat then
           return
         end
-        require("conform").format({ bufnr = args.buf })
+        require("conform").format({ 
+          bufnr = args.buf,
+          timeout_ms = 10000, -- 增加超时时间
+        })
       end,
     })
     vim.keymap.set({ "n", "v" }, "<leader>fa", function()
       require("conform").format({
         lsp_fallback = false,
         async = false,
-        timeout_ms = 500,
+        timeout_ms = 10000, -- 增加到10秒，适合大文件
       })
     end, { desc = "Format file or range (in visual mode)" })
 
