@@ -211,3 +211,6 @@ zinit light-mode for \
 eval "$(mise activate zsh)"
 
 . "$HOME/.local/bin/env"
+
+# opencode
+export PATH=/Users/mac/.opencode/bin:$PATH
