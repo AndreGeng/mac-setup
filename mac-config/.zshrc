@@ -214,3 +214,8 @@ eval "$(mise activate zsh)"
 
 # opencode
 export PATH=/Users/mac/.opencode/bin:$PATH
+
+# OpenCode AI Coding Agent Aliases
+alias oc="opencode"
+alias oc-init="opencode && /init"
+alias oc-share="opencode && /share"

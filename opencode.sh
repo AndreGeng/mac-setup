@@ -7,19 +7,19 @@ for f in $(dirname "$0")/utils/*.sh; do
 done
 
 # Check if OpenCode is already installed
-if command_exists "opencode"; then
+if exists "opencode"; then
 	log "OpenCode is already installed" $GREEN
 	log "Current version: $(opencode --version 2>/dev/null || echo 'unknown')" $CYAN
 else
 	log "Installing OpenCode..." $YELLOW
 
 	# Install via Homebrew (preferred method)
-	if command_exists "brew"; then
+	if exists "brew"; then
 		log "Installing OpenCode via Homebrew..." $YELLOW
 		brew install anomalyco/tap/opencode || {
 			log "Homebrew installation failed, trying npm..." $YELLOW
 			# Fallback to npm installation
-			if command_exists "npm"; then
+			if exists "npm"; then
 				npm install -g opencode-ai
 			else
 				log "Neither Homebrew nor npm found. Please install one first." $RED
@@ -28,7 +28,7 @@ else
 		}
 	else
 		# Install via npm if Homebrew is not available
-		if command_exists "npm"; then
+		if exists "npm"; then
 			log "Installing OpenCode via npm..." $YELLOW
 			npm install -g opencode-ai
 		else
@@ -38,7 +38,7 @@ else
 	fi
 
 	# Verify installation
-	if command_exists "opencode"; then
+	if exists "opencode"; then
 		log "OpenCode installed successfully!" $GREEN
 		log "Version: $(opencode --version 2>/dev/null || echo 'unknown')" $CYAN
 	else
@@ -57,45 +57,45 @@ log "Setting up OpenCode configuration..." $YELLOW
 # Create config file with recommended settings for this repository
 cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
 {
+  "$schema": "https://opencode.ai/config.json",
   "model": "opencode/zen-coder",
   "theme": "dark",
-  "auto_save": true,
-  "format_on_save": true,
-  "lsp": {
-    "enabled": true,
-    "bash": {
-      "command": "bash-language-server",
-      "args": ["start"]
+  "autoupdate": true,
+  "formatter": {
+    "shfmt": {
+      "command": ["shfmt", "-w", "-i", "2", "$FILE"],
+      "extensions": [".sh", ".bash"]
     },
-    "lua": {
-      "command": "lua-language-server"
+    "stylua": {
+      "command": ["stylua", "--config-path", "mac-config/nvim/stylua.toml", "$FILE"],
+      "extensions": [".lua"]
     },
-    "yaml": {
-      "command": "yaml-language-server",
-      "args": ["--stdio"]
+    "black": {
+      "command": ["black", "$FILE"],
+      "extensions": [".py"]
+    },
+    "isort": {
+      "command": ["isort", "$FILE"],
+      "extensions": [".py"]
+    },
+    "prettier": {
+      "command": ["prettier", "--write", "$FILE"],
+      "extensions": [".js", ".ts", ".jsx", ".tsx", ".json", ".yaml", ".yml", ".md"]
     }
   },
-  "formatters": {
-    "sh": "shfmt",
-    "lua": "stylua",
-    "py": "black",
-    "js": "prettier",
-    "json": "prettier",
-    "yaml": "prettier",
-    "md": "prettier"
-  },
-  "rules": {
-    "shell_script": {
-      "shebang": "#!/bin/bash",
-      "utility_loading": "for f in $(dirname \"$0\")/utils/*.sh; do source $f; done",
-      "logging": "log() function with colors",
-      "error_handling": "command_exists checks"
+  "command": {
+    "test": {
+      "template": "Run tests and validate setup",
+      "description": "Test shell scripts and configuration"
     },
-    "lua_config": {
-      "structure": "modular lua/plugins/ and lua/config/",
-      "plugin_format": "LazyVim plugin spec",
-      "indentation": 2
+    "format": {
+      "template": "Format all code files using appropriate formatters",
+      "description": "Format shell scripts, lua, python, and web files"
     }
+  },
+  "instructions": ["AGENTS.md"],
+  "watcher": {
+    "ignore": ["node_modules/**", "dist/**", ".git/**", "*.tmp"]
   }
 }
 EOF
@@ -173,24 +173,24 @@ EOF
 log "Installing language servers for enhanced OpenCode experience..." $YELLOW
 
 # Install bash language server
-if command_exists "npm"; then
-	if ! command_exists "bash-language-server"; then
+if exists "npm"; then
+	if ! exists "bash-language-server"; then
 		log "Installing bash-language-server..." $YELLOW
 		npm install -g bash-language-server
 	fi
 fi
 
 # Install lua language server
-if command_exists "brew"; then
-	if ! command_exists "lua-language-server"; then
+if exists "brew"; then
+	if ! exists "lua-language-server"; then
 		log "Installing lua-language-server..." $YELLOW
 		brew install lua-language-server
 	fi
 fi
 
 # Install yaml language server
-if command_exists "npm"; then
-	if ! command_exists "yaml-language-server"; then
+if exists "npm"; then
+	if ! exists "yaml-language-server"; then
 		log "Installing yaml-language-server..." $YELLOW
 		npm install -g yaml-language-server
 	fi
