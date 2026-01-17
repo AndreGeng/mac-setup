@@ -3,48 +3,48 @@
 # This script installs and configures OpenCode AI coding agent
 
 for f in $(dirname "$0")/utils/*.sh; do
-	source $f
+  source $f
 done
 
 # Check if OpenCode is already installed
 if exists "opencode"; then
-	log "OpenCode is already installed" $GREEN
-	log "Current version: $(opencode --version 2>/dev/null || echo 'unknown')" $CYAN
+  log "OpenCode is already installed" $GREEN
+  log "Current version: $(opencode --version 2>/dev/null || echo 'unknown')" $CYAN
 else
-	log "Installing OpenCode..." $YELLOW
+  log "Installing OpenCode..." $YELLOW
 
-	# Install via Homebrew (preferred method)
-	if exists "brew"; then
-		log "Installing OpenCode via Homebrew..." $YELLOW
-		brew install anomalyco/tap/opencode || {
-			log "Homebrew installation failed, trying npm..." $YELLOW
-			# Fallback to npm installation
-			if exists "npm"; then
-				npm install -g opencode-ai
-			else
-				log "Neither Homebrew nor npm found. Please install one first." $RED
-				exit 1
-			fi
-		}
-	else
-		# Install via npm if Homebrew is not available
-		if exists "npm"; then
-			log "Installing OpenCode via npm..." $YELLOW
-			npm install -g opencode-ai
-		else
-			log "Neither Homebrew nor npm found. Please install one first." $RED
-			exit 1
-		fi
-	fi
+  # Install via Homebrew (preferred method)
+  if exists "brew"; then
+    log "Installing OpenCode via Homebrew..." $YELLOW
+    brew install anomalyco/tap/opencode || {
+      log "Homebrew installation failed, trying npm..." $YELLOW
+      # Fallback to npm installation
+      if exists "npm"; then
+        npm install -g opencode-ai
+      else
+        log "Neither Homebrew nor npm found. Please install one first." $RED
+        exit 1
+      fi
+    }
+  else
+    # Install via npm if Homebrew is not available
+    if exists "npm"; then
+      log "Installing OpenCode via npm..." $YELLOW
+      npm install -g opencode-ai
+    else
+      log "Neither Homebrew nor npm found. Please install one first." $RED
+      exit 1
+    fi
+  fi
 
-	# Verify installation
-	if exists "opencode"; then
-		log "OpenCode installed successfully!" $GREEN
-		log "Version: $(opencode --version 2>/dev/null || echo 'unknown')" $CYAN
-	else
-		log "OpenCode installation failed" $RED
-		exit 1
-	fi
+  # Verify installation
+  if exists "opencode"; then
+    log "OpenCode installed successfully!" $GREEN
+    log "Version: $(opencode --version 2>/dev/null || echo 'unknown')" $CYAN
+  else
+    log "OpenCode installation failed" $RED
+    exit 1
+  fi
 fi
 
 # Create OpenCode configuration directory
@@ -96,6 +96,16 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
   "instructions": ["AGENTS.md"],
   "watcher": {
     "ignore": ["node_modules/**", "dist/**", ".git/**", "*.tmp"]
+  },
+  "mcp": {
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "-y", "@playwright/mcp@latest"]
+    },
+    "feishu-mcp": {
+      "type": "remote",
+      "url": "https://open.feishu.cn/mcp/stream/mcp__aQA3IxPLp5MwCLVlNU76kVAeMEhKxl4MwJOOIVhIGh0cRWNWke1K_Ah1nRKocC12Zg8qfMxks8"
+    }
   }
 }
 EOF
@@ -105,22 +115,22 @@ log "Adding OpenCode aliases to shell configuration..." $YELLOW
 
 # Check for existing shell configs and add aliases
 add_opencode_alias() {
-	local config_file="$1"
-	if [[ -f "$config_file" ]]; then
-		# Check if alias already exists
-		if ! grep -q "alias oc=" "$config_file" 2>/dev/null; then
-			cat >>"$config_file" <<'EOF'
+  local config_file="$1"
+  if [[ -f "$config_file" ]]; then
+    # Check if alias already exists
+    if ! grep -q "alias oc=" "$config_file" 2>/dev/null; then
+      cat >>"$config_file" <<'EOF'
 
 # OpenCode AI Coding Agent Aliases
 alias oc="opencode"
 alias oc-init="opencode && /init"
 alias oc-share="opencode && /share"
 EOF
-			log "Added OpenCode aliases to $config_file" $GREEN
-		else
-			log "OpenCode aliases already exist in $config_file" $CYAN
-		fi
-	fi
+      log "Added OpenCode aliases to $config_file" $GREEN
+    else
+      log "OpenCode aliases already exist in $config_file" $CYAN
+    fi
+  fi
 }
 
 # Add aliases to common shell configs
@@ -174,26 +184,26 @@ log "Installing language servers for enhanced OpenCode experience..." $YELLOW
 
 # Install bash language server
 if exists "npm"; then
-	if ! exists "bash-language-server"; then
-		log "Installing bash-language-server..." $YELLOW
-		npm install -g bash-language-server
-	fi
+  if ! exists "bash-language-server"; then
+    log "Installing bash-language-server..." $YELLOW
+    npm install -g bash-language-server
+  fi
 fi
 
 # Install lua language server
 if exists "brew"; then
-	if ! exists "lua-language-server"; then
-		log "Installing lua-language-server..." $YELLOW
-		brew install lua-language-server
-	fi
+  if ! exists "lua-language-server"; then
+    log "Installing lua-language-server..." $YELLOW
+    brew install lua-language-server
+  fi
 fi
 
 # Install yaml language server
 if exists "npm"; then
-	if ! exists "yaml-language-server"; then
-		log "Installing yaml-language-server..." $YELLOW
-		npm install -g yaml-language-server
-	fi
+  if ! exists "yaml-language-server"; then
+    log "Installing yaml-language-server..." $YELLOW
+    npm install -g yaml-language-server
+  fi
 fi
 
 # Final setup and verification
