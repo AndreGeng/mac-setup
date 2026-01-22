@@ -47,6 +47,12 @@ return {
             typescript = {
               tsserver = { maxTsServerMemory = 8192 }
             },
+            -- Emmet LSP specific settings
+            emmet = {
+              showSuggestionsAsSnippets = true,
+              expandAbbreviation = true,
+              showExpandedAbbreviation = "never",
+            }
           },
         })
       end
