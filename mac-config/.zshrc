@@ -219,3 +219,16 @@ export PATH=/Users/mac/.opencode/bin:$PATH
 alias oc="opencode"
 alias oc-init="opencode && /init"
 alias oc-share="opencode && /share"
+
+# bun completions
+[ -s "/Users/mac/.bun/_bun" ] && source "/Users/mac/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+ulimit -n 8192
+export ulimit

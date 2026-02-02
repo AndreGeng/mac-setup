@@ -14,6 +14,7 @@ brewI ranger
 brewI cmake
 brewI mise
 brewI ast-grep
+brewI git-delta
 
 # brew installs
 
