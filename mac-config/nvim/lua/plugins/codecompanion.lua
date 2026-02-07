@@ -26,9 +26,15 @@ return {
     },
   },
   keys = {
-    -- Inline assistant - prompt for input
+    -- Toggle chat window
     {
       "<leader>cc",
+      "<cmd>CodeCompanionChat Toggle<cr>",
+      desc = "CodeCompanion Toggle Chat",
+    },
+    -- Inline assistant - prompt for input
+    {
+      "<leader>ci",
       function()
         vim.ui.input({ prompt = "CodeCompanion: " }, function(input)
           if input and input ~= "" then
@@ -43,12 +49,6 @@ return {
       "<leader>ca",
       "<cmd>CodeCompanionActions<cr>",
       desc = "CodeCompanion Action Palette",
-    },
-    -- Toggle chat window
-    {
-      "<leader>ct",
-      "<cmd>CodeCompanionChat Toggle<cr>",
-      desc = "CodeCompanion Toggle Chat",
     },
     -- Add selection to chat
     {
