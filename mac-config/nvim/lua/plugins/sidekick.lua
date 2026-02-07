@@ -11,6 +11,9 @@ return {
         micode = {
           cmd = { "/opt/homebrew/bin/mise", "exec", "node@22", "--", "micode" },
         },
+        opencode = {
+          cmd = { "opencode" },
+        },
         cursor = { cmd = { "cursor-agent --model auto" } }
       },
     },
@@ -29,7 +32,7 @@ return {
     },
     {
       "<leader>tt",
-      function() require("sidekick.cli").toggle({ name = "micode" }) end,
+      function() require("sidekick.cli").toggle({ name = "opencode" }) end,
       desc = "Sidekick Toggle CLI",
     },
     {
@@ -46,24 +49,24 @@ return {
     },
     {
       "<leader>ts",
-      function() require("sidekick.cli").send({ name = "micode", msg = "{this}", focus = true }) end,
+      function() require("sidekick.cli").send({ name = "opencode", msg = "{this}", focus = true }) end,
       mode = { "x", "n" },
       desc = "Send This",
     },
     {
       "<leader>tf",
-      function() require("sidekick.cli").send({ name = "micode", msg = "{file}", focus = true }) end,
+      function() require("sidekick.cli").send({ name = "opencode", msg = "{file}", focus = true }) end,
       desc = "Send File",
     },
     {
       "<leader>tv",
-      function() require("sidekick.cli").send({ name = "micode", msg = "{selection}", focus = true }) end,
+      function() require("sidekick.cli").send({ name = "opencode", msg = "{selection}", focus = true }) end,
       mode = { "x" },
       desc = "Send Visual Selection",
     },
     {
       "<leader>tp",
-      function() require("sidekick.cli").prompt({ name = "micode", focus = true }) end,
+      function() require("sidekick.cli").prompt({ name = "opencode", focus = true }) end,
       mode = { "n", "x" },
       desc = "Sidekick Select Prompt",
     },
