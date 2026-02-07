@@ -3,11 +3,13 @@ return {
     'norcalli/nvim-colorizer.lua',
   },
   {
-    -- one stop shop for vim colorschemes
-    'flazz/vim-colorschemes',
+    "folke/tokyonight.nvim",
+    lazy = false,
+    priority = 1000,
+    opts = {},
     config = function()
       vim.cmd([[
-        colorscheme evening
+        colorscheme tokyonight
       ]])
     end,
   }

@@ -213,3 +213,42 @@ return {
 - Use existing utility functions rather than reimplementing
 - Maintain compatibility with the user's existing dotfiles
 - Consider the order of operations - some tools depend on others
+
+## Neovim Plugin Management
+
+### Plugin Manager
+- **lazy.nvim** - Modern plugin manager with lazy loading
+- Location: `mac-config/nvim/lua/config/lazy.lua`
+- Plugins are defined in `mac-config/nvim/lua/plugins/`
+
+### Recently Added Plugins
+
+#### snacks.nvim (QoL Plugin Collection)
+- **Location**: `mac-config/nvim/lua/plugins/snacks.lua`
+- **Purpose**: Collection of quality-of-life plugins
+- **Key Features**:
+  - Smart file picker (`<leader><space>`)
+  - Enhanced notifications
+  - Zen mode (`<leader>z`)
+  - Terminal toggle (`<C-/>`)
+  - Git integration
+  - LSP integration
+  - Toggle utilities
+
+- **Usage Guide**: See `mac-config/nvim/docs/snacks-usage.md`
+
+#### Key Bindings
+- **File Operations**: `<leader>ff`, `<leader>fg`, `<leader>fb`
+- **Git Operations**: `<leader>gb` (blame), `<leader>gB` (branches), `<leader>gs` (status)
+- **Search**: `<leader>/`, `<leader>sg`, `<leader>sw`
+- **LSP**: `gd`, `gr`, `gI`, `<leader>ss`
+- **Zen Mode**: `<leader>z`
+- **Terminal**: `<C-/>`
+- **Toggles**: `<leader>us`, `<leader>uw`, `<leader>ud`, etc.
+
+### Plugin Configuration Guidelines
+- Each plugin should have its own file in `lua/plugins/`
+- Use lazy.nvim's plugin spec format
+- Add descriptive comments for key bindings
+- Document any conflicts with existing bindings
+- Update `AGENTS.md` when adding major plugins

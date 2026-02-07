@@ -13,22 +13,10 @@ return {
       { 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release' }
     },
     config = function()
+      local telescope = require('telescope')
       local lga_actions = require("telescope-live-grep-args.actions")
 
-      -- To get fzf loaded and working with telescope, you need to call
-      -- load_extension, somewhere after setup function:
-      require('telescope').load_extension('fzf')
-      require("telescope").load_extension("live_grep_args")
-
-      vim.keymap.set('n', '<leader>ff',
-        '<cmd>lua require("telescope.builtin").find_files({ previewer = false })<cr>',
-        { noremap = true })
-      vim.keymap.set('n', '<leader>fg', '<cmd>lua require("telescope").extensions.live_grep_args.live_grep_args()<cr>',
-        { noremap = true })
-      vim.keymap.set('n', '<leader>fb', '<cmd>lua require("telescope.builtin").buffers()<cr>', { noremap = true })
-      vim.keymap.set('n', '<leader>fh', '<cmd>lua require("telescope.builtin").help_tags()<cr>', { noremap = true })
-
-      return {
+      telescope.setup({
         defaults = {
           -- Default configuration for telescope goes here:
           -- config_key = value,
@@ -40,7 +28,7 @@ return {
               -- e.g. git_{create, delete, ...}_branch for the git_branches picker
             }
           },
-          preview = { hide_on_startup = true },
+          preview = { hide_on_startup = false },
           path_display = { "truncate" },
           layout_config = {
             width = 0.9,
@@ -54,6 +42,14 @@ return {
           -- }
           -- Now the picker_config_key will be applied every time you call this
           -- builtin picker
+          colorscheme = {
+            enable_preview = true,
+            -- Show preview of the colorscheme
+            layout_config = {
+              width = 0.9,
+              height = 0.8,
+            },
+          },
         },
         extensions = {
           -- Your extension configuration goes here:
@@ -76,8 +72,21 @@ return {
             -- layout_config = { mirror=true }, -- mirror preview pane
           }
         }
+      })
 
-      }
+      -- To get fzf loaded and working with telescope, you need to call
+      -- load_extension, somewhere after setup function:
+      telescope.load_extension('fzf')
+      telescope.load_extension("live_grep_args")
+
+      vim.keymap.set('n', '<leader>ff',
+        '<cmd>lua require("telescope.builtin").find_files({ previewer = false })<cr>',
+        { noremap = true, desc = "Telescope: Find Files" })
+      vim.keymap.set('n', '<leader>fg', '<cmd>lua require("telescope").extensions.live_grep_args.live_grep_args()<cr>',
+        { noremap = true, desc = "Telescope: Live Grep with Args" })
+      vim.keymap.set('n', '<leader>fb', '<cmd>lua require("telescope.builtin").buffers()<cr>', { noremap = true, desc = "Telescope: Buffers" })
+      vim.keymap.set('n', '<leader>fh', '<cmd>lua require("telescope.builtin").help_tags()<cr>', { noremap = true, desc = "Telescope: Help Tags" })
+      vim.keymap.set('n', '<leader>fc', '<cmd>lua require("telescope.builtin").colorscheme()<cr>', { noremap = true, desc = "Telescope: Colorscheme" })
     end,
   },
 
