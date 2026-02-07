@@ -37,21 +37,9 @@ return {
     },
     {
       "<leader>ts",
-      function() require("sidekick.cli").select() end,
-      -- Or to select only installed tools:
-      -- require("sidekick.cli").select({ filter = { installed = true } })
-      desc = "Select CLI",
-    },
-    {
-      "<leader>td",
-      function() require("sidekick.cli").close() end,
-      desc = "Detach a CLI Session",
-    },
-    {
-      "<leader>ts",
       function() require("sidekick.cli").send({ name = "opencode", msg = "{this}", focus = true }) end,
       mode = { "x", "n" },
-      desc = "Send This",
+      desc = "Send Active",
     },
     {
       "<leader>tf",
@@ -59,22 +47,22 @@ return {
       desc = "Send File",
     },
     {
-      "<leader>tv",
-      function() require("sidekick.cli").send({ name = "opencode", msg = "{selection}", focus = true }) end,
-      mode = { "x" },
-      desc = "Send Visual Selection",
-    },
-    {
       "<leader>tp",
       function() require("sidekick.cli").prompt({ name = "opencode", focus = true }) end,
       mode = { "n", "x" },
       desc = "Sidekick Select Prompt",
     },
-    -- Example of a keybinding to open Claude directly
     {
-      "<leader>tc",
-      function() require("sidekick.cli").toggle({ name = "claude", focus = true }) end,
-      desc = "Sidekick Toggle Claude",
+      "<leader>tT",
+      function() require("sidekick.cli").select() end,
+      -- Or to select only installed tools:
+      -- require("sidekick.cli").select({ filter = { installed = true } })
+      desc = "Select CLI",
+    },
+    {
+      "<leader>tx",
+      function() require("sidekick.cli").close() end,
+      desc = "Detach a CLI Session",
     },
   },
 }
