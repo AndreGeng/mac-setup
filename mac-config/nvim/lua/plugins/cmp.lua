@@ -53,7 +53,7 @@ return {
           end, { 'i', 'c' }),
         },
         sources = cmp.config.sources({
-          { name = "marscode" }, -- for ai
+          { name = "supermaven", group_index = 1, priority = 100 }, -- AI completion with high priority
           {
             name = 'nvim_lsp',
             entry_filter = function(entry)
@@ -68,7 +68,8 @@ return {
       }
     end,
     dependencies = {
-      "tailwind-tools"
+      "tailwind-tools",
+      "supermaven-inc/supermaven-nvim",
     }
   },
 }
