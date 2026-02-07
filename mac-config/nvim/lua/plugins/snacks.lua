@@ -42,9 +42,18 @@ return {
       { '<leader>s"',      function() require("snacks").picker.registers() end,          desc = "Registers" },
       { '<leader>s/',      function() require("snacks").picker.search_history() end,     desc = "Search History" },
       { "<leader>sd",      function() require("snacks").picker.diagnostics_buffer() end, desc = "Buffer Diagnostics" },
+      { "<leader>sa",      function() require("snacks").picker.diagnostics() end,        desc = "All Diagnostics" },
       { "<leader>sk",      function() require("snacks").picker.keymaps() end,            desc = "Keymaps" },
       { "<leader>sl",      function() require("snacks").picker.loclist() end,            desc = "Location List" },
       { "<leader>sq",      function() require("snacks").picker.qflist() end,             desc = "Quickfix List" },
+      -- LSP
+      { "<leader>cs",      function() require("snacks").picker.lsp_symbols() end,        desc = "Symbols" },
+      { "<leader>cl",      function() require("snacks").picker.lsp_definitions() end,    desc = "LSP Definitions" },
+      { "<leader>cr",      function() require("snacks").picker.lsp_references() end,     desc = "LSP References" },
+      { "<leader>ci",      function() require("snacks").picker.lsp_implementations() end, desc = "LSP Implementations" },
+      { "<leader>ct",      function() require("snacks").picker.lsp_type_definitions() end, desc = "LSP Type Definitions" },
+      { "<leader>cg",      function() require("snacks").picker.lsp_incoming_calls() end, desc = "LSP Incoming Calls" },
+      { "<leader>co",      function() require("snacks").picker.lsp_outgoing_calls() end, desc = "LSP Outgoing Calls" },
       -- Other
       { "<leader>bd",      function() require("snacks").bufdelete() end,                 desc = "Delete Buffer" },
       { "]]",              function() require("snacks").words.jump(vim.v.count1) end,    desc = "Next Reference",      mode = { "n", "t" } },
