@@ -1,3 +1,6 @@
+if [ -f ~/.zshrc.local ]; then
+  source ~/.zshrc.local
+fi
 # profile zsh startup
 # 加载zprof以后，使用`time  zsh -i -c exit` 来评估启动时间
 # zmodload zsh/zprof

@@ -5,3 +5,4 @@
 .DS_Store
 automatic_backups
 *-local.yml
+*.local
