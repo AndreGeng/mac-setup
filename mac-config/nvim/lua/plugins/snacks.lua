@@ -34,7 +34,7 @@ return {
       -- find
       { "<leader>fb",      function() require("snacks").picker.buffers() end,            desc = "Buffers" },
       { "<leader>ff",      function() require("snacks").picker.files() end,              desc = "Find Files" },
-      { "<leader>fg",      function() require("snacks").picker.git_files() end,          desc = "Find Git Files" },
+      { "<leader>fi",      function() require("snacks").picker.files({ find_command = {"fd", "-i", "--type", "f", "--hidden", "-I"}, hidden = true, ignored = true }) end, desc = "Find Ignored Files (with fd)" },
       -- Grep
       { "<leader>sb",      function() require("snacks").picker.lines() end,              desc = "Buffer Lines" },
       -- search
