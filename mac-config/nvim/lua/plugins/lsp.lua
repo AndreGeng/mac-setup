@@ -32,7 +32,7 @@ return {
       -- Setup lspconfig.
       local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
       -- Enable the following language servers
-      local servers = { 'eslint_d', 'ts_ls', 'lua_ls', 'emmet_language_server', 'bashls', 'html', 'copilot' }
+      local servers = { 'eslint_d', 'ts_ls', 'lua_ls', 'emmet_language_server', 'bashls', 'html' }
       for _, lsp in ipairs(servers) do
         vim.lsp.enable(lsp)
         vim.lsp.config(lsp, {
