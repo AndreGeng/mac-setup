@@ -10,13 +10,13 @@ return {
     "SupermavenClearLog",
   },
   opts = {
-    -- Disable inline completion since we're using nvim-cmp
-    disable_inline_completion = true,
-    -- Let nvim-cmp handle suggestion acceptance
+    -- Enable inline completion (like Copilot)
+    disable_inline_completion = false,
+    -- Key mappings matching Copilot for consistency
     keymaps = {
-      accept_suggestion = nil, -- handled by nvim-cmp
-      clear_suggestion = "<C-]>",
-      accept_word = "<C-l>",
+      accept_suggestion = "<C-J>", -- Accept full suggestion (same as Copilot)
+      clear_suggestion = "<C-X>", -- Dismiss suggestion (same as Copilot)
+      accept_word = "<C-L>", -- Accept word by word (using C-L like Copilot's Next)
     },
     -- Ignore certain filetypes
     ignore_filetypes = {
@@ -29,7 +29,5 @@ return {
     -- Disable built-in keymaps for more manual control (optional)
     disable_keymaps = false,
   },
-  dependencies = {
-    "hrsh7th/nvim-cmp",
-  },
+  -- No longer needs nvim-cmp dependency for inline completion
 }

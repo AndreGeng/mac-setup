@@ -39,7 +39,7 @@ return {
       "<leader>ts",
       function() require("sidekick.cli").send({ name = "opencode", msg = "{this}", focus = true }) end,
       mode = { "x", "n" },
-      desc = "Send Active",
+      desc = "Send This",
     },
     {
       "<leader>tf",
