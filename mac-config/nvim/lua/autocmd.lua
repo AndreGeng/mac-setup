@@ -7,7 +7,11 @@ vim.api.nvim_create_autocmd({ "FileChangedShell" }, {
 -- Check if any buffers were changed outside of Vim.
 vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI", "FocusGained" }, {
   pattern = { '*' },
-  command = 'checktime',
+  callback = function()
+    if vim.fn.mode() ~= 'c' then
+      vim.cmd('checktime')
+    end
+  end,
 })
 
 -- folding
