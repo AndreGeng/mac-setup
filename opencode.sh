@@ -105,6 +105,87 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
     "feishu-mcp": {
       "type": "remote",
       "url": "https://open.feishu.cn/mcp/stream/mcp__aQA3IxPLp5MwCLVlNU76kVAeMEhKxl4MwJOOIVhIGh0cRWNWke1K_Ah1nRKocC12Zg8qfMxks8"
+    },
+    "chrome-devtools": {
+      "type": "local",
+      "command": ["npx", "-y", "chrome-devtools-mcp@latest"]
+    }
+  },
+  "provider": {
+    "Mify-Zhipu": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Mify-Zhipu",
+      "options": {
+        "baseURL": "{env:MIMO_API_URL}",
+        "apiKey": "{env:MIMO_API_KEY}"
+      },
+      "models": {
+        "zhipuai/glm-4.7": {
+          "name": "zhipuai/glm-4.7"
+        }
+      }
+    },
+    "Mify-OpenAI": {
+      "npm": "@ai-sdk/openai",
+      "name": "Mify-OpenAI",
+      "options": {
+        "baseURL": "{env:MIMO_API_URL}",
+        "apiKey": "{env:MIMO_API_KEY}"
+      },
+      "models": {
+        "azure_openai/gpt-5.1-codex": {
+          "name": "azure_openai/gpt-5.1-codex"
+        }
+      }
+    },
+    "Mify-Xiaomi": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Mify-Xiaomi",
+      "options": {
+        "baseURL": "{env:MIMO_API_URL}",
+        "apiKey": "{env:MIMO_API_KEY}"
+      },
+      "models": {
+        "xiaomi/mimo-v2-flash": {
+          "name": "xiaomi/mimo-v2-flash"
+        }
+      }
+    },
+    "Mify-Kimi": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Mify-Kimi",
+      "options": {
+        "baseURL": "{env:MIMO_API_URL}",
+        "apiKey": "{env:MIMO_API_KEY}"
+      },
+      "models": {
+        "volcengine_maas/kimi-k2-250711": {
+          "name": "volcengine_maas/kimi-k2-250711"
+        }
+      }
+    },
+    "Mify-Google": {
+      "npm": "@ai-sdk/google",
+      "options": {
+        "baseURL": "{env:MIMO_API_SGP_URL}",
+        "apiKey": "{env:MIMO_API_KEY}"
+      },
+      "models": {
+        "gemini-3-pro-preview-pt": {
+          "name": "gemini-3-pro",
+          "limit": {
+            "context": 1000000,
+            "output": 128000
+          }
+        },
+        "gemini-3-flash-preview": {
+          "name": "gemini-3-flash",
+          "limit": {
+            "context": 1000000,
+            "output": 128000
+          }
+        }
+      }
     }
   }
 }

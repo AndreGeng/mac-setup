@@ -53,7 +53,7 @@ return {
           end, { 'i', 'c' }),
         },
         sources = cmp.config.sources({
-          { name = "supermaven", group_index = 1, priority = 100 }, -- AI completion with high priority
+          -- { name = "supermaven", group_index = 1, priority = 100 }, -- AI completion with high priority
           {
             name = 'nvim_lsp',
             entry_filter = function(entry)
@@ -62,9 +62,9 @@ return {
           },
           { name = 'buffer' },
         }),
-        experimental = {
-          ghost_text = true
-        }
+        -- experimental = {
+        --   ghost_text = true
+        -- }
       }
     end,
     dependencies = {

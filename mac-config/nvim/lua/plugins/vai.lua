@@ -6,7 +6,7 @@ return {
       require("vai").setup({
         -- your vai config here
         -- see https://github.com/vai/vai.nvim for more info
-        trigger = ";"
+        trigger = "'"
       })
     end,
   },
