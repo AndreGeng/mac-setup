@@ -5,10 +5,10 @@ return {
   config = function()
     require("tiny-inline-diagnostic").setup({
       options = {
-        -- Workaround for userdata concatenation bug
         show_source = false,
-        -- Disable code display to avoid the bug
         show_code = false,
+        -- 仅当光标正好在诊断位置时才显示，减少 normal 下移动光标时的打扰
+        show_diags_only_under_cursor = true,
       },
     })
     vim.diagnostic.config({ virtual_text = false })

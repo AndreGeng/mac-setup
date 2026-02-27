@@ -58,7 +58,7 @@ log "Setting up OpenCode configuration..." $YELLOW
 cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "opencode/zen-coder",
+  "model": "Mify-Zhipu/zhipuai/glm-4.7",
   "theme": "dark",
   "autoupdate": true,
   "formatter": {
@@ -112,6 +112,19 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
     }
   },
   "provider": {
+    "Mify-Minimax1": {
+      "models": {
+        "minimax/MiniMax-M2.5": {
+          "name": "minimax/MiniMax-M2.5"
+        }
+      },
+      "name": "Mify-Minimax",
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "apiKey": "{env:MIMO_API_KEY}",
+        "baseURL": "http://model.mify.ai.srv/v1/"
+      }
+    },
     "Mify-Zhipu": {
       "npm": "@ai-sdk/openai-compatible",
       "name": "Mify-Zhipu",
