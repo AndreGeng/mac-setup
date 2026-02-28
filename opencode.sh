@@ -58,7 +58,7 @@ log "Setting up OpenCode configuration..." $YELLOW
 cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "Mify-Zhipu/zhipuai/glm-4.7",
+  "model": "Mify-Google/gemini-3-flash",
   "theme": "dark",
   "autoupdate": true,
   "formatter": {
