@@ -55,6 +55,7 @@ return {
       { "<leader>cg",      function() require("snacks").picker.lsp_incoming_calls() end, desc = "LSP Incoming Calls" },
       { "<leader>co",      function() require("snacks").picker.lsp_outgoing_calls() end, desc = "LSP Outgoing Calls" },
       -- Other
+      { "<leader>gg",      function() require("snacks").lazygit() end,                     desc = "Lazygit" },
       { "<leader>bd",      function() require("snacks").bufdelete() end,                 desc = "Delete Buffer" },
       { "]]",              function() require("snacks").words.jump(vim.v.count1) end,    desc = "Next Reference",      mode = { "n", "t" } },
       { "[[",              function() require("snacks").words.jump(-vim.v.count1) end,   desc = "Prev Reference",      mode = { "n", "t" } },
