@@ -13,12 +13,10 @@ return {
       },
       quickfile = { enabled = true },
       scroll = { enabled = true },
+      lazygit = { enabled = true },
       words = { enabled = true },
       picker = {
         enabled = true,
-        layout = {
-          preset = "telescope",
-        },
       },
       styles = {
         notification = {

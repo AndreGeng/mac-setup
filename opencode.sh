@@ -121,7 +121,7 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
       "name": "Mify-Minimax",
       "npm": "@ai-sdk/openai-compatible",
       "options": {
-        "apiKey": "{env:MIMO_API_KEY}",
+        "apiKey": "{env:MIFY_API_KEY}",
         "baseURL": "http://model.mify.ai.srv/v1/"
       }
     },
@@ -129,12 +129,15 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
       "npm": "@ai-sdk/openai-compatible",
       "name": "Mify-Zhipu",
       "options": {
-        "baseURL": "{env:MIMO_API_URL}",
-        "apiKey": "{env:MIMO_API_KEY}"
+        "baseURL": "{env:MIFY_API_URL}",
+        "apiKey": "{env:MIFY_API_KEY}"
       },
       "models": {
         "zhipuai/glm-4.7": {
           "name": "zhipuai/glm-4.7"
+        },
+        "zhipuai/glm-5": {
+          "name": "zhipuai/glm-5"
         }
       }
     },
@@ -142,8 +145,8 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
       "npm": "@ai-sdk/openai",
       "name": "Mify-OpenAI",
       "options": {
-        "baseURL": "{env:MIMO_API_URL}",
-        "apiKey": "{env:MIMO_API_KEY}"
+        "baseURL": "{env:MIFY_API_URL}",
+        "apiKey": "{env:MIFY_API_KEY}"
       },
       "models": {
         "azure_openai/gpt-5.1-codex": {
@@ -155,8 +158,8 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
       "npm": "@ai-sdk/openai-compatible",
       "name": "Mify-Xiaomi",
       "options": {
-        "baseURL": "{env:MIMO_API_URL}",
-        "apiKey": "{env:MIMO_API_KEY}"
+        "baseURL": "{env:MIFY_API_URL}",
+        "apiKey": "{env:MIFY_API_KEY}"
       },
       "models": {
         "xiaomi/mimo-v2-flash": {
@@ -168,8 +171,8 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
       "npm": "@ai-sdk/openai-compatible",
       "name": "Mify-Kimi",
       "options": {
-        "baseURL": "{env:MIMO_API_URL}",
-        "apiKey": "{env:MIMO_API_KEY}"
+        "baseURL": "{env:MIFY_API_URL}",
+        "apiKey": "{env:MIFY_API_KEY}"
       },
       "models": {
         "volcengine_maas/kimi-k2-250711": {
@@ -180,8 +183,8 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
     "Mify-Google": {
       "npm": "@ai-sdk/google",
       "options": {
-        "baseURL": "{env:MIMO_API_SGP_URL}",
-        "apiKey": "{env:MIMO_API_KEY}"
+        "baseURL": "{env:MIFY_API_SGP_URL}",
+        "apiKey": "{env:MIFY_API_KEY}"
       },
       "models": {
         "gemini-3-pro-preview-pt": {
