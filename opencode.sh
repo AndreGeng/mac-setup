@@ -58,7 +58,7 @@ log "Setting up OpenCode configuration..." $YELLOW
 cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "Mify-Google/gemini-3-flash",
+  "model": "Mify-Anthropic/ppio/pa/claude-opus-4-6",
   "theme": "dark",
   "autoupdate": true,
   "formatter": {
@@ -122,7 +122,7 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
       "npm": "@ai-sdk/openai-compatible",
       "options": {
         "apiKey": "{env:MIFY_API_KEY}",
-        "baseURL": "http://model.mify.ai.srv/v1/"
+        "baseURL": "{env:MIFY_API_URL}"
       }
     },
     "Mify-Zhipu": {
@@ -202,7 +202,26 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
           }
         }
       }
-    }
+    },
+    "Mify-Anthropic": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Mify-Anthropic",
+      "options": {
+        "baseURL": "{env:MIFY_API_URL}",
+        "apiKey": "{env:MIFY_API_KEY}"
+      },
+      "models": {
+        "ppio/pa/claude-opus-4-6": {
+          "name": "ppio/pa/claude-opus-4-6"
+        },
+        "ppio/pa/claude-sonnet-4-6": {
+          "name": "ppio/pa/claude-sonnet-4-6"
+        },
+        "ppio/pa/claude-haiku-4-5-20251001": {
+          "name": "ppio/pa/claude-haiku-4-5-20251001"
+        }
+      },
+    },
   }
 }
 EOF

@@ -2,15 +2,25 @@ return {
   { -- color highlighter
     'norcalli/nvim-colorizer.lua',
   },
+  -- {
+  --   "folke/tokyonight.nvim",
+  --   lazy = false,
+  --   priority = 1000,
+  --   opts = {},
+  --   config = function()
+  --     vim.cmd([[
+  --       colorscheme tokyonight
+  --     ]])
+  --   end,
+  -- },
   {
-    "folke/tokyonight.nvim",
-    lazy = false,
+    "catppuccin/nvim",
+    name = "catppuccin",
     priority = 1000,
-    opts = {},
     config = function()
       vim.cmd([[
-        colorscheme tokyonight
+        colorscheme catppuccin-mocha
       ]])
-    end,
+    end
   }
 }
