@@ -212,13 +212,25 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
       },
       "models": {
         "ppio/pa/claude-opus-4-6": {
-          "name": "ppio/pa/claude-opus-4-6"
+          "name": "ppio/pa/claude-opus-4-6",
+          "modalities": {
+            "input": ["text", "image"],
+            "output": ["text"]
+          }
         },
         "ppio/pa/claude-sonnet-4-6": {
-          "name": "ppio/pa/claude-sonnet-4-6"
+          "name": "ppio/pa/claude-sonnet-4-6",
+          "modalities": {
+            "input": ["text", "image"],
+            "output": ["text"]
+          }
         },
         "ppio/pa/claude-haiku-4-5-20251001": {
-          "name": "ppio/pa/claude-haiku-4-5-20251001"
+          "name": "ppio/pa/claude-haiku-4-5-20251001",
+          "modalities": {
+            "input": ["text", "image"],
+            "output": ["text"]
+          }
         }
       },
     },
