@@ -58,9 +58,10 @@ log "Setting up OpenCode configuration..." $YELLOW
 cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "Mify-Anthropic/ppio/pa/claude-opus-4-6",
+  "model": "Mify-Zhipu/zhipuai/glm-5",
   "theme": "dark",
   "autoupdate": true,
+  "plugin": ["opencode-swarm"],
   "formatter": {
     "shfmt": {
       "command": ["shfmt", "-w", "-i", "2", "$FILE"],
