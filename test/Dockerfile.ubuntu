@@ -1,0 +1,21 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    sudo \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# 创建非 root 用户
+RUN useradd -m -s /bin/bash testuser && \
+    echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+USER testuser
+WORKDIR /home/testuser
+
+COPY . /home/testuser/mac-setup
+
+CMD ["./mac-setup/setup.sh"]
