@@ -82,12 +82,19 @@ pkg_install() {
 
 _pkg_install_linux() {
   local pkg="$1"
+  local SUDO=""
+
+  # 如果不是 root 用户且需要 sudo
+  if [[ $EUID -ne 0 ]] && ! sudo -n true 2>/dev/null; then
+    SUDO="sudo"
+  fi
+
   if command -v apt &>/dev/null; then
-    sudo apt install -y "$pkg"
+    $SUDO apt install -y "$pkg"
   elif command -v dnf &>/dev/null; then
-    sudo dnf install -y "$pkg"
+    $SUDO dnf install -y "$pkg"
   elif command -v pacman &>/dev/null; then
-    sudo pacman -S --noconfirm "$pkg"
+    $SUDO pacman -S --noconfirm "$pkg"
   else
     log "未找到支持的包管理器" "$RED"
     return 1

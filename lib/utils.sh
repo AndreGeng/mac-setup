@@ -58,10 +58,15 @@ fix_zsh_permissions() {
     "/usr/local/share/zsh/site-functions"
   )
 
+  local SUDO=""
+  if [[ $EUID -ne 0 ]] && ! sudo -n true 2>/dev/null; then
+    SUDO="sudo"
+  fi
+
   for dir in "${zsh_dirs[@]}"; do
     if [[ -d "$dir" ]] && [[ ! -w "$dir" ]]; then
       log "修复目录权限: $dir" "$YELLOW"
-      sudo chown -R "$(whoami)" "$dir" 2>/dev/null || true
+      $SUDO chown -R "$(whoami)" "$dir" 2>/dev/null || true
       chmod -R u+w "$dir" 2>/dev/null || true
     fi
   done
