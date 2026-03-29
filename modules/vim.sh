@@ -33,9 +33,9 @@ install_neovim() {
     log "跳过 setup_python_env（无 pynvim/nvr venv；由 setup-lite 默认开启）" "$YELLOW"
   fi
 
-  # 复制 nvim 配置
+  # 复制 nvim 配置（须用 BASH_SOURCE：被 source 时 $0 不是本文件路径）
   local nvim_config_src
-  nvim_config_src="$(cd "$(dirname "$0")/../config/nvim" && pwd)"
+  nvim_config_src="$(cd "$(dirname "${BASH_SOURCE[0]}")/../config/nvim" && pwd)"
   mkdir -p "$HOME/.config/nvim"
   log "复制 nvim 配置..." "$GREEN"
   cp -rf "$nvim_config_src"/* "$HOME/.config/nvim/"
