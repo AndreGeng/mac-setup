@@ -1,5 +1,49 @@
 #!/usr/bin/env bash
 
+install_mise_binary() {
+  local arch
+  local os
+  local version="2024.12.13"
+
+  arch=$(uname -m)
+  os=$(uname -s | tr '[:upper:]' '[:lower:]')
+
+  case "$os" in
+  darwin) os="macos" ;;
+  linux) os="linux" ;;
+  *)
+    log "不支持的操作系统: $os" "$RED"
+    return 1
+    ;;
+  esac
+
+  case "$arch" in
+  x86_64) arch="x64" ;;
+  arm64 | aarch64) arch="arm64" ;;
+  *)
+    log "不支持的架构: $arch" "$RED"
+    return 1
+    ;;
+  esac
+
+  local filename="mise-${version}-${os}-${arch}.tar.gz"
+  local url="https://github.com/jdx/mise/releases/download/v${version}/${filename}"
+  local dest="/tmp/mise.tar.gz"
+
+  log "下载 mise..." "$GREEN"
+  if curl -fLo "$dest" "$url"; then
+    mkdir -p "$HOME/.local/bin"
+    tar -xzf "$dest" -C /tmp
+    mv /tmp/mise "$HOME/.local/bin/mise"
+    chmod +x "$HOME/.local/bin/mise"
+    rm -f "$dest"
+    log "mise 安装成功" "$GREEN"
+  else
+    log "mise 下载失败" "$YELLOW"
+    return 1
+  fi
+}
+
 install_neovim() {
   log "=== 安装 Neovim ===" "$GREEN"
 
@@ -19,18 +63,11 @@ install_neovim() {
   # 安装 mise（如果不存在）
   if ! command -v mise &>/dev/null; then
     log "安装 mise..." "$GREEN"
-    # 使用官方安装脚本，带重试
-    local install_script="/tmp/install_mise.sh"
-    if curl -fLo "$install_script" https://mise.run && bash "$install_script"; then
-      rm -f "$install_script"
-    else
-      rm -f "$install_script"
-      log "mise 安装失败，跳过" "$YELLOW"
-    fi
-    export PATH="$HOME/.local/bin:$PATH"
+    install_mise_binary
   else
     log "mise 已安装，跳过" "$YELLOW"
   fi
+  export PATH="$HOME/.local/bin:$PATH"
 
   # 加载 mise
   eval "$(mise activate bash 2>/dev/null || mise activate zsh 2>/dev/null || true)"
