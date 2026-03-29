@@ -10,26 +10,66 @@ install_mise() {
 
   log "安装 mise..." "$GREEN"
 
-  # 尝试官方安装脚本
-  if curl --proto '=https' --tlsv1.2 -sSf https://mise.run | sh 2>/dev/null; then
-    log "mise 安装成功" "$GREEN"
+  # 检测系统和架构
+  local arch
+  local os
+  local ext
+
+  arch=$(uname -m)
+  os=$(uname -s | tr '[:upper:]' '[:lower:]')
+
+  case "$os" in
+  darwin)
+    os="macos"
+    ext="tar.gz"
+    ;;
+  linux) ext="tar.gz" ;;
+  *)
+    log "不支持的操作系统: $os" "$RED"
+    return 1
+    ;;
+  esac
+
+  case "$arch" in
+  x86_64) arch="x64" ;;
+  arm64 | aarch64) arch="arm64" ;;
+  *)
+    log "不支持的架构: $arch" "$RED"
+    return 1
+    ;;
+  esac
+
+  # 从 GitHub releases 获取最新版本号
+  local version
+  version=$(curl -sSL "https://api.github.com/repos/jdx/mise/releases/latest" 2>/dev/null | grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/' || echo "")
+
+  if [[ -z "$version" ]]; then
+    log "无法获取 mise 版本，尝试安装脚本..." "$YELLOW"
+    curl --proto '=https' --tlsv1.2 -sSf https://mise.run | sh 2>/dev/null
     return 0
   fi
 
-  # 如果官方脚本失败，尝试 pip 安装
-  log "官方脚本安装失败，尝试 pip 安装..." "$YELLOW"
-  if command -v pip &>/dev/null; then
-    pip install mise 2>/dev/null && return 0
-  fi
+  local filename="mise-v${version}-${os}-${arch}.${ext}"
+  local url="https://github.com/jdx/mise/releases/download/v${version}/${filename}"
 
-  # 如果 pip 也失败，尝试 npm 安装
-  if command -v npm &>/dev/null; then
-    npm install -g @mise/plugin 2>/dev/null && return 0
-  fi
+  log "下载 mise v${version}..." "$GREEN"
 
-  log "mise 安装失败，请手动安装: https://mise.run" "$RED"
-  log "或运行: curl https://mise.run | sh" "$YELLOW"
-  return 1
+  mkdir -p "$HOME/.local/bin"
+
+  if curl -fLo "/tmp/mise.tar.gz" "$url"; then
+    tar -xzf /tmp/mise.tar.gz -C /tmp
+    mv /tmp/mise "$HOME/.local/bin/mise"
+    chmod +x "$HOME/.local/bin/mise"
+    rm -f /tmp/mise.tar.gz
+    log "mise 安装成功" "$GREEN"
+  else
+    rm -f /tmp/mise.tar.gz
+    log "从 GitHub 下载失败，尝试安装脚本..." "$YELLOW"
+    curl --proto '=https' --tlsv1.2 -sSf https://mise.run | sh 2>/dev/null || {
+      log "mise 安装失败，请手动运行: curl https://mise.run | sh" "$RED"
+      return 1
+    }
+  fi
 }
 
 install_neovim() {
