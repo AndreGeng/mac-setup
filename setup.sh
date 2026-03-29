@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -98,13 +99,7 @@ for module in "${MODULES[@]}"; do
       log "[DRY-RUN] 将执行: $module_path" "$YELLOW"
     else
       log "执行模块: $module" "$GREEN"
-      set +e # 禁用 set -e 以便单个工具安装失败不影响后续
       source "$module_path"
-      local exit_code=$?
-      set -e # 恢复 set -e
-      if [[ $exit_code -ne 0 ]]; then
-        log "模块 $module 执行完成 (退出码: $exit_code)" "$YELLOW"
-      fi
     fi
   else
     log "模块不存在: $module" "$RED"
@@ -121,13 +116,7 @@ if [[ -d "$platform_dir" ]]; then
         log "[DRY-RUN] 将执行: $script" "$YELLOW"
       else
         log "执行: $(basename "$script")" "$GREEN"
-        set +e
         source "$script"
-        local exit_code=$?
-        set -e
-        if [[ $exit_code -ne 0 ]]; then
-          log "平台模块 $(basename "$script") 执行完成 (退出码: $exit_code)" "$YELLOW"
-        fi
       fi
     fi
   done

@@ -86,9 +86,7 @@ install_fzf_safe() {
   # 重试下载（网络问题可能临时失败）
   count=0
   while [[ $count -lt 3 ]]; do
-    if curl --retry 3 --retry-delay 2 --tlsv1.2 -fLo "/tmp/fzf.${ext}" "$url" 2>/dev/null; then
-      break
-    fi
+    curl --retry 3 --retry-delay 2 --tlsv1.2 -fLo "/tmp/fzf.${ext}" "$url" 2>/dev/null && break || true
     count=$((count + 1))
     log "下载失败，重试 ($count/3)..." "$YELLOW"
     sleep 2
