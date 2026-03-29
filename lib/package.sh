@@ -6,21 +6,33 @@ fix_brew_mirror() {
     return 0
   fi
 
-  # 检查是否使用了科大镜像
-  if git -C "$(brew --repo)" remote get-url origin 2>/dev/null | grep -q "ustc.edu.cn"; then
-    log "检测到 Homebrew 使用科大镜像，可能存在包版本过旧问题" "$YELLOW"
-    log "尝试切换到清华源..." "$GREEN"
+  # 国内镜像源（按优先级排列）
+  local BREW_TUNA="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew"
+  local BOTTLE_TUNA="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles"
+  local BREW_TEAC="https://mirrors.cloud.tencent.com/homebrew"
+  local BOTTLE_TEAC="https://mirrors.cloud.tencent.com/homebrew-bottles"
 
-    # 切换到清华源（通常更新更及时）
-    git -C "$(brew --repo)" remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git 2>/dev/null || true
-    git -C "$(brew --repo homebrew/core)" remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git 2>/dev/null || true
-    git -C "$(brew --repo homebrew/cask)" remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-cask.git 2>/dev/null || true
+  # 检查当前源
+  local current_remote
+  current_remote=$(git -C "$(brew --repo)" remote get-url origin 2>/dev/null || echo "")
 
-    # 设置 bottle 镜像
-    export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles"
-
-    log "已切换到清华源" "$GREEN"
+  # 如果已经是清华源且可用，跳过
+  if echo "$current_remote" | grep -q "tuna.tsinghua"; then
+    export HOMEBREW_BOTTLE_DOMAIN="$BOTTLE_TUNA"
+    return 0
   fi
+
+  log "设置 Homebrew 清华镜像源..." "$GREEN"
+
+  # 切换到清华源
+  git -C "$(brew --repo)" remote set-url origin "$BREW_TUNA/brew.git" 2>/dev/null || true
+  git -C "$(brew --repo homebrew/core)" remote set-url origin "$BREW_TUNA/homebrew-core.git" 2>/dev/null || true
+  git -C "$(brew --repo homebrew/cask)" remote set-url origin "$BREW_TUNA/homebrew-cask.git" 2>/dev/null || true
+
+  # 设置 bottle 镜像
+  export HOMEBREW_BOTTLE_DOMAIN="$BOTTLE_TUNA"
+
+  log "已设置清华源 (备用: 腾讯云)" "$GREEN"
 }
 
 pkg_map_name() {
