@@ -46,18 +46,29 @@ install_fzf_safe() {
     return 0
   fi
 
-  log "Homebrew 安装 fzf 失败，尝试下载二进制..." "$YELLOW"
+  # 方法2: 系统包管理器
+  if command -v apt-get &>/dev/null; then
+    if apt-get install -y fzf 2>/dev/null; then
+      log "fzf 安装成功 (apt)" "$GREEN"
+      return 0
+    fi
+  elif command -v dnf &>/dev/null; then
+    if dnf install -y fzf 2>/dev/null; then
+      log "fzf 安装成功 (dnf)" "$GREEN"
+      return 0
+    fi
+  fi
 
-  # 方法2: 直接下载二进制
-  local arch os version url ext retry count
+  log "包管理器安装失败，尝试下载二进制..." "$YELLOW"
+
+  # 方法3: 直接下载二进制
+  local arch os version url ext count
 
   arch=$(uname -m)
   os=$(uname -s | tr '[:upper:]' '[:lower:]')
 
-  # 从 API 获取最新版本
-  version=$(curl -sL "https://api.github.com/repos/junegunn/fzf/releases/latest" 2>/dev/null | grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/' || echo "0.70.0")
+  version=$(curl -sL --connect-timeout 10 "https://api.github.com/repos/junegunn/fzf/releases/latest" 2>/dev/null | grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/' || echo "0.70.0")
 
-  # 确定文件扩展名和后缀
   case "$os" in
   darwin)
     ext="tar.gz"
@@ -75,34 +86,45 @@ install_fzf_safe() {
     ;;
   *)
     log "不支持的操作系统: $os" "$RED"
-    return 1
+    return 0
     ;;
   esac
 
-  url="https://github.com/junegunn/fzf/releases/download/v${version}/fzf-${version}-${os}_${arch}.${ext}"
+  local base_url="https://github.com/junegunn/fzf/releases/download/v${version}/fzf-${version}-${os}_${arch}.${ext}"
+  local mirrors=(
+    "$base_url"
+    "https://ghproxy.com/$base_url"
+    "https://mirror.ghproxy.com/$base_url"
+  )
 
   mkdir -p "$home_dir/.local/bin"
 
-  # 重试下载（网络问题可能临时失败）
-  count=0
-  while [[ $count -lt 3 ]]; do
-    curl --retry 3 --retry-delay 2 --tlsv1.2 -fLo "/tmp/fzf.${ext}" "$url" 2>/dev/null && break || true
-    count=$((count + 1))
-    log "下载失败，重试 ($count/3)..." "$YELLOW"
-    sleep 2
+  for url in "${mirrors[@]}"; do
+    count=0
+    while [[ $count -lt 2 ]]; do
+      if curl -fL --connect-timeout 15 --retry 1 -o "/tmp/fzf.${ext}" "$url" 2>/dev/null; then
+        break 2
+      fi
+      count=$((count + 1))
+      sleep 1
+    done
   done
 
-  if [[ -f "/tmp/fzf.${ext}" ]]; then
+  if [[ -s "/tmp/fzf.${ext}" ]]; then
     tar -xzf "/tmp/fzf.${ext}" -C /tmp
-    mv /tmp/fzf "$home_dir/.local/bin/fzf"
-    chmod +x "$home_dir/.local/bin/fzf"
-    rm -f "/tmp/fzf.${ext}"
-    export PATH="$home_dir/.local/bin:$PATH"
-    log "fzf 安装成功" "$GREEN"
+    if [[ -f /tmp/fzf ]]; then
+      mv /tmp/fzf "$home_dir/.local/bin/fzf"
+      chmod +x "$home_dir/.local/bin/fzf"
+      rm -f "/tmp/fzf.${ext}"
+      export PATH="$home_dir/.local/bin:$PATH"
+      log "fzf 安装成功" "$GREEN"
+    else
+      log "fzf 下载文件无效，跳过" "$YELLOW"
+      rm -f "/tmp/fzf.${ext}"
+    fi
   else
     rm -f "/tmp/fzf.${ext}"
     log "fzf 下载失败（网络问题），跳过" "$YELLOW"
-    return 0 # 不阻塞后续安装
   fi
 }
 
