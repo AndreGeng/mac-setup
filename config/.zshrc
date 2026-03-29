@@ -190,27 +190,11 @@ esac
 export PATH="$PATH:$HOME/.rvm/bin"
 export PATH="$PATH:$PNPM_HOME/bin"
 
-# Load a few important annexes, without Turbo
-# (this is currently required for annexes)
+# Load zinit annexes in turbo mode (background)
+zinit ice wait lucid
 zinit light-mode for \
     zdharma-continuum/zinit-annex-as-monitor \
-    zdharma-continuum/zinit-annex-bin-gem-node \
-    zdharma-continuum/zinit-annex-patch-dl \
-    zdharma-continuum/zinit-annex-rust
-
-### End of Zinit's installer chunk
-#
-
-# Load a few important annexes, without Turbo
-# (this is currently required for annexes)
-zinit light-mode for \
-    zdharma-continuum/zinit-annex-as-monitor \
-    zdharma-continuum/zinit-annex-bin-gem-node \
-    zdharma-continuum/zinit-annex-patch-dl \
-    zdharma-continuum/zinit-annex-rust
-
-### End of Zinit's installer chunk
-#
+    zdharma-continuum/zinit-annex-bin-gem-node
 eval "$(mise activate zsh)"
 
 . "$HOME/.local/bin/env"
