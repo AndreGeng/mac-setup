@@ -10,12 +10,14 @@ install_mise() {
 
   log "安装 mise..." "$GREEN"
 
-  if curl --proto '=https' --tlsv1.2 -sSf https://mise.run | sh; then
+  # 尝试官方安装脚本
+  if curl --proto '=https' --tlsv1.2 -sSf https://mise.run | sh 2>/dev/null; then
     log "mise 安装成功" "$GREEN"
-  else
-    log "mise 安装失败，跳过" "$YELLOW"
-    return 1
+    return 0
   fi
+
+  log "mise 安装失败，请手动安装: https://mise.run" "$RED"
+  return 1
 }
 
 install_nodejs() {
