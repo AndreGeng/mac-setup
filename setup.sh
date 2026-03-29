@@ -12,7 +12,7 @@ PLATFORM=$(detect_platform)
 log "检测到平台: $PLATFORM" "$GREEN"
 log "脚本根目录: $SCRIPT_ROOT" "$GREEN"
 
-# Linux 上预先获取 sudo 权限
+# 预先获取 sudo 权限（避免多次输入）
 if is_linux; then
   if ! can_sudo; then
     echo ""
@@ -23,6 +23,9 @@ if is_linux; then
   else
     log "sudo 权限已获取" "$GREEN"
   fi
+elif is_macos; then
+  # macOS 上也预先保持 sudo 会话
+  sudo -n true 2>/dev/null || true
 fi
 
 # 解析命令行参数
