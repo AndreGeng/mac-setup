@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
 
 install_mise() {
+  # 确保 HOME 变量存在
+  local home_dir="${HOME:-/root}"
+  local local_bin="$home_dir/.local/bin"
+
   # 先确保 PATH 包含用户 bin 目录
-  export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
+  export PATH="$local_bin:$home_dir/bin:$PATH"
 
   # 检查 mise 是否已安装（多个位置）
   if command -v mise &>/dev/null ||
-    [[ -f "$HOME/.local/bin/mise" ]] ||
-    [[ -f "$HOME/bin/mise" ]] ||
-    [[ -f "/usr/local/bin/mise" ]] ||
-    [[ -f "/usr/bin/mise" ]]; then
+    [[ -x "$local_bin/mise" ]] ||
+    [[ -x "$home_dir/bin/mise" ]] ||
+    [[ -x "/usr/local/bin/mise" ]] ||
+    [[ -x "/usr/bin/mise" ]]; then
     log "mise 已安装，跳过" "$YELLOW"
     return 0
   fi
