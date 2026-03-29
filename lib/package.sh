@@ -2,21 +2,8 @@
 
 # 修复 macOS Homebrew 镜像源问题
 fix_brew_mirror() {
-  if ! is_macos || ! command -v brew &>/dev/null; then
-    return 0
-  fi
-
-  # 检查是否使用了科大镜像
-  if git -C "$(brew --repo)" remote get-url origin 2>/dev/null | grep -q "ustc.edu.cn"; then
-    log "检测到 Homebrew 使用科大镜像，可能存在包版本过旧问题" "$YELLOW"
-
-    # 直接切换到官方源，跳过 brew update（太慢）
-    log "切换到官方源..." "$GREEN"
-    git -C "$(brew --repo)" remote set-url origin https://github.com/Homebrew/brew.git 2>/dev/null || true
-    git -C "$(brew --repo homebrew/core)" remote set-url origin https://github.com/Homebrew/homebrew-core.git 2>/dev/null || true
-    git -C "$(brew --repo homebrew/cask)" remote set-url origin https://github.com/Homebrew/homebrew-cask.git 2>/dev/null || true
-    log "已切换到官方源" "$GREEN"
-  fi
+  # 此功能已禁用，源切换由用户自行处理
+  return 0
 }
 
 pkg_map_name() {
