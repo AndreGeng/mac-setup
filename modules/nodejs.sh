@@ -2,21 +2,27 @@
 
 install_nodejs() {
   log "=== 安装 Node.js ===" "$GREEN"
-  
+
   # 确保 mise 已安装
   if ! command -v mise &>/dev/null; then
     log "安装 mise..." "$GREEN"
-    curl https://mise.run | sh
+    if is_macos && command -v brew &>/dev/null; then
+      brew install mise
+    else
+      curl --proto '=https' --tlsv1.2 -sSf https://mise.run | sh
+    fi
     export PATH="$HOME/.local/bin:$PATH"
+  else
+    log "mise 已安装，跳过" "$YELLOW"
   fi
-  
+
   # 加载 mise
   eval "$(mise activate bash 2>/dev/null || mise activate zsh 2>/dev/null || true)"
-  
+
   # 安装 Node.js LTS
   log "安装 Node.js LTS..." "$GREEN"
   mise use -g node@lts
-  
+
   # 全局 npm 包
   local npm_packages=(
     "js-beautify"
@@ -28,7 +34,7 @@ install_nodejs() {
     "eslint_d"
     "vscode-langservers-extracted"
   )
-  
+
   for pkg in "${npm_packages[@]}"; do
     if ! npm list -g "$pkg" &>/dev/null 2>&1; then
       log "安装 npm 包: $pkg" "$GREEN"
