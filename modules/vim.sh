@@ -19,12 +19,7 @@ install_neovim() {
   # 安装 mise（如果不存在）
   if ! command -v mise &>/dev/null; then
     log "安装 mise..." "$GREEN"
-    if is_macos && command -v brew &>/dev/null; then
-      brew install mise
-    else
-      curl --proto '=https' --tlsv1.2 -sSf https://mise.run | sh
-    fi
-    # 添加到 PATH
+    curl --proto '=https' --tlsv1.2 -sSf https://mise.run | sh
     export PATH="$HOME/.local/bin:$PATH"
   else
     log "mise 已安装，跳过" "$YELLOW"
