@@ -25,13 +25,13 @@ symlink_config() {
   local src="$1"
   local dest="$2"
   local backup="${3:-true}"
-  
+
   if [[ -L "$dest" ]]; then
     rm "$dest"
   elif [[ -e "$dest" ]] && [[ "$backup" == "true" ]]; then
     mv "$dest" "${dest}.bak.$(date +%Y%m%d%H%M%S)"
   fi
-  
+
   mkdir -p "$(dirname "$dest")"
   ln -sf "$src" "$dest"
   log "链接: $dest -> $src" "$GREEN"
@@ -49,4 +49,20 @@ get_realpath() {
     local dir="$(cd "$(dirname "$path")" 2>/dev/null && pwd)"
     echo "$dir/$(basename "$path")"
   fi
+}
+
+# 修复 zsh 相关目录权限
+fix_zsh_permissions() {
+  local zsh_dirs=(
+    "/usr/local/share/zsh"
+    "/usr/local/share/zsh/site-functions"
+  )
+
+  for dir in "${zsh_dirs[@]}"; do
+    if [[ -d "$dir" ]] && [[ ! -w "$dir" ]]; then
+      log "修复目录权限: $dir" "$YELLOW"
+      sudo chown -R "$(whoami)" "$dir" 2>/dev/null || true
+      chmod -R u+w "$dir" 2>/dev/null || true
+    fi
+  done
 }
