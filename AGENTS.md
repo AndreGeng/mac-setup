@@ -29,11 +29,11 @@ This is a modular macOS development environment setup repository using shell scr
 shfmt -w -i 2 script.sh
 
 # Lua formatting (Neovim configs)
-stylua --config-path mac-config/nvim/stylua.toml mac-config/nvim/
+stylua --config-path config/nvim/stylua.toml config/nvim/
 
 # Python formatting
-black mac-config/ranger/plugins/
-isort mac-config/ranger/plugins/
+black config/ranger/plugins/
+isort config/ranger/plugins/
 
 # General formatting
 prettier --write .  # For JSON/YAML/Markdown files
@@ -98,11 +98,11 @@ This repository does not have traditional tests. To validate changes:
 - `setup.sh` - Main orchestrator
 - `*.sh` - Component installation scripts
 - `utils/*.sh` - Shared utility functions
-- `mac-config/` - Configuration files to be symlinked
-- `mac-config/nvim/` - Neovim Lua configuration
+- `config/` - Configuration files to be symlinked
+- `config/nvim/` - Neovim Lua configuration
 
 ### Configuration Management
-- All user configs live in `mac-config/`
+- All user configs live in `config/`
 - Use `sync.sh` to create symlinks to home directory
 - Maintain the same directory structure in `~/.config/`
 
@@ -190,7 +190,7 @@ command_exists "tool" || {
 mkdir -p ~/.config/app
 
 # Symlink configuration
-ln -sf "$(pwd)/mac-config/app/config" ~/.config/app/config
+ln -sf "$(pwd)/config/app/config" ~/.config/app/config
 ```
 
 ### Plugin Configuration Pattern (Lua)
@@ -218,13 +218,13 @@ return {
 
 ### Plugin Manager
 - **lazy.nvim** - Modern plugin manager with lazy loading
-- Location: `mac-config/nvim/lua/config/lazy.lua`
-- Plugins are defined in `mac-config/nvim/lua/plugins/`
+- Location: `config/nvim/lua/config/lazy.lua`
+- Plugins are defined in `config/nvim/lua/plugins/`
 
 ### Recently Added Plugins
 
 #### snacks.nvim (QoL Plugin Collection)
-- **Location**: `mac-config/nvim/lua/plugins/snacks.lua`
+- **Location**: `config/nvim/lua/plugins/snacks.lua`
 - **Purpose**: Collection of quality-of-life plugins
 - **Key Features**:
   - Smart file picker (`<leader><space>`)
@@ -235,7 +235,7 @@ return {
   - LSP integration
   - Toggle utilities
 
-- **Usage Guide**: See `mac-config/nvim/docs/snacks-usage.md`
+- **Usage Guide**: See `config/nvim/docs/snacks-usage.md`
 
 #### Key Bindings
 - **File Operations**: `<leader>ff`, `<leader>fg`, `<leader>fb`

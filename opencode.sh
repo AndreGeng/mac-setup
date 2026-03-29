@@ -68,7 +68,7 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
       "extensions": [".sh", ".bash"]
     },
     "stylua": {
-      "command": ["stylua", "--config-path", "mac-config/nvim/stylua.toml", "$FILE"],
+      "command": ["stylua", "--config-path", "config/nvim/stylua.toml", "$FILE"],
       "extensions": [".lua"]
     },
     "black": {

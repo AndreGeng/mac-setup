@@ -75,7 +75,7 @@ fi
 # 下载nvim配置
 if [ ! -d "$HOME/.config/nvim" ]; then
   log "Copying nvim configuration" $GREEN
-  cp -R $(dirname "$0")/mac-config/nvim ~/.config
+  cp -R $(dirname "$0")/config/nvim ~/.config
 else
   log "nvim configuration already exists, skipping copy" $YELLOW
 fi
