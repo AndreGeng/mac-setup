@@ -2,8 +2,25 @@
 
 # 修复 macOS Homebrew 镜像源问题
 fix_brew_mirror() {
-  # 此功能已禁用，源切换由用户自行处理
-  return 0
+  if ! is_macos || ! command -v brew &>/dev/null; then
+    return 0
+  fi
+
+  # 检查是否使用了科大镜像
+  if git -C "$(brew --repo)" remote get-url origin 2>/dev/null | grep -q "ustc.edu.cn"; then
+    log "检测到 Homebrew 使用科大镜像，可能存在包版本过旧问题" "$YELLOW"
+    log "尝试切换到清华源..." "$GREEN"
+
+    # 切换到清华源（通常更新更及时）
+    git -C "$(brew --repo)" remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git 2>/dev/null || true
+    git -C "$(brew --repo homebrew/core)" remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git 2>/dev/null || true
+    git -C "$(brew --repo homebrew/cask)" remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-cask.git 2>/dev/null || true
+
+    # 设置 bottle 镜像
+    export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles"
+
+    log "已切换到清华源" "$GREEN"
+  fi
 }
 
 pkg_map_name() {

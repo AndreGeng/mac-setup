@@ -37,6 +37,11 @@ elif is_macos; then
 
   # 修复 Homebrew 镜像源问题
   fix_brew_mirror
+
+  # 如果设置了镜像 domain，应用到环境变量
+  if [[ -n "$HOMEBREW_BOTTLE_DOMAIN" ]]; then
+    export HOMEBREW_BOTTLE_DOMAIN
+  fi
 fi
 
 # 解析命令行参数
