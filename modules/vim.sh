@@ -19,7 +19,14 @@ install_neovim() {
   # 安装 mise（如果不存在）
   if ! command -v mise &>/dev/null; then
     log "安装 mise..." "$GREEN"
-    curl --proto '=https' --tlsv1.2 -sSf https://mise.run | sh
+    # 使用官方安装脚本，带重试
+    local install_script="/tmp/install_mise.sh"
+    if curl -fLo "$install_script" https://mise.run && bash "$install_script"; then
+      rm -f "$install_script"
+    else
+      rm -f "$install_script"
+      log "mise 安装失败，跳过" "$YELLOW"
+    fi
     export PATH="$HOME/.local/bin:$PATH"
   else
     log "mise 已安装，跳过" "$YELLOW"
