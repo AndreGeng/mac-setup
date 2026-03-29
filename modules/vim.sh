@@ -106,6 +106,17 @@ install_neovim() {
 
   # Python 环境
   setup_python_env
+
+  # 复制 nvim 配置
+  local nvim_config_src
+  nvim_config_src="$(cd "$(dirname "$0")/../config/nvim" && pwd)"
+  mkdir -p "$HOME/.config/nvim"
+  if [[ ! -f "$HOME/.config/nvim/init.lua" ]]; then
+    log "复制 nvim 配置..." "$GREEN"
+    cp -r "$nvim_config_src"/* "$HOME/.config/nvim/"
+  else
+    log "nvim 配置已存在，跳过" "$YELLOW"
+  fi
 }
 
 install_fzf_safe() {
