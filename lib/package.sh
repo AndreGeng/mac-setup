@@ -9,16 +9,13 @@ fix_brew_mirror() {
   # 检查是否使用了科大镜像
   if git -C "$(brew --repo)" remote get-url origin 2>/dev/null | grep -q "ustc.edu.cn"; then
     log "检测到 Homebrew 使用科大镜像，可能存在包版本过旧问题" "$YELLOW"
-    log "尝试更新 Homebrew..." "$GREEN"
 
-    # 尝试更新，如果失败则尝试切换到官方源
-    if ! brew update 2>/dev/null; then
-      log "brew update 失败，切换到官方源..." "$YELLOW"
-      git -C "$(brew --repo)" remote set-url origin https://github.com/Homebrew/brew.git 2>/dev/null || true
-      git -C "$(brew --repo homebrew/core)" remote set-url origin https://github.com/Homebrew/homebrew-core.git 2>/dev/null || true
-      git -C "$(brew --repo homebrew/cask)" remote set-url origin https://github.com/Homebrew/homebrew-cask.git 2>/dev/null || true
-      brew update 2>/dev/null || true
-    fi
+    # 直接切换到官方源，跳过 brew update（太慢）
+    log "切换到官方源..." "$GREEN"
+    git -C "$(brew --repo)" remote set-url origin https://github.com/Homebrew/brew.git 2>/dev/null || true
+    git -C "$(brew --repo homebrew/core)" remote set-url origin https://github.com/Homebrew/homebrew-core.git 2>/dev/null || true
+    git -C "$(brew --repo homebrew/cask)" remote set-url origin https://github.com/Homebrew/homebrew-cask.git 2>/dev/null || true
+    log "已切换到官方源" "$GREEN"
   fi
 }
 
