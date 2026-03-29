@@ -34,6 +34,9 @@ elif is_macos; then
   else
     log "sudo 权限已获取" "$GREEN"
   fi
+
+  # 修复 Homebrew 镜像源问题
+  fix_brew_mirror
 fi
 
 # 解析命令行参数
