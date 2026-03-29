@@ -10,44 +10,10 @@ install_mise() {
 
   log "安装 mise..." "$GREEN"
 
-  local arch
-  local os
-  local version="2026.3.17"
-
-  arch=$(uname -m)
-  os=$(uname -s | tr '[:upper:]' '[:lower:]')
-
-  case "$os" in
-  darwin) os="macos" ;;
-  linux) ;;
-  *)
-    log "不支持的操作系统: $os" "$RED"
-    return 1
-    ;;
-  esac
-
-  case "$arch" in
-  x86_64) arch="x64" ;;
-  arm64 | aarch64) arch="arm64" ;;
-  *)
-    log "不支持的架构: $arch" "$RED"
-    return 1
-    ;;
-  esac
-
-  local filename="mise-${version}-${os}-${arch}.tar.gz"
-  local url="https://github.com/jdx/mise/releases/download/v${version}/${filename}"
-  local dest="/tmp/mise.tar.gz"
-
-  if curl -fLo "$dest" "$url"; then
-    mkdir -p "$HOME/.local/bin"
-    tar -xzf "$dest" -C /tmp
-    mv /tmp/mise "$HOME/.local/bin/mise"
-    chmod +x "$HOME/.local/bin/mise"
-    rm -f "$dest"
+  if curl --proto '=https' --tlsv1.2 -sSf https://mise.run | sh; then
     log "mise 安装成功" "$GREEN"
   else
-    log "mise 下载失败" "$YELLOW"
+    log "mise 安装失败，跳过" "$YELLOW"
     return 1
   fi
 }
