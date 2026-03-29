@@ -12,7 +12,7 @@ install_mise() {
 
   local arch
   local os
-  local version="2024.12.13"
+  local version="2026.3.17"
 
   arch=$(uname -m)
   os=$(uname -s | tr '[:upper:]' '[:lower:]')
