@@ -1,34 +1,9 @@
 #!/usr/bin/env bash
-
-install_mise() {
-  # 确保 HOME 变量存在
-  local home_dir="${HOME:-/root}"
-  local local_bin="$home_dir/.local/bin"
-
-  # 先确保 PATH 包含用户 bin 目录
-  export PATH="$local_bin:$home_dir/bin:$PATH"
-
-  # 检查 mise 是否已安装（多个位置）
-  if command -v mise &>/dev/null ||
-    [[ -x "$local_bin/mise" ]] ||
-    [[ -x "$home_dir/bin/mise" ]] ||
-    [[ -x "/usr/local/bin/mise" ]] ||
-    [[ -x "/usr/bin/mise" ]]; then
-    log "mise 已安装，跳过" "$YELLOW"
-    return 0
-  fi
-
-  log "安装 mise..." "$GREEN"
-
-  # 尝试官方安装脚本
-  if curl --proto '=https' --tlsv1.2 -sSf https://mise.run | sh 2>/dev/null; then
-    log "mise 安装成功" "$GREEN"
-    return 0
-  fi
-
-  log "mise 安装失败，请手动安装: https://mise.run" "$RED"
-  return 1
-}
+if ! declare -F install_mise &>/dev/null; then
+  _MOD_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+  # shellcheck source=../lib/utils.sh
+  source "${_MOD_ROOT}/lib/utils.sh"
+fi
 
 install_nodejs() {
   log "=== 安装 Node.js ===" "$GREEN"
@@ -39,12 +14,16 @@ install_nodejs() {
   # 确保 PATH 包含 mise
   export PATH="$HOME/.local/bin:$PATH"
 
-  # 加载 mise
-  eval "$($HOME/.local/bin/mise activate bash 2>/dev/null || mise activate bash 2>/dev/null || true)"
+  local _mise_bin
+  if ! _mise_bin="$(resolve_mise_executable 2>/dev/null)"; then
+    log "未找到 mise 可执行文件，无法安装 Node.js" "$RED"
+    return 1
+  fi
+  eval "$("$_mise_bin" activate bash 2>/dev/null || true)"
 
   # 安装 Node.js LTS
   log "安装 Node.js LTS..." "$GREEN"
-  mise use -g node@lts
+  "$_mise_bin" use -g node@lts
 
   # 全局 npm 包
   local npm_packages=(

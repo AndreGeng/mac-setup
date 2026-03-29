@@ -71,3 +71,57 @@ fix_zsh_permissions() {
     fi
   done
 }
+
+# 解析可用的 mise 可执行文件路径（必须是常规文件）。
+# 注意：目录 ~/.local/bin/mise 在 Unix 上也可能带 +x，用 -x 会误判为「已安装」。
+resolve_mise_executable() {
+  local home_dir="${HOME:-/root}"
+  export PATH="$home_dir/.local/bin:$home_dir/bin:/usr/local/bin:/usr/bin:$PATH"
+  local c
+  c="$(command -v mise 2>/dev/null || true)"
+  if [[ -n "$c" && -f "$c" && -x "$c" ]]; then
+    printf '%s\n' "$c"
+    return 0
+  fi
+  local p
+  for p in "$home_dir/.local/bin/mise" "$home_dir/bin/mise" /usr/local/bin/mise /usr/bin/mise; do
+    if [[ -f "$p" && -x "$p" ]]; then
+      printf '%s\n' "$p"
+      return 0
+    fi
+  done
+  return 1
+}
+
+# 若 ~/.local/bin/mise 误为目录，移除以便安装真实二进制
+cleanup_mise_path_if_directory() {
+  local home_dir="${HOME:-/root}"
+  local p="${home_dir}/.local/bin/mise"
+  if [[ -d "$p" ]]; then
+    log "发现 $p 为目录（应为 mise 可执行文件），正在移除..." "$YELLOW"
+    rm -rf "$p"
+  fi
+}
+
+# 安装 mise（官方脚本，跨 macOS / Linux）
+install_mise() {
+  local home_dir="${HOME:-/root}"
+  local local_bin="$home_dir/.local/bin"
+  export PATH="$local_bin:$home_dir/bin:$PATH"
+
+  if resolve_mise_executable &>/dev/null; then
+    log "mise 已安装，跳过" "$YELLOW"
+    return 0
+  fi
+
+  log "安装 mise..." "$GREEN"
+  cleanup_mise_path_if_directory
+
+  if curl --proto '=https' --tlsv1.2 -sSf https://mise.run | sh; then
+    log "mise 安装成功" "$GREEN"
+    return 0
+  fi
+
+  log "mise 安装失败，请手动安装: https://mise.run" "$RED"
+  return 1
+}
