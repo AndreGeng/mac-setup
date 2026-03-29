@@ -110,7 +110,7 @@ pkg_exists() {
     brew list "$pkg" &>/dev/null
     ;;
   ubuntu)
-    dpkg -l "$pkg" &>/dev/null 2>&1
+    dpkg -s "$pkg" &>/dev/null 2>&1
     ;;
   fedora)
     rpm -q "$pkg" &>/dev/null 2>&1
