@@ -1,12 +1,15 @@
 #!/bin/bash
-# OpenCode Setup Script for macOS Development Environment
-# This script installs and configures OpenCode AI coding agent
+#
+# OpenCode AI 编码助手：安装 CLI、写入 ~/.config/opencode/opencode.json、可选 shell 别名与 LSP。
+# 依赖仓库内 utils/*.sh（log、exists），与主流程 setup.sh 使用的 lib/ 相互独立。
+#
 
+# 按 utils 目录下文件名顺序 source（1.constants → 2.log → …）
 for f in $(dirname "$0")/utils/*.sh; do
   source $f
 done
 
-# Check if OpenCode is already installed
+# 已安装则只打印版本，否则走 Homebrew 或 npm
 if exists "opencode"; then
   log "OpenCode is already installed" $GREEN
   log "Current version: $(opencode --version 2>/dev/null || echo 'unknown')" $CYAN
@@ -47,14 +50,13 @@ else
   fi
 fi
 
-# Create OpenCode configuration directory
+# 配置目录与主配置文件（JSON 内含格式化器、MCP、模型提供方等）
 OPENCODE_CONFIG_DIR="$HOME/.config/opencode"
 mkdir -p "$OPENCODE_CONFIG_DIR"
 
-# Create basic OpenCode configuration
 log "Setting up OpenCode configuration..." $YELLOW
 
-# Create config file with recommended settings for this repository
+# 单行 <<'EOF' 表示 here-document 不展开变量，整段原样写入文件
 cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
 {
   "$schema": "https://opencode.ai/config.json",
@@ -239,10 +241,9 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
 }
 EOF
 
-# Create OpenCode aliases in shell config
 log "Adding OpenCode aliases to shell configuration..." $YELLOW
 
-# Check for existing shell configs and add aliases
+# 若 rc 文件中尚无 alias oc=，则追加一段（避免重复插入）
 add_opencode_alias() {
   local config_file="$1"
   if [[ -f "$config_file" ]]; then
@@ -267,7 +268,6 @@ add_opencode_alias "$HOME/.zshrc"
 add_opencode_alias "$HOME/.bashrc"
 add_opencode_alias "$HOME/.bash_profile"
 
-# Create a helpful OpenCode usage guide
 log "Creating OpenCode usage guide..." $YELLOW
 cat >"$OPENCODE_CONFIG_DIR/usage-guide.md" <<'EOF'
 # OpenCode Usage Guide
@@ -308,10 +308,9 @@ opencode
 - Formatters: shfmt, stylua, black, prettier
 EOF
 
-# Install language servers for better OpenCode experience
 log "Installing language servers for enhanced OpenCode experience..." $YELLOW
 
-# Install bash language server
+# 以下全局安装 LSP，供编辑器 / OpenCode 做补全与诊断
 if exists "npm"; then
   if ! exists "bash-language-server"; then
     log "Installing bash-language-server..." $YELLOW

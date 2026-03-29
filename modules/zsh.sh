@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+#
+# 模块：Zsh + zinit；可选 zsh-completions（macOS）。
+# 由 setup.sh / setup-lite.sh --with-zsh source 本文件；需已加载 lib（log、pkg_install、fix_zsh_permissions 等）。
+#
 
 install_zsh() {
   log "=== 安装 Zsh ===" "$GREEN"

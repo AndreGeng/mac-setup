@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# 模块：tmux、TPM；macOS 额外装 reattach-to-user-namespace（剪贴板）。
+#
 
 install_tmux() {
   log "=== 安装 Tmux ===" "$GREEN"

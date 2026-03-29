@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+#
+# macOS 平台脚本（由 setup.sh 在 platforms/macos/ 下 source）：用 brew --cask 安装 GUI 应用。
+# 每项后接 || true，单个 cask 失败不中断整脚本。
+#
 
 install_macos_apps() {
   log "=== 安装 macOS GUI 应用 ===" "$GREEN"

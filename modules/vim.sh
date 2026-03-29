@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+#
+# 模块：Neovim、ripgrep、fd，以及可选的 mise + Python venv（pynvim、neovim-remote）。
+# 单独跑本文件时会自载 lib/utils.sh；完整 setup 已由入口脚本加载 lib。
+#
 if ! declare -F install_mise &>/dev/null; then
   _MOD_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
   # shellcheck source=../lib/utils.sh

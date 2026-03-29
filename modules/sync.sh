@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# 模块：把仓库 config/ 下内容软链到 ~/.config、~ 等；macOS 额外链 lazygit、karabiner 等到系统路径。
+#
 
 sync_configs() {
   log "=== 同步配置文件 ===" "$GREEN"

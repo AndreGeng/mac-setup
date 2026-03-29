@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
+#
+# 被 setup 与各模块 source 的通用工具：日志、软链、mise 安装与路径解析等。
+#
 
-# 颜色常量
+# 终端 ANSI 颜色（NC = no color，用于 log 结尾重置样式）
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-# 日志函数
+# $1 消息 $2 可选颜色，默认绿色
 log() {
   local msg="$1"
   local color="${2:-$GREEN}"

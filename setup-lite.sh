@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# 简版环境搭建：核心开发工具，尽量快、依赖少。
-# 默认跳过 zsh（zinit 首次较慢）、tmux、平台专属脚本（字体/GUI 等）。
-# 用法见: ./setup-lite.sh --help
-
+#
+# 简版环境搭建：默认只跑 vim / nodejs / cli-tools / sync，比 setup.sh 更快、依赖更少。
+# 默认跳过 zsh、tmux、平台专属脚本；可用 --with-* 逐项打开。
+# 环境变量 MAC_SETUP_SKIP_NVIM_PYTHON=1（默认）时 vim 模块不装 mise Python/pynvim/nvr。
+# 用法: ./setup-lite.sh --help
+#
 set -e
 
 SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -42,6 +44,7 @@ usage() {
 EOF
 }
 
+# 与 setup.sh 不同：未知参数直接报错退出，避免静默吞掉拼写错误
 while [[ $# -gt 0 ]]; do
   case "$1" in
   --dry-run)

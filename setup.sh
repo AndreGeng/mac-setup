@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
+#
+# 全量环境搭建入口：加载 lib → 按需 sudo / Homebrew 镜像 → 依次 source 各模块 → 再跑平台专属脚本。
+# 用法: ./setup.sh [--dry-run] [--modules zsh,vim,...] [--no-root]；模块列表见 --help。
+#
+# set -e: 任一命令返回非 0 时立刻退出，避免错误被默默忽略。
 set -e
 
+# BASH_SOURCE[0] 在被 source 时仍指向本文件；dirname + cd + pwd 得到绝对路径，不依赖当前工作目录。
 SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# 加载核心库
+# 核心库顺序：platform（检测 OS）→ package（brew/apt 等）→ utils（log、symlink、mise 等）
 source "$SCRIPT_ROOT/lib/platform.sh"
 source "$SCRIPT_ROOT/lib/package.sh"
 source "$SCRIPT_ROOT/lib/utils.sh"
@@ -48,7 +54,7 @@ elif is_macos; then
   fi
 fi
 
-# 解析命令行参数
+# 命令行参数（$# 为剩余参数个数；shift 吃掉已处理项）
 MODULES=()
 DRY_RUN=false
 NO_ROOT=false
@@ -60,6 +66,7 @@ while [[ $# -gt 0 ]]; do
     shift
     ;;
   --modules)
+    # IFS=',' 仅作用于 read：把 "a,b,c" 读入数组 MODULES
     IFS=',' read -ra MODULES <<<"$2"
     shift 2
     ;;
@@ -85,12 +92,12 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# 默认所有模块
+# 未指定 --modules 时使用默认全套模块（${#ARRAY[@]} 为数组长度）
 if [[ ${#MODULES[@]} -eq 0 ]]; then
   MODULES=(zsh vim tmux cli-tools nodejs sync)
 fi
 
-# 运行通用模块
+# 通用模块：每个文件在 subshell 外被 source，可调用已加载的 log、pkg_install 等函数
 log "=== 安装通用模块 ===" "$GREEN"
 for module in "${MODULES[@]}"; do
   module_path="$SCRIPT_ROOT/modules/${module}.sh"
@@ -106,7 +113,7 @@ for module in "${MODULES[@]}"; do
   fi
 done
 
-# 运行平台专属模块
+# 平台专属：例如 platforms/macos/*.sh、platforms/ubuntu/*.sh（按文件名排序依次 source）
 platform_dir="$SCRIPT_ROOT/platforms/$PLATFORM"
 if [[ -d "$platform_dir" ]]; then
   log "=== 安装 $PLATFORM 专属模块 ===" "$GREEN"

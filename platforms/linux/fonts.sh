@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Linux：下载 Nerd Fonts 的 Hack 压缩包到 ~/.local/share/fonts 并 fc-cache。
+#
 
 install_linux_fonts() {
   log "=== 安装 Linux 字体 ===" "$GREEN"

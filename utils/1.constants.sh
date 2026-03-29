@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-COLOR_OFF='\033[0m' # Text Reset
+#
+# 旧版脚本（如 opencode.sh）共用的 ANSI 颜色常量；配合 2.log.sh 的 log() 使用。
+#
+COLOR_OFF='\033[0m' # 重置终端样式
 # Regular Colors
 BLACK='\033[0;30m'  # BLACK
 RED='\033[0;31m'    # RED

@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# 模块：lazygit、ag、git-delta、ast-grep、shfmt 等 CLI；fzf 单独走 install_fzf_safe（多路回退）。
+#
 
 install_cli_tools() {
   log "=== 安装 CLI 工具 ===" "$GREEN"
@@ -13,6 +16,7 @@ install_cli_tools() {
   )
 
   for tool in "${tools[@]}"; do
+    # ${var%%-*} 去掉第一个 - 及其右侧，用于从 git-delta 得到 git 等可执行名探测
     local cmd_name="${tool%%-*}"
     if ! command -v "$cmd_name" &>/dev/null && ! command -v "$tool" &>/dev/null; then
       pkg_install "$tool" || log "跳过 $tool (可能需要 root)" "$YELLOW"
@@ -28,7 +32,7 @@ install_cli_tools() {
 install_fzf_safe() {
   local home_dir="${HOME:-/root}"
 
-  # 检查多个可能的安装位置
+  # PATH 与常见绝对路径都查一遍，避免只装了二进制但未进当前 PATH
   if command -v fzf &>/dev/null ||
     [[ -x /opt/homebrew/bin/fzf ]] ||
     [[ -x /usr/local/bin/fzf ]] ||

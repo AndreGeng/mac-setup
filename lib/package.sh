@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
+#
+# 跨平台装包封装：macOS 用 Homebrew，Linux 用 apt/dnf/pacman。
+# pkg_map_name 把「逻辑包名」映射到各发行版实际包名（如 fd vs fd-find）。
+#
 
-# 修复 macOS Homebrew 镜像源问题
+# 将 brew.git / core / cask 与 bottle 域名切到国内镜像，加速下载（仅 macOS + 已安装 brew 时生效）
 fix_brew_mirror() {
   if ! is_macos || ! command -v brew &>/dev/null; then
     return 0
@@ -35,6 +39,7 @@ fix_brew_mirror() {
   log "已设置清华源 (备用: 腾讯云)" "$GREEN"
 }
 
+# 返回当前平台下应安装的软件包名；无映射则原样返回
 pkg_map_name() {
   local pkg="$1"
   local platform="${2:-$(detect_platform)}"
@@ -50,6 +55,7 @@ pkg_map_name() {
   esac
 }
 
+# 若已安装则跳过；Linux 侧通过 _pkg_install_linux 调用 apt/dnf/pacman
 pkg_install() {
   local pkg="$1"
   local platform=$(detect_platform)
@@ -84,7 +90,7 @@ _pkg_install_linux() {
   local pkg="$1"
   local SUDO=""
 
-  # 如果不是 root 用户且需要 sudo
+  # 非 root 且无缓存的免密 sudo 时，命令前加 sudo（与 can_sudo 前置检查配合）
   if [[ $EUID -ne 0 ]] && ! sudo -n true 2>/dev/null; then
     SUDO="sudo"
   fi
@@ -101,6 +107,7 @@ _pkg_install_linux() {
   fi
 }
 
+# 判断「包是否已由包管理器安装」；未知平台则退化为检测可执行文件是否存在
 pkg_exists() {
   local pkg="$1"
   local platform=$(detect_platform)

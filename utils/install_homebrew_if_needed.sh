@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Check to if Homebrew is installed, and install it if it is not
+#
+# 未安装 Homebrew 时拉取国内镜像安装脚本；已安装则只打日志。
+#
 
 source $(dirname "$0")/utils/command_exists.sh
 if exists brew; then

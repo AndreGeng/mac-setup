@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# 模块：mise 全局 Node LTS + 一组全局 npm 包（格式化、LSP 等）。
+#
 if ! declare -F install_mise &>/dev/null; then
   _MOD_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
   # shellcheck source=../lib/utils.sh
@@ -19,6 +22,7 @@ install_nodejs() {
     log "未找到 mise 可执行文件，无法安装 Node.js" "$RED"
     return 1
   fi
+  # mise 往当前 shell 注入 shims PATH；eval 执行其打印出的 export 语句
   eval "$("$_mise_bin" activate bash 2>/dev/null || true)"
 
   # 安装 Node.js LTS
