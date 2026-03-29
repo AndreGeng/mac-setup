@@ -49,7 +49,7 @@ install_fzf_safe() {
   log "Homebrew 安装 fzf 失败，尝试下载二进制..." "$YELLOW"
 
   # 方法2: 直接下载二进制
-  local arch os version url ext
+  local arch os version url ext retry count
 
   arch=$(uname -m)
   os=$(uname -s | tr '[:upper:]' '[:lower:]')
@@ -81,7 +81,18 @@ install_fzf_safe() {
 
   mkdir -p "$home_dir/.local/bin"
 
-  if curl -fLo "/tmp/fzf.${ext}" "$url"; then
+  # 重试下载（网络问题可能临时失败）
+  count=0
+  while [[ $count -lt 3 ]]; do
+    if curl --retry 3 --retry-delay 2 --tlsv1.2 -fLo "/tmp/fzf.${ext}" "$url" 2>/dev/null; then
+      break
+    fi
+    count=$((count + 1))
+    log "下载失败，重试 ($count/3)..." "$YELLOW"
+    sleep 2
+  done
+
+  if [[ -f "/tmp/fzf.${ext}" ]]; then
     if [[ "$ext" == "zip" ]]; then
       mkdir -p /tmp/fzf_extract
       unzip -o "/tmp/fzf.${ext}" -d /tmp/fzf_extract
@@ -98,8 +109,8 @@ install_fzf_safe() {
     log "fzf 安装成功" "$GREEN"
   else
     rm -f "/tmp/fzf.${ext}"
-    log "fzf 下载失败，跳过" "$YELLOW"
-    return 1
+    log "fzf 下载失败（网络问题），跳过" "$YELLOW"
+    return 0 # 不阻塞后续安装
   fi
 }
 
