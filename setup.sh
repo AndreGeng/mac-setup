@@ -24,8 +24,16 @@ if is_linux; then
     log "sudo 权限已获取" "$GREEN"
   fi
 elif is_macos; then
-  # macOS 上也预先保持 sudo 会话
-  sudo -n true 2>/dev/null || true
+  # macOS 上预先获取 sudo 权限
+  if ! sudo -n true 2>/dev/null; then
+    echo ""
+    echo "此脚本需要 sudo 权限来修复目录权限。"
+    echo "请输入密码以继续："
+    sudo -v
+    echo "sudo 权限获取成功"
+  else
+    log "sudo 权限已获取" "$GREEN"
+  fi
 fi
 
 # 解析命令行参数
