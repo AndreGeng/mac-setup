@@ -111,12 +111,8 @@ install_neovim() {
   local nvim_config_src
   nvim_config_src="$(cd "$(dirname "$0")/../config/nvim" && pwd)"
   mkdir -p "$HOME/.config/nvim"
-  if [[ ! -f "$HOME/.config/nvim/init.lua" ]]; then
-    log "复制 nvim 配置..." "$GREEN"
-    cp -r "$nvim_config_src"/* "$HOME/.config/nvim/"
-  else
-    log "nvim 配置已存在，跳过" "$YELLOW"
-  fi
+  log "复制 nvim 配置..." "$GREEN"
+  cp -rf "$nvim_config_src"/* "$HOME/.config/nvim/"
 }
 
 install_fzf_safe() {
