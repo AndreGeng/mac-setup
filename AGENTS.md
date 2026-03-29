@@ -13,8 +13,9 @@ This is a modular macOS development environment setup repository using shell scr
 # Main setup script - runs all components in sequence
 ./setup.sh
 
-# Quick dev stack: Neovim, Node, CLI tools, dotfile sync (skips zsh/tmux/platform extras by default)
+# Quick dev stack: Neovim, Node, CLI tools, dotfile sync (skips zsh/tmux/platform extras; vim skips Python/nvr by default)
 ./setup-lite.sh
+# Same but with pynvim + nvr venv: ./setup-lite.sh --with-nvim-python
 
 # Individual component scripts
 ./brew.sh          # Homebrew packages and cask applications
