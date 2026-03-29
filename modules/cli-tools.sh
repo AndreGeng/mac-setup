@@ -53,19 +53,21 @@ install_fzf_safe() {
 
   arch=$(uname -m)
   os=$(uname -s | tr '[:upper:]' '[:lower:]')
-  version="0.71.0"
+
+  # 从 API 获取最新版本
+  version=$(curl -sL "https://api.github.com/repos/junegunn/fzf/releases/latest" 2>/dev/null | grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/' || echo "0.70.0")
 
   # 确定文件扩展名和后缀
   case "$os" in
   darwin)
-    ext="zip"
+    ext="tar.gz"
     case "$arch" in
     x86_64) arch="amd64" ;;
     arm64) arch="arm64" ;;
     esac
     ;;
   linux)
-    ext="tgz"
+    ext="tar.gz"
     case "$arch" in
     x86_64) arch="amd64" ;;
     aarch64 | arm64) arch="arm64" ;;
@@ -77,7 +79,7 @@ install_fzf_safe() {
     ;;
   esac
 
-  url="https://github.com/junegunn/fzf/releases/download/${version}/fzf-${version}-${os}_${arch}.${ext}"
+  url="https://github.com/junegunn/fzf/releases/download/v${version}/fzf-${version}-${os}_${arch}.${ext}"
 
   mkdir -p "$home_dir/.local/bin"
 
@@ -93,17 +95,9 @@ install_fzf_safe() {
   done
 
   if [[ -f "/tmp/fzf.${ext}" ]]; then
-    if [[ "$ext" == "zip" ]]; then
-      mkdir -p /tmp/fzf_extract
-      unzip -o "/tmp/fzf.${ext}" -d /tmp/fzf_extract
-      chmod +x /tmp/fzf_extract/fzf
-      mv /tmp/fzf_extract/fzf "$home_dir/.local/bin/fzf"
-      rm -rf /tmp/fzf_extract
-    else
-      tar -xzf "/tmp/fzf.${ext}" -C /tmp
-      mv /tmp/fzf "$home_dir/.local/bin/fzf"
-      chmod +x "$home_dir/.local/bin/fzf"
-    fi
+    tar -xzf "/tmp/fzf.${ext}" -C /tmp
+    mv /tmp/fzf "$home_dir/.local/bin/fzf"
+    chmod +x "$home_dir/.local/bin/fzf"
     rm -f "/tmp/fzf.${ext}"
     export PATH="$home_dir/.local/bin:$PATH"
     log "fzf 安装成功" "$GREEN"
