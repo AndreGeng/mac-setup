@@ -60,17 +60,19 @@ install_neovim() {
     pkg_install "fd" || true
   fi
 
+  # 确保 ~/.local/bin 在 PATH 中
+  export PATH="$HOME/.local/bin:$PATH"
+
   # 安装 mise（如果不存在）
-  if ! command -v mise &>/dev/null; then
+  if ! command -v mise &>/dev/null && [[ ! -f "$HOME/.local/bin/mise" ]]; then
     log "安装 mise..." "$GREEN"
     install_mise_binary
   else
     log "mise 已安装，跳过" "$YELLOW"
   fi
-  export PATH="$HOME/.local/bin:$PATH"
 
-  # 加载 mise
-  eval "$(mise activate bash 2>/dev/null || mise activate zsh 2>/dev/null || true)"
+  # 加载 mise（使用绝对路径或 PATH 中的 mise）
+  eval "$($HOME/.local/bin/mise activate bash 2>/dev/null || mise activate bash 2>/dev/null || true)"
 
   # Python 环境
   setup_python_env
@@ -81,22 +83,26 @@ setup_python_env() {
 
   unset ALL_PROXY
 
+  # 确保 PATH 包含 mise
+  export PATH="$HOME/.local/bin:$PATH"
+
   local venv_dir="$HOME/.local/share/neovim"
   local python3_version="3.11"
+  local mise_cmd="$HOME/.local/bin/mise"
 
   mkdir -p "$venv_dir"
 
   # 安装 Python
-  if ! mise ls python 2>/dev/null | grep -q "$python3_version"; then
+  if ! $mise_cmd ls python 2>/dev/null | grep -q "$python3_version"; then
     log "安装 Python $python3_version..." "$GREEN"
-    mise install python@$python3_version
+    $mise_cmd install python@$python3_version
   fi
 
   # 创建虚拟环境
   local venv_path="$venv_dir/neovim3"
   if [[ ! -d "$venv_path" ]]; then
     log "创建 Python 虚拟环境..." "$GREEN"
-    mise exec python@$python3_version -- python -m venv "$venv_path"
+    $mise_cmd exec python@$python3_version -- python -m venv "$venv_path"
   fi
 
   # 安装 pynvim

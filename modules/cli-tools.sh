@@ -26,7 +26,8 @@ install_cli_tools() {
 }
 
 install_fzf_safe() {
-  if command -v fzf &>/dev/null; then
+  # 检查多个可能的安装位置
+  if command -v fzf &>/dev/null || [[ -f /opt/homebrew/bin/fzf ]] || [[ -f /usr/local/bin/fzf ]] || [[ -f "$HOME/.local/bin/fzf" ]]; then
     log "fzf 已安装，跳过" "$YELLOW"
     return 0
   fi
