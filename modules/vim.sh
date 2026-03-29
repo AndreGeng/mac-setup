@@ -95,7 +95,7 @@ install_neovim() {
   done
 
   # fzf 和 fd 单独处理
-  install_fzf_safe
+  # install_fzf_safe
   install_fd_safe
 
   # 确保 ~/.local/bin 在 PATH 中
