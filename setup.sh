@@ -14,14 +14,18 @@ log "脚本根目录: $SCRIPT_ROOT" "$GREEN"
 
 # 预先获取 sudo 权限（避免多次输入）
 if is_linux; then
-  if ! can_sudo; then
+  if [[ $EUID -eq 0 ]]; then
+    log "以 root 用户运行，跳过 sudo 检查" "$GREEN"
+  elif can_sudo; then
+    log "sudo 权限已获取" "$GREEN"
+  elif command -v sudo &>/dev/null; then
     echo ""
     echo "此脚本需要 sudo 权限来安装系统包。"
     echo "请输入密码以继续（密码不会显示）："
     sudo -v
     echo "sudo 权限获取成功"
   else
-    log "sudo 权限已获取" "$GREEN"
+    log "未找到 sudo，可能需要 root 权限安装系统包" "$YELLOW"
   fi
 elif is_macos; then
   # macOS 上预先获取 sudo 权限
