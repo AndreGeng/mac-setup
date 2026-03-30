@@ -42,13 +42,13 @@ install_neovim() {
   nvim_config_src="$(cd "$(dirname "${BASH_SOURCE[0]}")/../config/nvim" && pwd)"
 
   # 确保 HOME 正确（处理 root 用户等情况）
-  local target_home="${HOME}"
-  if [[ -z "$target_home" ]] || [[ ! -d "$target_home" ]]; then
-    target_home="/root"
-  fi
+  local target_home="${HOME:-/root}"
 
   local nvim_config_dest="$target_home/.config/nvim"
   local config_dir="$target_home/.config"
+
+  # 调试：打印实际路径
+  log "目标目录: $config_dir" "$GREEN"
 
   # 检查并处理已存在的 .config 目录
   if [[ -e "$config_dir" ]] && [[ ! -d "$config_dir" ]]; then
@@ -61,8 +61,9 @@ install_neovim() {
     rm -rf "$nvim_config_dest" 2>/dev/null || true
   fi
 
-  mkdir -p "$config_dir" "$nvim_config_dest" 2>/dev/null || {
-    log "无法创建 $config_dir，请检查磁盘或权限" "$RED"
+  mkdir -p "$config_dir" "$nvim_config_dest" || {
+    log "无法创建目录，请检查磁盘或权限" "$RED"
+    log "config_dir=$config_dir" "$RED"
     return 1
   }
 
