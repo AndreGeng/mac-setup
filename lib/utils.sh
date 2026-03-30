@@ -112,6 +112,9 @@ install_mise() {
   local local_bin="$home_dir/.local/bin"
   export PATH="$local_bin:$home_dir/bin:$PATH"
 
+  # 清理可能的错误目录
+  cleanup_mise_path_if_directory
+
   if resolve_mise_executable &>/dev/null; then
     log "mise 已安装，跳过" "$YELLOW"
     return 0
