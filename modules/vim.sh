@@ -48,7 +48,24 @@ install_neovim() {
   fi
 
   local nvim_config_dest="$target_home/.config/nvim"
-  mkdir -p "$nvim_config_dest"
+  local config_dir="$target_home/.config"
+
+  # 检查并处理已存在的 .config 目录
+  if [[ -e "$config_dir" ]] && [[ ! -d "$config_dir" ]]; then
+    log "警告: $config_dir 存在但不是目录，尝试删除..." "$YELLOW"
+    rm -f "$config_dir" 2>/dev/null || true
+  fi
+
+  if [[ -d "$nvim_config_dest" ]]; then
+    log "nvim 配置已存在，先删除再复制..." "$YELLOW"
+    rm -rf "$nvim_config_dest" 2>/dev/null || true
+  fi
+
+  mkdir -p "$config_dir" "$nvim_config_dest" 2>/dev/null || {
+    log "无法创建 $config_dir，请检查磁盘或权限" "$RED"
+    return 1
+  }
+
   log "复制 nvim 配置到 $nvim_config_dest..." "$GREEN"
   cp -rf "$nvim_config_src"/* "$nvim_config_dest/"
 }
