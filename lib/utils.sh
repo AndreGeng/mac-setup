@@ -106,7 +106,7 @@ cleanup_mise_path_if_directory() {
   fi
 }
 
-# 安装 mise（官方脚本，跨 macOS / Linux）
+# 安装 mise（直接下载二进制）
 install_mise() {
   local home_dir="${HOME:-/root}"
   local local_bin="$home_dir/.local/bin"
@@ -123,11 +123,68 @@ install_mise() {
   log "安装 mise..." "$GREEN"
   cleanup_mise_path_if_directory
 
-  if curl --proto '=https' --tlsv1.2 -sSf https://mise.run | sh; then
-    log "mise 安装成功" "$GREEN"
-    return 0
+  # 检测系统和架构
+  local arch
+  local os
+  arch=$(uname -m)
+  os=$(uname -s | tr '[:upper:]' '[:lower:]')
+
+  case "$os" in
+  darwin) os="macos" ;;
+  linux) ;;
+  *)
+    log "不支持的操作系统: $os" "$RED"
+    return 1
+    ;;
+  esac
+
+  case "$arch" in
+  x86_64) arch="x64" ;;
+  arm64 | aarch64) arch="arm64" ;;
+  *)
+    log "不支持的架构: $arch" "$RED"
+    return 1
+    ;;
+  esac
+
+  # 获取最新版本
+  local version
+  version=$(curl -sSL "https://api.github.com/repos/jdx/mise/releases/latest" 2>/dev/null | grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/' || echo "")
+
+  if [[ -z "$version" ]]; then
+    log "无法获取 mise 版本，尝试安装脚本..." "$YELLOW"
+    # 备用：使用安装脚本
+    if curl --proto '=https' --tlsv1.2 -sSf https://mise.run | sh -s -- -y; then
+      log "mise 安装成功" "$GREEN"
+      return 0
+    fi
+    log "mise 安装失败，请手动安装: https://mise.run" "$RED"
+    return 1
   fi
 
-  log "mise 安装失败，请手动安装: https://mise.run" "$RED"
-  return 1
+  local filename="mise-v${version}-${os}-${arch}.tar.gz"
+  local url="https://github.com/jdx/mise/releases/download/v${version}/${filename}"
+  local tmp_dir="/tmp/mise-install"
+
+  mkdir -p "$tmp_dir"
+
+  log "下载 mise v${version}..." "$GREEN"
+  if curl -fLo "$tmp_dir/mise.tar.gz" "$url"; then
+    tar -xzf "$tmp_dir/mise.tar.gz" -C "$tmp_dir"
+    mkdir -p "$local_bin"
+    mv "$tmp_dir/mise" "$local_bin/mise"
+    chmod +x "$local_bin/mise"
+    rm -rf "$tmp_dir"
+    log "mise 安装成功" "$GREEN"
+    return 0
+  else
+    rm -rf "$tmp_dir"
+    log "下载失败，尝试安装脚本..." "$YELLOW"
+    if curl --proto '=https' --tlsv1.2 -sSf https://mise.run | sh -s -- -y; then
+      log "mise 安装成功" "$GREEN"
+      return 0
+    fi
+    log "mise 安装失败，请手动安装: https://mise.run" "$RED"
+    return 1
+  fi
 }
