@@ -32,6 +32,7 @@ return {
       -- Setup lspconfig.
       local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
       -- Enable the following language servers
+      -- 注意：Java (jdtls) 由 nvim-jdtls 插件单独管理，不要在这里添加
       local servers = { 'eslint_d', 'ts_ls', 'lua_ls', 'emmet_language_server', 'bashls', 'html' }
       for _, lsp in ipairs(servers) do
         vim.lsp.enable(lsp)
@@ -52,7 +53,7 @@ return {
               showSuggestionsAsSnippets = true,
               expandAbbreviation = true,
               showExpandedAbbreviation = "never",
-            }
+            },
           },
         })
       end
@@ -62,7 +63,11 @@ return {
   },
   {
     'williamboman/mason-lspconfig.nvim',
-    opts = {},
+    opts = {
+      automatic_enable = {
+        exclude = { 'jdtls' },
+      },
+    },
     dependencies = {
       'neovim/nvim-lspconfig',
     }

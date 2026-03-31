@@ -167,6 +167,9 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
       "models": {
         "xiaomi/mimo-v2-flash": {
           "name": "xiaomi/mimo-v2-flash"
+        },
+        "xiaomi/mimo-v2-pro:": {
+          "name": "xiaomi/mimo-v2-pro"
         }
       }
     },
