@@ -83,7 +83,7 @@ while [[ $# -gt 0 ]]; do
     echo "  --no-root           跳过需要 root 的步骤"
     echo "  -h, --help          显示帮助信息"
     echo ""
-    echo "可用模块: zsh, vim, tmux, cli-tools, nodejs, sync"
+    echo "可用模块: zsh, vim, tmux, cli-tools, nodejs, sync, opencode"
     exit 0
     ;;
   *)
@@ -94,7 +94,7 @@ done
 
 # 未指定 --modules 时使用默认全套模块（${#ARRAY[@]} 为数组长度）
 if [[ ${#MODULES[@]} -eq 0 ]]; then
-  MODULES=(zsh vim tmux cli-tools nodejs sync)
+  MODULES=(zsh vim tmux cli-tools nodejs sync opencode)
 fi
 
 # 通用模块：每个文件在 subshell 外被 source，可调用已加载的 log、pkg_install 等函数

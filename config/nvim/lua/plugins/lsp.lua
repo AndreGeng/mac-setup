@@ -26,7 +26,7 @@ return {
         vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>Q', '<cmd>lua vim.diagnostic.setloclist()<CR>', opts)
         vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>so',
           [[<cmd>lua require('telescope.builtin').lsp_document_symbols()<CR>]], opts)
-        vim.cmd [[ command! Format execute 'lua vim.lsp.buf.formatting()' ]]
+        vim.cmd [[ command! Format execute 'lua vim.lsp.buf.format({ async = true })' ]]
       end
 
       -- Setup lspconfig.
