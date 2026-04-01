@@ -158,8 +158,20 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
         "xiaomi/mimo-v2-flash": {
           "name": "xiaomi/mimo-v2-flash"
         },
-        "xiaomi/mimo-v2-pro:": {
-          "name": "xiaomi/mimo-v2-pro"
+        "xiaomi/mimo-v2-pro": {
+            "name": "xiaomi/mimo-v2-pro",
+            "interleaved": {
+                "field": "reasoning_content"
+            },
+            "options": {
+                "thinking": {
+                    "type": "enabled"
+                }
+            },
+            "limit": {
+                "context": 1048576,
+                "output": 65536
+            }
         }
       }
     },

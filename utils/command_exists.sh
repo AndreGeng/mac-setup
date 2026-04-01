@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-#
-# 判断命令是否在 PATH 中（command -v 比 which 更 POSIX、更可靠）。
-#
-exists() {
+command_exists() {
   command -v "$1" >/dev/null 2>&1
+}
+
+exists() {
+  command_exists "$@"
 }
