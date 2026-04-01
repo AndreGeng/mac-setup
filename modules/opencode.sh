@@ -53,7 +53,7 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
   "model": "Mify-Zhipu/zhipuai/glm-5",
   "theme": "dark",
   "autoupdate": true,
-  "plugin": ["opencode-swarm", "opencode-notify"],
+  "plugin": ["opencode-swarm"],
   "formatter": {
     "shfmt": {
       "command": ["shfmt", "-w", "-i", "2", "$FILE"],

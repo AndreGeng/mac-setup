@@ -31,12 +31,44 @@ return {
 
       -- Setup lspconfig.
       local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
+      local mise = vim.fn.exepath('mise')
+      if mise == '' then
+        mise = vim.fn.expand('~/.local/bin/mise')
+      end
+
+      local node_root = nil
+      if vim.fn.executable(mise) == 1 then
+        node_root = vim.trim(vim.fn.system({ mise, 'where', 'node@22' }))
+        if vim.v.shell_error ~= 0 or node_root == '' then
+          node_root = vim.trim(vim.fn.system({ mise, 'where', 'node@lts' }))
+        end
+        if vim.v.shell_error ~= 0 or node_root == '' then
+          node_root = nil
+        end
+      end
+
+      local ts_ls_cmd = nil
+      local tailwindcss_cmd = nil
+      if node_root then
+        ts_ls_cmd = {
+          node_root .. '/bin/node',
+          vim.fn.expand('~/.local/share/nvim/mason/packages/typescript-language-server/node_modules/typescript-language-server/lib/cli.mjs'),
+          '--stdio',
+        }
+        tailwindcss_cmd = {
+          node_root .. '/bin/node',
+          vim.fn.expand('~/.local/share/nvim/mason/packages/tailwindcss-language-server/node_modules/@tailwindcss/language-server/bin/tailwindcss-language-server'),
+          '--stdio',
+        }
+      end
+
       -- Enable the following language servers
       -- 注意：Java (jdtls) 由 nvim-jdtls 插件单独管理，不要在这里添加
-      local servers = { 'eslint_d', 'ts_ls', 'lua_ls', 'emmet_language_server', 'bashls', 'html' }
+      local servers = { 'eslint_d', 'ts_ls', 'lua_ls', 'emmet_language_server', 'bashls', 'html', 'tailwindcss' }
       for _, lsp in ipairs(servers) do
         vim.lsp.enable(lsp)
         vim.lsp.config(lsp, {
+          cmd = lsp == 'ts_ls' and ts_ls_cmd or lsp == 'tailwindcss' and tailwindcss_cmd or nil,
           on_attach = on_attach,
           capabilities = capabilities,
           settings = {
@@ -64,9 +96,7 @@ return {
   {
     'williamboman/mason-lspconfig.nvim',
     opts = {
-      automatic_enable = {
-        exclude = { 'jdtls' },
-      },
+      automatic_enable = false,
     },
     dependencies = {
       'neovim/nvim-lspconfig',
