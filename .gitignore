@@ -6,3 +6,4 @@
 automatic_backups
 *-local.yml
 *.local
+.swarm/
