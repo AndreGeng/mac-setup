@@ -4,7 +4,6 @@ return {
   config = function()
     vim.keymap.set('n', '<C-g>', ':FloatermToggle()<cr>', { noremap = true })
 
-    -- using FloatermToggle to show 'lazygit'/'ranger'
     -- @see https://github.com/voldikss/vim-floaterm/issues/243
     vim.cmd([[
       function! GetBufnrUnnamed() abort
@@ -44,8 +43,6 @@ return {
       command! -nargs=? -count=0 ToggleTool call ToggleTool(<q-args>, <count>)
       nnoremap <silent> <C-a> <Cmd>execute v:count . 'ToggleTool lazygit'<CR>
       tnoremap <silent> <C-a> <Cmd>execute v:count . 'ToggleTool lazygit'<CR>
-      nnoremap <silent> <leader>r <Cmd>execute v:count . 'ToggleTool ranger'<CR>
-      tnoremap <silent> <leader>r <Cmd>execute v:count . 'ToggleTool ranger'<CR>
     ]])
     return {}
   end
