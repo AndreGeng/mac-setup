@@ -95,7 +95,16 @@ alias proxy='export ALL_PROXY=http://127.0.0.1:1087'
 alias unproxy='unset ALL_PROXY'
 alias lg='lazygit'
 alias work='mux work-local'
-alias r='ranger'
+
+# yazi wrapper - change directory after exit
+y() {
+  local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
+  command yazi "$@" --cwd-file="$tmp"
+  IFS= read -r -d '' cwd < "$tmp"
+  [ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd"
+  rm -f -- "$tmp"
+}
+# alias r='ranger'  # removed
 
 # }}}
 

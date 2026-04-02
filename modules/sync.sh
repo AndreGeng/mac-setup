@@ -21,6 +21,7 @@ sync_configs() {
   
   # 通用配置
   symlink_config "$config_dir/nvim" "$HOME/.config/nvim"
+  symlink_config "$config_dir/yazi" "$HOME/.config/yazi"
   symlink_config "$config_dir/tmuxinator" "$HOME/.config/tmuxinator"
   symlink_config "$config_dir/.zsh-utils" "$HOME/.config/.zsh-utils"
   

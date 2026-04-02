@@ -45,6 +45,25 @@ pkg_map_name() {
   local platform="${2:-$(detect_platform)}"
 
   case "$pkg:$platform" in
+  # Yazi 主程序
+  yazi:arch) echo "yazi" ;;
+  # Yazi 依赖
+  poppler:ubuntu) echo "poppler-utils" ;;
+  poppler:macos) echo "poppler" ;;
+  sevenzip:ubuntu) echo "p7zip" ;;
+  sevenzip:macos) echo "sevenzip" ;;
+  ffmpeg:ubuntu) echo "ffmpeg" ;;
+  ffmpeg:macos) echo "ffmpeg" ;;
+  jq:ubuntu) echo "jq" ;;
+  jq:macos) echo "jq" ;;
+  imagemagick:ubuntu) echo "imagemagick" ;;
+  imagemagick:macos) echo "imagemagick" ;;
+  imagemagick:arch) echo "imagemagick" ;;
+  resvg:macos) echo "resvg" ;;
+  resvg:arch) echo "resvg" ;;
+  zoxide:ubuntu) echo "zoxide" ;;
+  zoxide:macos) echo "zoxide" ;;
+  zoxide:arch) echo "zoxide" ;;
   openssl:ubuntu) echo "libssl-dev" ;;
   zlib:ubuntu) echo "zlib1g-dev" ;;
   xz:ubuntu) echo "xz-utils" ;;

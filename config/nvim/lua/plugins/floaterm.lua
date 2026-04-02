@@ -41,8 +41,8 @@ return {
       endfunction
 
       command! -nargs=? -count=0 ToggleTool call ToggleTool(<q-args>, <count>)
-      nnoremap <silent> <C-a> <Cmd>execute v:count . 'ToggleTool lazygit'<CR>
-      tnoremap <silent> <C-a> <Cmd>execute v:count . 'ToggleTool lazygit'<CR>
+      nnoremap <silent> <C-a> <Cmd>execute v:count . 'ToggleTool yazi'<CR>
+      tnoremap <silent> <C-a> <Cmd>execute v:count . 'ToggleTool yazi'<CR>
     ]])
     return {}
   end

@@ -1,0 +1,11 @@
+# Yazi configuration
+# https://yazi-rs.github.io/docs/configuration/overview/
+
+[mgr]
+show_hidden = false
+sort_by = "alphabetical"
+scrolloff = 5
+
+[preview]
+max_width = 600
+max_height = 900
