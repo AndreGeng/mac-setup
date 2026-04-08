@@ -50,7 +50,7 @@ log "Setting up OpenCode configuration..." "$YELLOW"
 cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "Mify-Zhipu/zhipuai/glm-5",
+  "model": "Mify-Xiaomi/xiaomi/mimo-v2-pro",
   "theme": "dark",
   "autoupdate": true,
   "plugin": ["opencode-swarm"],
@@ -102,6 +102,10 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
     "chrome-devtools": {
       "type": "local",
       "command": ["npx", "-y", "chrome-devtools-mcp@latest"]
+    },
+    "gitnexus": {
+      "type": "local",
+      "command": ["gitnexus", "mcp"]
     }
   },
   "provider": {
@@ -130,7 +134,7 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
           "name": "zhipuai/glm-4.7"
         },
         "zhipuai/glm-5": {
-          "name": "zhipuai/glm-5"
+          "name": "zhipuai/glm-5",
         }
       }
     },

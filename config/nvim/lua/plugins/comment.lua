@@ -5,8 +5,14 @@ return {
       'JoosepAlviste/nvim-ts-context-commentstring',
     },
     config = function()
+      local ok, ts = pcall(require, 'ts_context_commentstring')
+      local pre_hook = nil
+      if ok and ts and ts.integrations and ts.integrations.comment_nvim then
+        pre_hook = ts.integrations.comment_nvim.create_pre_hook()
+      end
+
       require('Comment').setup {
-        pre_hook = require('ts_context_commentstring.integrations.comment_nvim').create_pre_hook(),
+        pre_hook = pre_hook,
         padding = true,
         sticky = true,
         ignore = nil,
