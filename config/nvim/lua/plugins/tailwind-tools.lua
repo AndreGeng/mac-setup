@@ -9,6 +9,9 @@ return {
   opts = {
     server = {
       override = false, -- Disable lspconfig override to avoid deprecation warning
+    },
+    document_color = {
+      enabled = false, -- Disable to avoid client.request deprecation warning
     }
   }
 }

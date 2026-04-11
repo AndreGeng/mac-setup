@@ -22,8 +22,9 @@ local options = {
   ignorecase = true,
   -- 搜索使用智能大小写
   smartcase = true,
-  -- 关闭backup
+  -- 关闭backup和swap
   backup = false,
+  swapfile = false,
   -- 在切换buffer时，持久化undo历史记录。see 『:help undo-persistence』
   undofile = true,
   -- String-encoding used internally and for |RPC| communication. Always UTF-8.
