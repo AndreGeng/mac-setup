@@ -7,17 +7,6 @@ return {
 			bigfile = { enabled = true },
 			dashboard = {
 				enabled = true,
-				sections = {
-					{ section = "header" },
-					{
-						section = "terminal",
-						cmd = "/opt/homebrew/bin/chafa ~/Downloads/wall.jpg --size 60x17 --stretch; sleep .1",
-						height = 17,
-						padding = 1,
-					},
-					{ section = "keys", gap = 1, padding = 1 },
-					{ section = "startup" },
-				},
 			},
 			indent = { enabled = true },
 			notifier = {
@@ -234,17 +223,10 @@ return {
 			},
 		},
 		init = function()
-			vim.api.nvim_create_autocmd("VimEnter", {
-				callback = function()
-					require("snacks").dashboard()
-				end,
-			})
-
 			vim.api.nvim_create_autocmd("User", {
 				pattern = "VeryLazy",
 				callback = function()
 					local snacks = require("snacks")
-
 					snacks.toggle.option("spell", { name = "Spelling" }):map("<leader>us")
 				end,
 			})
