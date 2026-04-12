@@ -14,7 +14,7 @@ return {
         opencode = {
           cmd = { "opencode" },
         },
-        cursor = { cmd = { "cursor-agent --model auto" } }
+        cursor = { cmd = { "cursor-agent" } }
       },
     },
   },

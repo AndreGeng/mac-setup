@@ -17,7 +17,6 @@ local function set_file_descriptor_limit()
     end)
     
     if success then
-      vim.notify("File descriptor limit set via vim.uv: " .. target_cur, vim.log.levels.INFO)
       return true
     else
       vim.notify("Failed to set limit via vim.uv: " .. tostring(err), vim.log.levels.WARN)
@@ -29,7 +28,6 @@ local function set_file_descriptor_limit()
   local result = vim.fn.system(shell_cmd)
   
   if vim.v.shell_error == 0 then
-    vim.notify("File descriptor limit set via shell: " .. target_cur, vim.log.levels.INFO)
     return true
   else
     vim.notify("Failed to set file descriptor limit", vim.log.levels.ERROR)
