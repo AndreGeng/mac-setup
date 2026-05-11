@@ -221,3 +221,6 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+
+# OpenClaw Completion
+source "/Users/mac/.openclaw/completions/openclaw.zsh"

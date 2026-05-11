@@ -50,10 +50,9 @@ log "Setting up OpenCode configuration..." "$YELLOW"
 cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "Mify-Xiaomi/xiaomi/mimo-v2-pro",
+  "model": "Mify-Xiaomi/xiaomi/mimo-v2.5-pro",
   "theme": "dark",
   "autoupdate": true,
-  "plugin": ["opencode-swarm"],
   "formatter": {
     "shfmt": {
       "command": ["shfmt", "-w", "-i", "2", "$FILE"],
@@ -118,7 +117,7 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
       "name": "Mify-Minimax",
       "npm": "@ai-sdk/openai-compatible",
       "options": {
-        "apiKey": "{env:MIFY_API_KEY}",
+        "apiKey": "{env:MIFY_API_TEAM_KEY}",
         "baseURL": "{env:MIFY_API_URL}"
       }
     },
@@ -127,7 +126,7 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
       "name": "Mify-Zhipu",
       "options": {
         "baseURL": "{env:MIFY_API_URL}",
-        "apiKey": "{env:MIFY_API_KEY}"
+        "apiKey": "{env:MIFY_API_TEAM_KEY}"
       },
       "models": {
         "zhipuai/glm-4.7": {
@@ -143,11 +142,14 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
       "name": "Mify-OpenAI",
       "options": {
         "baseURL": "{env:MIFY_API_URL}",
-        "apiKey": "{env:MIFY_API_KEY}"
+        "apiKey": "{env:MIFY_API_TEAM_KEY}"
       },
       "models": {
         "azure_openai/gpt-5.1-codex": {
           "name": "azure_openai/gpt-5.1-codex"
+        },
+        "azure_openai/gpt-5.5": {
+          "name": "azure_openai/gpt-5.5"
         }
       }
     },
@@ -156,7 +158,7 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
       "name": "Mify-Xiaomi",
       "options": {
         "baseURL": "{env:MIFY_API_URL}",
-        "apiKey": "{env:MIFY_API_KEY}"
+        "apiKey": "{env:MIFY_API_TEAM_KEY}"
       },
       "models": {
         "xiaomi/mimo-v2-flash": {
@@ -176,6 +178,40 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
                 "context": 1048576,
                 "output": 65536
             }
+        },
+        "xiaomi/mimo-v2.5-pro": {
+          "name": "xiaomi/mimo-v2.5-pro",
+          "interleaved": {
+            "field": "reasoning_content"
+          },
+          "options": {
+            "thinking": {
+              "type": "enabled"
+            }
+          },
+          "limit": {
+            "context": 1048576,
+            "output": 65536
+          }
+        },
+        "xiaomi/mimo-v2.5": {
+          "name": "xiaomi/mimo-v2.5",
+          "interleaved": {
+            "field": "reasoning_content"
+          },
+          "options": {
+            "thinking": {
+              "type": "enabled"
+            }
+          },
+          "limit": {
+            "context": 1048576,
+            "output": 65536
+          },
+          "modalities": {
+            "input": ["text", "image"],
+            "output": ["text"]
+          }
         }
       }
     },
@@ -184,7 +220,7 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
       "name": "Mify-Kimi",
       "options": {
         "baseURL": "{env:MIFY_API_URL}",
-        "apiKey": "{env:MIFY_API_KEY}"
+        "apiKey": "{env:MIFY_API_TEAM_KEY}"
       },
       "models": {
         "volcengine_maas/kimi-k2-250711": {
@@ -196,7 +232,7 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
       "npm": "@ai-sdk/google",
       "options": {
         "baseURL": "{env:MIFY_API_SGP_URL}",
-        "apiKey": "{env:MIFY_API_KEY}"
+        "apiKey": "{env:MIFY_API_TEAM_KEY}"
       },
       "models": {
         "gemini-3-pro-preview-pt": {
@@ -220,7 +256,7 @@ cat >"$OPENCODE_CONFIG_DIR/opencode.json" <<'EOF'
       "name": "Mify-Anthropic",
       "options": {
         "baseURL": "{env:MIFY_API_URL}",
-        "apiKey": "{env:MIFY_API_KEY}"
+        "apiKey": "{env:MIFY_API_TEAM_KEY}"
       },
       "models": {
         "ppio/pa/claude-opus-4-6": {
