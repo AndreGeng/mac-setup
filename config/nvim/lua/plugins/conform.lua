@@ -15,6 +15,7 @@ return {
       graphql = { "prettier" },
       lua = { "stylua" },
       python = { "isort", "black" },
+      go = { "goimports", "gofmt", stop_after_first = true },
     },
     format_on_save = function(bufnr)
       -- Disable with a global or buffer-local variable

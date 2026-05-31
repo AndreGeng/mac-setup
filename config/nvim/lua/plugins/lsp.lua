@@ -80,6 +80,24 @@ return {
             typescript = {
               tsserver = { maxTsServerMemory = 8192 }
             },
+            gopls = {
+              gofumpt = true,
+              staticcheck = true,
+              usePlaceholders = true,
+              completeFunctionCalls = true,
+              analyses = {
+                nilness = true,
+                shadow = true,
+                unusedparams = true,
+                unusedwrite = true,
+              },
+              hints = {
+                assignVariableTypes = true,
+                compositeLiteralFields = true,
+                constantValues = true,
+                parameterNames = true,
+              },
+            },
             -- Emmet LSP specific settings
             emmet = {
               showSuggestionsAsSnippets = true,
@@ -96,6 +114,7 @@ return {
   {
     'williamboman/mason-lspconfig.nvim',
     opts = {
+      ensure_installed = { 'gopls' },
       automatic_enable = false,
     },
     dependencies = {

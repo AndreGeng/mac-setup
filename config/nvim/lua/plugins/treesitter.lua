@@ -10,7 +10,7 @@ return {
         'typescript', 'tsx', 'javascript', 'jsdoc',
         'lua', 'vim', 'vimdoc', 'html', 'css',
         'json', 'yaml', 'markdown', 'bash', 'python',
-        'java',
+        'java', 'go', 'gomod', 'gosum', 'gowork',
       })
     end,
   },
