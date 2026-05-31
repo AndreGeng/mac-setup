@@ -14,7 +14,7 @@ return {
       markdown = { "prettier" },
       graphql = { "prettier" },
       lua = { "stylua" },
-      python = { "isort", "black" },
+      python = { "ruff_format" },
       go = { "goimports", "gofmt", stop_after_first = true },
     },
     format_on_save = function(bufnr)
