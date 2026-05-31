@@ -64,7 +64,7 @@ return {
 
       -- Enable the following language servers
       -- 注意：Java (jdtls) 由 nvim-jdtls 插件单独管理，不要在这里添加
-      local servers = { 'eslint_d', 'ts_ls', 'lua_ls', 'emmet_language_server', 'bashls', 'html', 'tailwindcss' }
+      local servers = { 'eslint_d', 'ts_ls', 'lua_ls', 'emmet_language_server', 'bashls', 'html', 'tailwindcss', 'gopls' }
       for _, lsp in ipairs(servers) do
         vim.lsp.enable(lsp)
         vim.lsp.config(lsp, {

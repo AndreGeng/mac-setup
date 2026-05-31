@@ -10,6 +10,16 @@ if vim then
   if vim.fn.isdirectory(vim.env.HOME .. "/.local/share/mise/shims") == 1 then
     vim.env.PATH = vim.env.HOME .. "/.local/share/mise/shims:" .. vim.env.PATH
   end
+  local mise = vim.fn.exepath("mise")
+  if mise ~= "" then
+    local go_root = vim.trim(vim.fn.system({ mise, "where", "go" }))
+    if vim.v.shell_error == 0 and go_root ~= "" then
+      local go_bin = go_root .. "/bin"
+      if vim.fn.isdirectory(go_bin) == 1 then
+        vim.env.PATH = go_bin .. ":" .. vim.env.PATH
+      end
+    end
+  end
 
   -- disable matchparen plugin
   vim.g.loaded_matchparen = 1
