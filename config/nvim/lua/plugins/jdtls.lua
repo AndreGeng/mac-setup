@@ -19,6 +19,10 @@ local function mise_where(spec)
   return root
 end
 
+local function glob_jars(pattern)
+  return vim.fn.glob(pattern, true, true)
+end
+
 return {
   {
     'mfussenegger/nvim-jdtls',
@@ -40,7 +44,12 @@ return {
         '.git',
       }) or vim.fn.getcwd()
       local project_name = vim.fs.basename(root_dir)
-      local workspace_dir = vim.fn.stdpath('data') .. '/jdtls-workspace/' .. project_name
+      local project_hash = vim.fn.sha256(root_dir):sub(1, 8)
+      local workspace_dir = vim.fn.stdpath('data') .. '/jdtls-workspace/' .. project_name .. '-' .. project_hash
+      local mason_path = vim.fn.stdpath('data') .. '/mason/packages'
+      local bundles = {}
+      vim.list_extend(bundles, glob_jars(mason_path .. '/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar'))
+      vim.list_extend(bundles, glob_jars(mason_path .. '/java-test/extension/server/*.jar'))
 
       local config = {
         cmd = {
@@ -51,6 +60,9 @@ return {
           workspace_dir,
         },
         root_dir = root_dir,
+        init_options = {
+          bundles = bundles,
+        },
         settings = {
           java = {
             eclipse = {
@@ -82,12 +94,30 @@ return {
           },
         },
         on_attach = function(_, bufnr)
-          vim.keymap.set('n', '<leader>jo', ':JdtOverwrite<CR>', { buffer = bufnr, silent = true, desc = 'Jdt Overwrite' })
+          local jdtls = require('jdtls')
+
+          vim.keymap.set('n', '<leader>ji', jdtls.organize_imports, { buffer = bufnr, desc = 'Java Organize Imports' })
+          vim.keymap.set('n', '<leader>jv', jdtls.extract_variable, { buffer = bufnr, desc = 'Java Extract Variable' })
+          vim.keymap.set('v', '<leader>jv', function()
+            jdtls.extract_variable({ visual = true })
+          end, { buffer = bufnr, desc = 'Java Extract Variable' })
+          vim.keymap.set('n', '<leader>jV', jdtls.extract_variable_all, { buffer = bufnr, desc = 'Java Extract Variable All' })
+          vim.keymap.set('n', '<leader>jC', jdtls.extract_constant, { buffer = bufnr, desc = 'Java Extract Constant' })
+          vim.keymap.set('v', '<leader>jC', function()
+            jdtls.extract_constant({ visual = true })
+          end, { buffer = bufnr, desc = 'Java Extract Constant' })
+          vim.keymap.set('v', '<leader>jm', function()
+            jdtls.extract_method({ visual = true })
+          end, { buffer = bufnr, desc = 'Java Extract Method' })
+          vim.keymap.set('n', '<leader>js', jdtls.extended_symbols, { buffer = bufnr, desc = 'Java Extended Symbols' })
+          vim.keymap.set('n', '<leader>jtc', jdtls.test_class, { buffer = bufnr, desc = 'Java Test Class' })
+          vim.keymap.set('n', '<leader>jtn', jdtls.test_nearest_method, { buffer = bufnr, desc = 'Java Test Nearest Method' })
+          vim.keymap.set('n', '<leader>jdc', function()
+            require('jdtls.dap').setup_dap_main_class_configs({ verbose = true })
+          end, { buffer = bufnr, desc = 'Java Discover Main Classes' })
           vim.keymap.set('n', '<leader>jc', ':JdtCompile<CR>', { buffer = bufnr, silent = true, desc = 'Jdt Compile' })
           vim.keymap.set('n', '<leader>jr', ':JdtRestart<CR>', { buffer = bufnr, silent = true, desc = 'Jdt Restart' })
-          vim.keymap.set('n', '<leader>jd', ':JdtDebug<CR>', { buffer = bufnr, silent = true, desc = 'Jdt Debug' })
-          vim.keymap.set('n', '<leader>jt', ':JdtTest<CR>', { buffer = bufnr, silent = true, desc = 'Jdt Test' })
-          vim.keymap.set('n', '<leader>jR', ':JdtRefreshConfig<CR>', { buffer = bufnr, silent = true, desc = 'Jdt Refresh Config' })
+          vim.keymap.set('n', '<leader>jR', ':JdtUpdateConfig<CR>', { buffer = bufnr, silent = true, desc = 'Jdt Update Config' })
 
           vim.keymap.set('n', 'gd', vim.lsp.buf.definition, { buffer = bufnr, desc = 'Go to definition' })
           vim.keymap.set('n', 'K', vim.lsp.buf.hover, { buffer = bufnr, desc = 'Hover' })
