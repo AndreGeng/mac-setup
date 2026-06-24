@@ -3,8 +3,8 @@ prefix = "ctrl+space"
 settings = ""
 next_agent = "alt+j"
 previous_agent = "alt+k"
-split_horizontal = "prefix+v"
-split_vertical = "prefix+s"
+split_horizontal = "prefix+s"
+split_vertical = "prefix+v"
 
 [[keys.command]]
 key = "ctrl+h"
