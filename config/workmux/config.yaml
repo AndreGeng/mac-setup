@@ -1,5 +1,6 @@
 nerdfont: true
 agent: claude --permission-mode auto
+merge_strategy: rebase
 panes:
   - command: <agent>
     focus: true
