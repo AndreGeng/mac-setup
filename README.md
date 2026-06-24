@@ -39,7 +39,10 @@ cd mac-setup
 | tmux | Tmux + TPM | macOS, Linux |
 | cli-tools | lazygit, fzf, ripgrep, delta 等 | macOS, Linux |
 | nodejs | Node.js LTS + 全局 npm 包 | macOS, Linux |
+| herdr | Herdr agent multiplexer + 配置 | macOS, Linux |
 | sync | 配置文件符号链接 | macOS, Linux |
+| opencode | OpenCode CLI 与常用 LSP | macOS, Linux |
+| workmux | Workmux 并行开发工作区工具 | macOS, Linux |
 
 ## 平台支持
 
@@ -68,7 +71,10 @@ cd mac-setup
 │   ├── vim.sh
 │   ├── tmux.sh
 │   ├── cli-tools.sh
+│   ├── herdr.sh
 │   ├── nodejs.sh
+│   ├── opencode.sh
+│   ├── workmux.sh
 │   └── sync.sh
 ├── platforms/         # 平台专属模块
 │   ├── macos/

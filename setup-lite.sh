@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # 简版环境搭建：默认只跑 vim / nodejs / cli-tools / sync，比 setup.sh 更快、依赖更少。
-# 默认跳过 zsh、tmux、平台专属脚本；可用 --with-* 逐项打开。
+# 默认跳过 zsh、tmux、Herdr、平台专属脚本；可用 --with-* 逐项打开。
 # 环境变量 MAC_SETUP_SKIP_NVIM_PYTHON=1（默认）时 vim 模块不装 mise Python/pynvim/nvr。
 # 用法: ./setup-lite.sh --help
 #
@@ -19,6 +19,7 @@ DRY_RUN=false
 RUN_PLATFORM=false
 WITH_ZSH=false
 WITH_TMUX=false
+WITH_HERDR=false
 WITH_NVIM_PYTHON=false
 MODULES_OVERRIDE=()
 
@@ -36,6 +37,7 @@ usage() {
   --with-nvim-python    vim 模块也执行 setup_python_env（pynvim + nvr，vim 内会装 mise+Python）
   --with-zsh            额外执行 zsh 模块（Oh My Zsh / Zinit，首次较慢）
   --with-tmux           额外执行 tmux 模块
+  --with-herdr          额外执行 Herdr 模块
   --with-platform       同时执行 platforms/<平台>/*.sh（字体、应用等）
   --modules A,B,C       完全自定义模块列表（逗号分隔），覆盖默认简版列表
   -h, --help            显示本帮助
@@ -61,6 +63,10 @@ while [[ $# -gt 0 ]]; do
     ;;
   --with-tmux)
     WITH_TMUX=true
+    shift
+    ;;
+  --with-herdr)
+    WITH_HERDR=true
     shift
     ;;
   --with-nvim-python)
@@ -114,6 +120,7 @@ else
   MODULES=(vim nodejs cli-tools sync)
   [[ "$WITH_ZSH" == "true" ]] && MODULES=(zsh "${MODULES[@]}")
   [[ "$WITH_TMUX" == "true" ]] && MODULES+=("tmux")
+  [[ "$WITH_HERDR" == "true" ]] && MODULES+=("herdr")
 fi
 
 # 简版默认跳过 Neovim Python/nvr；完整 setup.sh 不设此变量

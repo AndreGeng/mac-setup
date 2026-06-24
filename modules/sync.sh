@@ -26,6 +26,13 @@ sync_configs() {
   symlink_config "$config_dir/workmux" "$HOME/.config/workmux"
   symlink_config "$config_dir/.zsh-utils" "$HOME/.config/.zsh-utils"
 
+  # Herdr writes socket/log files next to config.toml, so only link the config file.
+  if [[ -L "$HOME/.config/herdr" && "$(readlink "$HOME/.config/herdr")" == "$config_dir/herdr" ]]; then
+    rm "$HOME/.config/herdr"
+  fi
+  mkdir -p "$HOME/.config/herdr"
+  symlink_config "$config_dir/herdr/config.toml" "$HOME/.config/herdr/config.toml"
+
   symlink_config "$config_dir/.zshrc" "$HOME/.zshrc"
   symlink_config "$config_dir/.p10k.zsh" "$HOME/.p10k.zsh"
   symlink_config "$config_dir/.tmux.conf" "$HOME/.tmux.conf"
