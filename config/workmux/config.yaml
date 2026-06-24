@@ -1,0 +1,19 @@
+nerdfont: true
+agent: claude --permission-mode auto
+panes:
+  - command: <agent>
+    focus: true
+  - split: horizontal
+    command: lazygit
+  - split: vertical
+sidebar:
+  layout: tiles
+  width: 40
+  templates:
+    tiles:
+      - "{status_icon} {pane_title} {fill} {elapsed}"
+      - "{worktree}"
+      - "{agent_icon} {fill} {git_stats}"
+  tree:
+    enabled: true
+    group_by: project
