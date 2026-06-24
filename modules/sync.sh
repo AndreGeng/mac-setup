@@ -32,6 +32,8 @@ sync_configs() {
   fi
   mkdir -p "$HOME/.config/herdr"
   symlink_config "$config_dir/herdr/config.toml" "$HOME/.config/herdr/config.toml"
+  symlink_config "$config_dir/herdr/navigator.sh" "$HOME/.config/herdr/navigator.sh"
+  chmod +x "$HOME/.config/herdr/navigator.sh"
 
   symlink_config "$config_dir/.zshrc" "$HOME/.zshrc"
   symlink_config "$config_dir/.p10k.zsh" "$HOME/.p10k.zsh"

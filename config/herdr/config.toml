@@ -1,9 +1,27 @@
 [keys]
 prefix = "ctrl+space"
 settings = ""
-focus_pane_left = "ctrl+h"
-focus_pane_down = "ctrl+j"
-focus_pane_up = "ctrl+k"
-focus_pane_right = "ctrl+l"
-split_horizontal = "prefix+s"
-split_vertical = "prefix+v"
+next_agent = "alt+j"
+previous_agent = "alt+k"
+split_horizontal = "prefix+v"
+split_vertical = "prefix+s"
+
+[[keys.command]]
+key = "ctrl+h"
+type = "shell"
+command = "~/.config/herdr/navigator.sh left ctrl+h"
+
+[[keys.command]]
+key = "ctrl+j"
+type = "shell"
+command = "~/.config/herdr/navigator.sh down ctrl+j"
+
+[[keys.command]]
+key = "ctrl+k"
+type = "shell"
+command = "~/.config/herdr/navigator.sh up ctrl+k"
+
+[[keys.command]]
+key = "ctrl+l"
+type = "shell"
+command = "~/.config/herdr/navigator.sh right ctrl+l"

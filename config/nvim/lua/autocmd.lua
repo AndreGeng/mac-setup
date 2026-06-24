@@ -53,7 +53,7 @@ vim.cmd([[
   augroup END
 
   function! NetrwMapping()
-    nnoremap <silent> <buffer> <c-l> :TmuxNavigateRight<CR>
+    nunmap <buffer> <c-l>
   endfunction
   " 禁止netrw保存history or bookmarks
   let g:netrw_dirhistmax = 0
