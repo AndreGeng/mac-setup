@@ -1,10 +1,12 @@
 [keys]
 prefix = "ctrl+space"
 settings = ""
+detach = "prefix+d"
+zoom = "prefix+i"
 next_agent = "alt+j"
 previous_agent = "alt+k"
-split_horizontal = "prefix+s"
 split_vertical = "prefix+v"
+split_horizontal = "prefix+s"
 
 [[keys.command]]
 key = "ctrl+h"
