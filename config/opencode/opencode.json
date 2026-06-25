@@ -66,7 +66,7 @@
       "type": "local"
     }
   },
-  "model": "Mify-Zhipu/zhipuai/glm-5.2",
+  "model": "Mify-OpenAI/ppio/pa/gpt-5.5",
   "plugin": ["ecc-universal"],
   "provider": {
     "Mify-Anthropic": {
