@@ -29,7 +29,7 @@ return {
         end
       end
 
-      vim.keymap.set({ 'n', 't' }, '<BS>', function()
+      vim.keymap.set('n', '<BS>', function()
         navigate('left', 'h', 'TmuxNavigateLeft')
       end, { silent = true })
       vim.keymap.set({ 'n', 't' }, '<C-h>', function()

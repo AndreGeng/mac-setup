@@ -1,3 +1,4 @@
+onboarding = false
 [keys]
 prefix = "ctrl+space"
 settings = ""
@@ -5,6 +6,8 @@ detach = "prefix+d"
 zoom = "prefix+i"
 next_agent = "alt+j"
 previous_agent = "alt+k"
+previous_workspace = "alt+h"
+next_workspace = "alt+l"
 split_vertical = "prefix+v"
 split_horizontal = "prefix+s"
 
@@ -27,3 +30,6 @@ command = "~/.config/herdr/navigator.sh up ctrl+k"
 key = "ctrl+l"
 type = "shell"
 command = "~/.config/herdr/navigator.sh right ctrl+l"
+
+[ui]
+show_agent_labels_on_pane_borders = true

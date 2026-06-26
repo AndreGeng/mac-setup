@@ -11,7 +11,13 @@ return {
     },
     filesystem_watchers = {
       enable = false,
-    }
+    },
+    on_attach = function(bufnr)
+      local api = require('nvim-tree.api')
+
+      api.config.mappings.default_on_attach(bufnr)
+      pcall(vim.keymap.del, 'n', '<C-k>', { buffer = bufnr })
+    end,
   },
   init = function()
     local function open_nvim_tree()
