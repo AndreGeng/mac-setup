@@ -11,12 +11,12 @@
       "template": "Run tests and validate setup"
     },
     "task": {
-      "description": "Delegate a task to workmux coordinator and merge completed work",
-      "template": "Use the coordinator skill to orchestrate this task end-to-end with workmux. Task: $ARGUMENTS\n\nRequirements:\n- Do not implement directly in the current checkout.\n- Break the request into one or more worktree agent tasks.\n- Spawn agents with workmux in the background.\n- Wait for agents to complete.\n- Review their output with workmux capture.\n- Merge successful branches one at a time by sending /merge to each agent.\n- Report merged branches, commits, and any blocked agents."
+      "description": "把任务交给 workmux coordinator 执行，并在完成后合并代码",
+      "template": "使用 coordinator skill，通过 workmux 端到端编排这个任务。任务：$ARGUMENTS\n\n要求：\n- 不要在当前 checkout 里直接实现。\n- 将请求拆成一个或多个 worktree agent 任务。\n- 使用 workmux 在后台启动 agents。\n- 等待 agents 完成。\n- 使用 workmux capture 审查它们的输出。\n- 对可接受的结果，逐个向对应 agent 发送 /merge 来合并分支。\n- 汇报已合并的分支、提交，以及任何被阻塞的 agent。"
     },
     "t": {
-      "description": "Shortcut for /task",
-      "template": "Use the coordinator skill to orchestrate this task end-to-end with workmux. Task: $ARGUMENTS\n\nRequirements:\n- Do not implement directly in the current checkout.\n- Break the request into one or more worktree agent tasks.\n- Spawn agents with workmux in the background.\n- Wait for agents to complete.\n- Review their output with workmux capture.\n- Merge successful branches one at a time by sending /merge to each agent.\n- Report merged branches, commits, and any blocked agents."
+      "description": "/task 的快捷命令",
+      "template": "使用 coordinator skill，通过 workmux 端到端编排这个任务。任务：$ARGUMENTS\n\n要求：\n- 不要在当前 checkout 里直接实现。\n- 将请求拆成一个或多个 worktree agent 任务。\n- 使用 workmux 在后台启动 agents。\n- 等待 agents 完成。\n- 使用 workmux capture 审查它们的输出。\n- 对可接受的结果，逐个向对应 agent 发送 /merge 来合并分支。\n- 汇报已合并的分支、提交，以及任何被阻塞的 agent。"
     }
   },
   "formatter": {
