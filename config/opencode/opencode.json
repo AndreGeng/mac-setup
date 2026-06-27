@@ -9,6 +9,14 @@
     "test": {
       "description": "Test shell scripts and configuration",
       "template": "Run tests and validate setup"
+    },
+    "task": {
+      "description": "Delegate a task to workmux coordinator and merge completed work",
+      "template": "Use the coordinator skill to orchestrate this task end-to-end with workmux. Task: $ARGUMENTS\n\nRequirements:\n- Do not implement directly in the current checkout.\n- Break the request into one or more worktree agent tasks.\n- Spawn agents with workmux in the background.\n- Wait for agents to complete.\n- Review their output with workmux capture.\n- Merge successful branches one at a time by sending /merge to each agent.\n- Report merged branches, commits, and any blocked agents."
+    },
+    "t": {
+      "description": "Shortcut for /task",
+      "template": "Use the coordinator skill to orchestrate this task end-to-end with workmux. Task: $ARGUMENTS\n\nRequirements:\n- Do not implement directly in the current checkout.\n- Break the request into one or more worktree agent tasks.\n- Spawn agents with workmux in the background.\n- Wait for agents to complete.\n- Review their output with workmux capture.\n- Merge successful branches one at a time by sending /merge to each agent.\n- Report merged branches, commits, and any blocked agents."
     }
   },
   "formatter": {
