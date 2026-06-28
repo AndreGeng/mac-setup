@@ -8,8 +8,13 @@ next_agent = "alt+j"
 previous_agent = "alt+k"
 previous_workspace = "alt+h"
 next_workspace = "alt+l"
+focus_pane_up = ""
+swap_pane_up = ""
 split_vertical = "prefix+v"
 split_horizontal = "prefix+s"
+close_pane = "prefix+k"
+close_tab = "prefix+shift+k"
+copy_mode = "prefix+space"
 
 [[keys.command]]
 key = "ctrl+h"
