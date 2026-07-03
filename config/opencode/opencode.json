@@ -10,13 +10,13 @@
       "description": "Test shell scripts and configuration",
       "template": "Run tests and validate setup"
     },
-    "task": {
-      "description": "把任务交给 workmux coordinator 执行，并在完成后合并代码",
-      "template": "使用 coordinator skill，通过 workmux 端到端编排这个任务。任务：$ARGUMENTS\n\n要求：\n- 不要在当前 checkout 里直接实现。\n- 将请求拆成一个或多个 worktree agent 任务。\n- 使用 workmux 在后台启动 agents。\n- 等待 agents 完成。\n- 使用 workmux capture 审查它们的输出。\n- 对可接受的结果，逐个向对应 agent 发送 /merge 来合并分支。\n- 汇报已合并的分支、提交，以及任何被阻塞的 agent。"
-    },
     "t": {
-      "description": "/task 的快捷命令",
-      "template": "使用 coordinator skill，通过 workmux 端到端编排这个任务。任务：$ARGUMENTS\n\n要求：\n- 不要在当前 checkout 里直接实现。\n- 将请求拆成一个或多个 worktree agent 任务。\n- 使用 workmux 在后台启动 agents。\n- 等待 agents 完成。\n- 使用 workmux capture 审查它们的输出。\n- 对可接受的结果，逐个向对应 agent 发送 /merge 来合并分支。\n- 汇报已合并的分支、提交，以及任何被阻塞的 agent。"
+      "description": "用 workmux 后台派发任务，完成后自动合并",
+      "template": "使用 worktree skill 执行：/worktree --merge $ARGUMENTS\n\n要求：\n- 这是非阻塞派发命令。\n- 不要在当前 checkout 里直接实现。\n- 只负责写 prompt file，并通过 workmux add -b -P <prompt-file> 创建后台 worktree agent。\n- 在子 agent 的 prompt 里要求它完成实现、验证、提交，并在最后使用 /merge 合并回来。\n- 创建 worktree 后立即汇报 branch/handle，然后停止。\n- 不要调用 workmux wait、workmux capture 或 coordinator。"
+    },
+    "w": {
+      "description": "用 Herdr worktree-dispatcher 派发任务",
+      "template": "使用 worktree-dispatcher skill 分发任务：$ARGUMENTS\n\n要求：\n- 这是 Herdr 下的任务分发命令，和 workmux 无关。\n- 不要在当前 checkout 里直接实现。\n- 按 worktree-dispatcher skill 的规则调用 dispatcher，将任务派发到临时 git worktree 中的 agent。\n- 默认使用 add --merge，让子 agent 在有提交时通过 dispatcher 提供的 merge token 合回。\n- 如果任务是分析、review、解释或计划，也要求子 agent 产出并提交 Markdown 报告文件。\n- 派发完成后立即汇报 branch、worktree path、agent name、cleanup log path，以及有无 merge command，然后停止。"
     }
   },
   "formatter": {
