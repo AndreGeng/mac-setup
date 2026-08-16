@@ -13,12 +13,19 @@ return {
       local function navigate(direction, vim_direction, tmux_command)
         local current_window = vim.api.nvim_get_current_win()
 
+        local function startinsert_if_terminal()
+          if vim.bo.buftype == 'terminal' then
+            vim.cmd('startinsert')
+          end
+        end
+
         if vim.fn.mode():sub(1, 1) == 't' then
           vim.cmd('stopinsert')
         end
 
         vim.cmd('wincmd ' .. vim_direction)
         if vim.api.nvim_get_current_win() ~= current_window then
+          startinsert_if_terminal()
           return
         end
 
@@ -27,6 +34,8 @@ return {
         else
           vim.cmd(tmux_command)
         end
+
+        startinsert_if_terminal()
       end
 
       vim.keymap.set('n', '<BS>', function()
