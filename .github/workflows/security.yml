@@ -1,0 +1,61 @@
+name: Security
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sensitive-data:
+    name: Sensitive data scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Gitleaks
+        env:
+          GITLEAKS_VERSION: 8.28.0
+          GITLEAKS_SHA256: a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/gitleaks.tar.gz"
+          bin_dir="$RUNNER_TEMP/gitleaks-bin"
+          mkdir -p "$bin_dir"
+          curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
+            --output "$archive" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          printf '%s  %s\n' "$GITLEAKS_SHA256" "$archive" | sha256sum --check --strict
+          tar -xzf "$archive" -C "$bin_dir" gitleaks
+          printf '%s\n' "$bin_dir" >> "$GITHUB_PATH"
+
+      - name: Test privacy scanner
+        run: ./test/security-scan-test.sh
+
+      - name: Scan repository and history
+        run: ./scripts/security-scan.sh
+
+      - name: Scan changed lines without legacy baselines
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$BASE_SHA" && ! "$BASE_SHA" =~ ^0+$ ]]; then
+            ./scripts/privacy-scan.sh --range "$BASE_SHA..$HEAD_SHA"
+          else
+            ./scripts/privacy-scan.sh
+          fi

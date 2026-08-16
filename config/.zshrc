@@ -55,11 +55,11 @@ export PATH="$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools"
 export PATH="$HOME/.pyenv/bin:$PATH"
 
 # perl
-PATH="/Users/andregeng/perl5/bin${PATH:+:${PATH}}"; export PATH;
-PERL5LIB="/Users/andregeng/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"; export PERL5LIB;
-PERL_LOCAL_LIB_ROOT="/Users/andregeng/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"; export PERL_LOCAL_LIB_ROOT;
-PERL_MB_OPT="--install_base \"/Users/andregeng/perl5\""; export PERL_MB_OPT;
-PERL_MM_OPT="INSTALL_BASE=/Users/andregeng/perl5"; export PERL_MM_OPT;
+PATH="$HOME/perl5/bin${PATH:+:${PATH}}"; export PATH;
+PERL5LIB="$HOME/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"; export PERL5LIB;
+PERL_LOCAL_LIB_ROOT="$HOME/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"; export PERL_LOCAL_LIB_ROOT;
+PERL_MB_OPT="--install_base \"$HOME/perl5\""; export PERL_MB_OPT;
+PERL_MM_OPT="INSTALL_BASE=$HOME/perl5"; export PERL_MM_OPT;
 
 # fzf
 export FZF_DEFAULT_COMMAND='fd --type f'
@@ -184,12 +184,12 @@ zstyle :bracketed-paste-magic paste-finish pastefinish
 # zprof
 
 # pnpm
-export PNPM_HOME="/Users/mac/.pnpm-global"
+export PNPM_HOME="$HOME/.pnpm-global"
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
-# pnpm endexport PATH=/Users/admin/.local/bin:$PATH
+# pnpm end
 
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH="$PATH:$HOME/.rvm/bin"
@@ -205,7 +205,7 @@ eval "$(mise activate zsh)"
 . "$HOME/.local/bin/env"
 
 # opencode
-export PATH=/Users/mac/.opencode/bin:$PATH
+export PATH="$HOME/.opencode/bin:$PATH"
 
 # OpenCode AI Coding Agent Aliases
 alias oc="opencode"
@@ -213,7 +213,7 @@ alias oc-init="opencode && /init"
 alias oc-share="opencode && /share"
 
 # bun completions
-[ -s "/Users/mac/.bun/_bun" ] && source "/Users/mac/.bun/_bun"
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
@@ -224,7 +224,7 @@ export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
 # OpenClaw Completion
-source "/Users/mac/.openclaw/completions/openclaw.zsh"
+source "$HOME/.openclaw/completions/openclaw.zsh"
 
 # Hermes Agent — ensure ~/.local/bin is on PATH
 export PATH="$HOME/.local/bin:$PATH"

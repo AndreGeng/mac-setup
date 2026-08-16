@@ -1,0 +1,5 @@
+# Exact fingerprints for rotated historical findings only. Never add raw secret values.
+# Feishu MCP links invalidated by link reset on 2026-08-16.
+6ffce9aee49b9f0158d710be66fc6d92638b3aec:config/opencode/opencode.json:feishu-mcp-token:64
+84f327891341cb159b86fb233d95257ce72c18d2:modules/opencode.sh:feishu-mcp-token:100
+2a11acd823ff464df58c86d0b983de0d42875f9a:opencode.sh:feishu-mcp-token:107

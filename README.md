@@ -113,6 +113,18 @@ cd mac-setup
 - macOS: Homebrew
 - Linux: apt (Ubuntu/Debian)
 
+## 安全检查
+
+本仓库是公开仓库。提交前安装 Gitleaks 并运行敏感信息检查：
+
+```bash
+brew install gitleaks
+./scripts/security-scan.sh
+```
+
+GitHub Actions 会在每个 Pull Request 和 `master` 推送上执行相同检查。规则、误报处理和
+凭据泄露响应流程见 [docs/security.md](docs/security.md)。
+
 ## 许可证
 
 MIT

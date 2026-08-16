@@ -1,0 +1,11 @@
+title = "mac-setup secret scanning"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "feishu-mcp-token"
+description = "Feishu remote MCP bearer token"
+regex = '''mcp__[A-Za-z0-9_-]{20,}'''
+keywords = ["mcp__"]
+tags = ["feishu", "mcp", "token"]

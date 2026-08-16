@@ -1,0 +1,2 @@
+# Prefix<TAB>Reason. Applies only to full scans; staged/range scans ignore this file.
+neovim3/	Legacy generated Python environment; new changes remain blocked by diff scans.
