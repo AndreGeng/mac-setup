@@ -9,7 +9,7 @@
         { "id": "ppio/pa/claude-opus-4-8", "reasoning": true, "input": ["text", "image"] }
       ]
     },
-    "openai": {
+    "mify-openai": {
       "baseUrl": "__MIFY_API_URL__",
       "api": "openai-completions",
       "apiKey": "$MIFY_API_TEAM_KEY",

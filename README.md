@@ -131,16 +131,19 @@ GitHub Actions 会在每个 Pull Request 和 `master` 推送上执行相同检�
 完整安装会自动部署脱敏后的 Agent 配置，也可以单独执行：
 
 ```bash
-bash modules/agents.sh
+bash modules/agents.sh --audit
+bash modules/agents.sh --apply
+bash modules/agents.sh --apply --only opencode --repair-links
 ```
 
-现有应用配置默认保留。需要用仓库模板刷新时：
+现有应用配置默认保留。需要用仓库模板刷新单个工具时：
 
 ```bash
-MAC_SETUP_FORCE_AGENT_CONFIG=1 bash modules/agents.sh
+bash modules/agents.sh --apply --only opencode --force
 ```
 
-第三方 skills 不复制进仓库，其来源和重建方式见
+`--force` 检测到明文凭据时会在创建备份前停止。第三方 skills 不复制进仓库，其来源、
+审计和安全更新流程见
 [docs/agent-migration.md](docs/agent-migration.md)。
 
 ## 许可证

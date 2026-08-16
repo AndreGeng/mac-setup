@@ -66,7 +66,7 @@
   "instructions": ["AGENTS.md"],
   "mcp": {
     "chrome-devtools": {
-      "command": ["npx", "-y", "chrome-devtools-mcp@latest"],
+      "command": ["npx", "-y", "chrome-devtools-mcp@1.7.0"],
       "type": "local"
     },
     "feishu-mcp": {
@@ -78,11 +78,28 @@
       "type": "local"
     },
     "playwright": {
-      "command": ["npx", "-y", "@playwright/mcp@latest"],
+      "command": ["npx", "-y", "@playwright/mcp@0.0.79"],
       "type": "local"
     }
   },
   "model": "Mify-OpenAI/ppio/pa/gpt-5.5",
+  "permission": {
+    "bash": {
+      "*": "ask",
+      "git diff*": "allow",
+      "git log*": "allow",
+      "git status*": "allow",
+      "git clean -df*": "deny",
+      "git clean -fd*": "deny",
+      "git reset --hard*": "deny",
+      "git push*": "deny",
+      "rm --recursive *": "deny",
+      "rm -fr *": "deny",
+      "rm -rf *": "deny",
+      "sudo *": "deny"
+    },
+    "external_directory": "ask"
+  },
   "plugin": ["ecc-universal"],
   "provider": {
     "Mify-Anthropic": {
@@ -247,6 +264,7 @@
       }
     }
   },
+  "share": "manual",
   "theme": "dark",
   "watcher": {
     "ignore": ["node_modules/**", "dist/**", ".git/**", "*.tmp"]

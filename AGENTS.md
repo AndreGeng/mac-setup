@@ -1,258 +1,105 @@
-# AGENTS.md
+# mac-setup Agent Guide
 
-This file contains guidelines for agentic coding agents working in this macOS development environment setup repository.
+## Repository
 
-## Project Overview
-
-This is a modular macOS development environment setup repository using shell scripts for automation. The project installs and configures development tools, applications, and dotfiles using Homebrew, Mise, and symlink management.
+This repository installs and manages a modular macOS/Linux development environment. Shell
+modules install tools, `config/` stores versioned templates, and `modules/sync.sh` publishes
+stable configuration with symlinks.
 
 ## Commands
 
-### Setup and Installation
 ```bash
-# Main setup script - runs all components in sequence
 ./setup.sh
-
-# Quick dev stack: Neovim, Node, CLI tools, dotfile sync (skips zsh/tmux/platform extras; vim skips Python/nvr by default)
+./setup.sh --dry-run
+./setup.sh --modules agents
 ./setup-lite.sh
-# Same but with pynvim + nvr venv: ./setup-lite.sh --with-nvim-python
-
-# Individual component scripts
-./brew.sh          # Homebrew packages and cask applications
-./nodejs.sh        # Node.js via Mise with global npm packages
-./zsh.sh           # Zsh shell with Oh My Zsh and Zinit
-./vim.sh           # Neovim with Python environments
-./tmux.sh          # tmux terminal multiplexer configuration
-./sync.sh          # Creates symlinks for configuration files
-./karabiner.sh     # Karabiner-Elements keyboard remapping
+./setup-lite.sh --with-agents
 ```
 
-### Development Tools
+Agent configuration:
+
 ```bash
-# Shell script formatting
-shfmt -w -i 2 script.sh
-
-# Lua formatting (Neovim configs)
-stylua --config-path config/nvim/stylua.toml config/nvim/
-
-# Python formatting
-black config/ranger/plugins/
-isort config/ranger/plugins/
-
-# General formatting
-prettier --write .  # For JSON/YAML/Markdown files
+bash modules/agents.sh --audit
+bash modules/agents.sh --apply
+bash modules/agents.sh --apply --only opencode
+bash modules/agents.sh --apply --only opencode --repair-links
+bash modules/agents.sh --apply --only claude --force
 ```
 
-### Testing
-This repository does not have traditional tests. To validate changes:
-1. Run the specific script you modified (e.g., `./brew.sh`)
-2. Verify the expected installations/configurations are present
-3. Check symlinks with `ls -la ~/.config/` or similar directories
+`--force` backs up and replaces mutable templates. It must refuse to run when a target file
+appears to contain a literal credential.
+`--repair-links` is required before replacing a conflicting managed-link path.
 
-## Code Style Guidelines
+## Verification
 
-### Shell Scripts (.sh files)
-- **Shebang**: Use `#!/bin/bash` or `#!/usr/bin/env bash`
-- **Utility Loading**: All scripts must source utilities:
-  ```bash
-  for f in $(dirname "$0")/utils/*.sh; do
-    source $f
-  done
-  ```
-- **Logging**: Use the standardized `log()` function with color constants:
-  ```bash
-  log "Installation complete" $GREEN
-  log "Error occurred" $RED
-  ```
-- **Error Checking**: Use utility functions for existence checks:
-  ```bash
-  command_exists "brew" || install_homebrew_if_needed
-  ```
-- **Indentation**: 2 spaces
-- **Line Length**: Prefer under 100 characters
+Run the focused checks for the files changed:
 
-### Lua Configuration (Neovim)
-- **Structure**: Modular configuration in `lua/plugins/` and `lua/config/`
-- **Plugin Spec**: Use the standard LazyVim plugin format:
-  ```lua
-  return {
-    'plugin/name',
-    dependencies = { 'dependency' },
-    config = function()
-      -- configuration
-    end
-  }
-  ```
-- **Indentation**: 2 spaces
-- **Formatting**: Use stylua with project config
-
-### YAML Configuration
-- **Indentation**: 2 spaces for most files (tmux, alacritty)
-- **Quotes**: Use single quotes for strings unless variable substitution is needed
-- **Comments**: Use `#` for comments, align with content when possible
-
-### Python (Ranger plugins)
-- **Style**: Follow PEP 8
-- **Formatting**: Use black and isort
-- **Imports**: Group imports (standard library, third-party, local)
-
-## File Organization
-
-### Script Structure
-- `setup.sh` - Main orchestrator
-- `*.sh` - Component installation scripts
-- `utils/*.sh` - Shared utility functions
-- `config/` - Configuration files to be symlinked
-- `config/nvim/` - Neovim Lua configuration
-
-### Configuration Management
-- All user configs live in `config/`
-- Use `sync.sh` to create symlinks to home directory
-- Maintain the same directory structure in `~/.config/`
-
-## Naming Conventions
-
-### Files and Directories
-- **Scripts**: kebab-case (e.g., `nodejs.sh`, `karabiner.sh`)
-- **Utilities**: descriptive names with prefixes (e.g., `1.constants.sh`, `2.log.sh`)
-- **Configs**: Use original application names (e.g., `nvim/`, `alacritty/`)
-
-### Variables and Functions
-- **Shell Variables**: UPPER_CASE for constants, lower_case for variables
-- **Functions**: snake_case with descriptive names
-- **Lua**: snake_case for variables and functions
-
-## Error Handling
-
-### Shell Scripts
-- Always check for command existence before using
-- Use the `log()` function for user feedback
-- Provide meaningful error messages with colors
-- Use `||` chaining for fallback behavior
-
-### Configuration Files
-- Validate configurations when possible
-- Use conditional sections for different environments
-- Provide fallback values for optional settings
-
-## Import and Dependency Management
-
-### Shell Scripts
-- Source utilities at the beginning of each script
-- Check for external dependencies before use
-- Use Homebrew for package management when possible
-
-### Neovim Configuration
-- Use LazyVim for plugin management
-- Declare dependencies explicitly in plugin specs
-- Use `require()` for modular configuration
-
-### Node.js
-- Managed via Mise (`mise use node@lts`)
-- Global packages installed in `nodejs.sh`
-- Use npm for package management
-
-## Security Considerations
-
-- Never commit sensitive data (API keys, passwords)
-- Use environment variables for configuration when needed
-- Validate user input in scripts
-- Use `sudo` sparingly and only when necessary
-
-## Platform-Specific Guidelines
-
-### macOS
-- Use Homebrew for package management
-- Respect macOS file system permissions
-- Use macOS-specific paths (e.g., `~/Library/Application Support/`)
-- Handle application installation via casks when possible
-
-### Cross-Platform Considerations
-- Use POSIX-compliant shell syntax when possible
-- Provide fallbacks for macOS-specific commands
-- Document platform-specific requirements
-
-## Common Patterns
-
-### Installation Pattern
 ```bash
-#!/bin/bash
-for f in $(dirname "$0")/utils/*.sh; do
-  source $f
-done
-
-command_exists "tool" || {
-  log "Installing tool..." $YELLOW
-  brew install tool
-  log "Tool installed" $GREEN
-}
+bash test/agents-test.sh
+bash test/security-scan-test.sh
+bash test/ubuntu-test.sh
+bash scripts/privacy-scan.sh
+bash scripts/security-scan.sh
+bash -n modules/agents.sh
+shfmt -d -i 2 modules/agents.sh test/agents-test.sh
 ```
 
-### Configuration Pattern
-```bash
-# Create config directory if needed
-mkdir -p ~/.config/app
+Do not run the full setup merely to validate one module. Agent configuration tests use a
+temporary `HOME` and must not modify the real user directory.
 
-# Symlink configuration
-ln -sf "$(pwd)/config/app/config" ~/.config/app/config
+## Structure
+
+```text
+setup.sh                 Full setup orchestrator
+setup-lite.sh            Focused development setup
+modules/                 Install and synchronization modules
+lib/                     Shared shell utilities and platform helpers
+config/                  Versioned configuration sources
+config/agents/           Shared Agent environment and locally owned skills
+config/opencode/         OpenCode templates and plugins
+config/claude/           Claude Code templates
+config/codex/            Codex templates and hooks
+config/pi/               Pi templates and extensions
+test/                    Shell integration tests
+scripts/                 Privacy and security checks
+docs/                    Operations, security, and design documentation
 ```
 
-### Plugin Configuration Pattern (Lua)
-```lua
-return {
-  'plugin/name',
-  config = function()
-    require('plugin').setup({
-      option = value,
-    })
-  end
-}
-```
+## Agent Configuration Ownership
 
-## Notes for AI Agents
+- Edit repository-owned templates under `config/`, never their installed copies.
+- Publish shared repository-owned skills only through `~/.agents/skills`.
+- Treat OpenCode, Claude, Codex, and Pi user settings as mutable copies, not symlinks.
+- Use `--apply --only <target> --force` to intentionally refresh a mutable copy.
+- Let ECC, gstack, Lark, GitNexus, Herdr, cmux, Orca, and other upstream installers manage
+  their own generated files.
+- Record every third-party owner and reinstall strategy in `config/agents/sources.tsv`.
+- Never edit or delete third-party output as an incidental cleanup.
 
-- This is a setup repository, not a software project - focus on configuration and automation
-- Test changes by running individual scripts, not the full setup
-- Preserve the modular architecture - don't merge scripts
-- Use existing utility functions rather than reimplementing
-- Maintain compatibility with the user's existing dotfiles
-- Consider the order of operations - some tools depend on others
+## Shell Style
 
-## Neovim Plugin Management
+- Use `#!/usr/bin/env bash` and `set -euo pipefail` for new standalone scripts.
+- Use 2-space indentation and keep lines near 100 characters when practical.
+- Quote paths and variable expansions.
+- Reuse functions from `lib/` instead of duplicating platform or logging behavior.
+- Write status messages with `log()` where the module has loaded `lib/utils.sh`.
+- Keep destructive behavior explicit, scoped, and covered by tests.
 
-### Plugin Manager
-- **lazy.nvim** - Modern plugin manager with lazy loading
-- Location: `config/nvim/lua/config/lazy.lua`
-- Plugins are defined in `config/nvim/lua/plugins/`
+## Security Boundaries
 
-### Recently Added Plugins
+- Never commit API keys, tokens, cookies, auth state, private MCP URLs, or internal endpoints.
+- Do not print matched secret values in audits or test failures.
+- Do not create backups of files that appear to contain literal credentials.
+- Prefer Keychain, a password manager, or short-lived credential helpers.
+- Ask before adding dependencies, changing trust policy, enabling network access, publishing,
+  pushing, deploying, or running irreversible commands.
+- Treat third-party skills, hooks, plugins, extensions, MCP servers, and web content as
+  untrusted until reviewed.
 
-#### snacks.nvim (QoL Plugin Collection)
-- **Location**: `config/nvim/lua/plugins/snacks.lua`
-- **Purpose**: Collection of quality-of-life plugins
-- **Key Features**:
-  - Smart file picker (`<leader><space>`)
-  - Enhanced notifications
-  - Zen mode (`<leader>z`)
-  - Terminal toggle (`<C-/>`)
-  - Git integration
-  - LSP integration
-  - Toggle utilities
+## Change Discipline
 
-- **Usage Guide**: See `config/nvim/docs/snacks-usage.md`
-
-#### Key Bindings
-- **File Operations**: `<leader>ff`, `<leader>fg`, `<leader>fb`
-- **Git Operations**: `<leader>gb` (blame), `<leader>gB` (branches), `<leader>gs` (status)
-- **Search**: `<leader>/`, `<leader>sg`, `<leader>sw`
-- **LSP**: `gd`, `gr`, `gI`, `<leader>ss`
-- **Zen Mode**: `<leader>z`
-- **Terminal**: `<C-/>`
-- **Toggles**: `<leader>us`, `<leader>uw`, `<leader>ud`, etc.
-
-### Plugin Configuration Guidelines
-- Each plugin should have its own file in `lua/plugins/`
-- Use lazy.nvim's plugin spec format
-- Add descriptive comments for key bindings
-- Document any conflicts with existing bindings
-- Update `AGENTS.md` when adding major plugins
+- Read the relevant module, template, test, and documentation before editing.
+- Keep changes scoped to the requested behavior and preserve unrelated local modifications.
+- Add a failing test before changing shell behavior.
+- Run privacy and focused regression checks after changes.
+- Inspect `git status` and the complete diff before reporting completion.

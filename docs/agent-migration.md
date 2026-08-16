@@ -1,64 +1,130 @@
-# Agent Configuration Migration
+# Agent Configuration Management
 
-The `agents` module restores stable configuration for OpenCode, Claude Code, Codex, Pi, and
-two locally maintained dispatch skills.
+The `agents` module manages stable configuration for OpenCode, Claude Code, Codex, Pi, and
+locally maintained shared skills.
 
-## Install
+## Ownership Model
+
+| Content | Source of truth | Installed form |
+|---|---|---|
+| Mutable tool settings | `config/<tool>/` | Owner-only copy in the tool home |
+| Repository-owned plugins/extensions | `config/<tool>/` | Symlink |
+| Repository-owned shared skills | `config/agents/skills/` | Symlink under `~/.agents/skills` |
+| Third-party skills/hooks/plugins | Upstream installer | Upstream-owned output |
+| Secrets and private endpoints | Keychain/password manager/local secret file | Runtime injection only |
+
+OpenCode, Codex, and Pi discover the shared `~/.agents/skills` directory. Do not create extra
+copies under `~/.config/opencode/skills`, `~/.codex/skills`, or `~/.pi/agent/skills` for
+repository-owned shared skills. Claude-specific skills remain under `~/.claude/skills` and are
+managed by their declared owner.
+
+## Audit
+
+Audit is read-only and returns non-zero when required configuration, managed links, safe file
+permissions, JSON validity, or literal-secret checks fail:
 
 ```bash
-bash modules/agents.sh
+bash modules/agents.sh --audit
+bash modules/agents.sh --audit --only opencode
 ```
 
-The module copies mutable application settings only when they do not exist. It symlinks
-repository-owned plugins and skills so later Git updates take effect immediately.
+Audit output contains rule names and paths only. It never prints matched credential values.
+Template differences are warnings because tool settings are mutable local copies.
 
-To intentionally replace existing settings, with timestamped backups:
+JSON/JSONC audit and forced replacement require `jq`. Codex TOML audit and forced replacement
+require Python 3.11+ with `tomllib`, or Python 3 with the `tomli` package. Missing parsers or
+invalid structured configuration fail closed rather than allowing a backup.
+
+Supported targets:
+
+```text
+shared  opencode  claude  codex  pi
+```
+
+## Apply
+
+Install missing mutable templates and repair repository-managed links:
 
 ```bash
-MAC_SETUP_FORCE_AGENT_CONFIG=1 bash modules/agents.sh
+bash modules/agents.sh --apply
+bash modules/agents.sh --apply --only pi
 ```
+
+No arguments remains an alias for `--apply` for setup compatibility.
+
+Existing mutable settings are preserved. To intentionally refresh one tool from the repository
+template, use a scoped force operation:
+
+```bash
+bash modules/agents.sh --apply --only opencode --force
+```
+
+Force creates a timestamped backup before replacement. If the current target appears to contain
+a literal credential, the entire apply operation stops before modifying any file or creating a
+backup. Migrate and revoke the credential first.
+
+Conflicting managed-link paths are never replaced implicitly. Inspect the reported owner and
+contents, then opt in to a timestamped backup and link repair:
+
+```bash
+bash modules/agents.sh --apply --only opencode --repair-links
+```
+
+`--repair-links` does not force replacement of mutable tool settings. Link replacement uses a
+unique backup name and restores the original path if link creation fails.
+
+The legacy environment variable remains supported, but the explicit flag is preferred:
+
+```bash
+MAC_SETUP_FORCE_AGENT_CONFIG=1 bash modules/agents.sh --apply --only claude
+```
+
+## Safe Change Workflow
+
+```text
+Audit → Edit source → Review diff → Apply one target → Restart → Runtime verify
+```
+
+Example OpenCode change:
+
+```bash
+bash modules/agents.sh --audit --only opencode
+$EDITOR config/opencode/opencode.json
+bash test/agents-test.sh
+bash scripts/privacy-scan.sh
+bash modules/agents.sh --apply --only opencode --force
+```
+
+Quit and restart OpenCode after any configuration, agent, skill, command, or plugin change.
+Start a new Claude or Codex session after configuration changes. Pi extensions may support
+`/reload`; restart Pi for settings or package changes.
 
 ## Secrets
 
-The repository contains only `config/agents/env.example`. Put real values in an ignored shell
-file such as `~/.zshrc.local`, never in an agent settings file:
+Prefer Keychain, a password manager, or a short-lived credential helper. If shell injection is
+required, load values from an owner-only local file that is excluded from Git and backup tools.
+The committed `config/agents/env.example` contains names only.
 
-```bash
-export MIFY_API_TEAM_KEY='...'
-export MIFY_API_URL='...'
-export MIFY_API_ANTHROPIC_URL='...'
-export MIFY_API_SGP_URL='...'
-export FEISHU_MCP_URL='...'
-```
+When replacing an insecure credential:
 
-When both Mify URL variables are available, the module renders Pi's `models.json` locally.
-The committed template contains no internal endpoint or credential.
+1. Identify every consumer, scope, and expiry.
+2. Create the replacement credential.
+3. Update consumers and verify the replacement.
+4. Revoke the old credential.
+5. Remove the old value from settings and backups without preserving another secret copy.
 
-## Third-party skills
+If exposure is confirmed, revoke first and accept emergency interruption.
 
-`config/agents/sources.tsv` records third-party ownership. Reinstall these from upstream rather
-than copying current agent homes:
+## Third-Party Components
 
-- ECC owns most Claude agents, commands, rules, hooks, and engineering skills.
-- gstack owns its workflow and browser skill suite.
-- Lark CLI owns the `lark-*` skills under the shared agent root.
-- GitNexus owns its seven code-graph skills.
-- Herdr, cmux, and Orca own their generated hooks and integration extensions.
+`config/agents/sources.tsv` records third-party ownership. Upgrade one component at a time with
+its upstream installer, then run the audit and tool-specific diagnostics. Do not manually edit
+generated output because the next upstream update will overwrite it.
 
-The current gstack installation can be reconstructed with its documented upstream flow:
+## Deliberately Excluded
 
-```bash
-git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/.claude/skills/gstack
-(cd ~/.claude/skills/gstack && ./setup)
-```
-
-## Deliberately excluded
-
-- `auth.json`, OAuth locks, credentials, cookies, and private MCP URLs.
+- Authentication files, OAuth locks, credentials, cookies, and private MCP URLs.
 - Sessions, transcripts, prompts, shell snapshots, memories, histories, and tasks.
-- SQLite databases, caches, logs, backups, downloaded models, and generated catalogs.
-- Codex project trust records, hook hashes, marketplace timestamps, and application paths.
-- `node_modules`, Codex runtime packages, ChatGPT Computer Use, and the full gstack checkout.
-
-After changing any OpenCode configuration, quit and restart OpenCode because it loads global
-configuration only at startup.
+- Databases, caches, logs, backups, downloaded models, and generated catalogs.
+- Codex project trust records, hook hashes, marketplace state, and application paths.
+- Third-party package checkouts and generated installation trees.

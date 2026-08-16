@@ -14,3 +14,4 @@ automatic_backups
 *.p12
 *.pfx
 .swarm/
+/docs/agent-configuration-review.local.md

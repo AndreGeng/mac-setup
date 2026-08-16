@@ -8,7 +8,7 @@ approval_policy = "on-request"
 service_tier = "priority"
 
 [sandbox_workspace_write]
-network_access = true
+network_access = false
 
 [tui]
 status_line = ["model-with-reasoning", "current-dir", "context-used"]
