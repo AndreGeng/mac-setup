@@ -6,4 +6,11 @@
 automatic_backups
 *-local.yml
 *.local
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
 .swarm/

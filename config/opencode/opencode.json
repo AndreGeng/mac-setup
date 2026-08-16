@@ -63,7 +63,7 @@
     },
     "feishu-mcp": {
       "type": "remote",
-      "url": "https://open.feishu.cn/mcp/stream/mcp__aQA3IxPLp5MwCLVlNU76kVAeMEhKxl4MwJOOIVhIGh0cRWNWke1K_Ah1nRKocC12Zg8qfMxks8"
+      "url": "{env:FEISHU_MCP_URL}"
     },
     "gitnexus": {
       "command": ["gitnexus", "mcp"],
