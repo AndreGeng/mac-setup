@@ -2,6 +2,7 @@ onboarding = false
 [keys]
 prefix = "ctrl+space"
 settings = ""
+remove_worktree = "prefix+shift+x"
 detach = "prefix+d"
 zoom = "prefix+i"
 next_agent = "alt+j"
