@@ -20,6 +20,7 @@ RUN_PLATFORM=false
 WITH_ZSH=false
 WITH_TMUX=false
 WITH_HERDR=false
+WITH_AGENTS=false
 WITH_NVIM_PYTHON=false
 MODULES_OVERRIDE=()
 
@@ -38,6 +39,7 @@ usage() {
   --with-zsh            额外执行 zsh 模块（Oh My Zsh / Zinit，首次较慢）
   --with-tmux           额外执行 tmux 模块
   --with-herdr          额外执行 Herdr 模块
+  --with-agents         安装 OpenCode、Claude、Codex、Pi 的稳定配置
   --with-platform       同时执行 platforms/<平台>/*.sh（字体、应用等）
   --modules A,B,C       完全自定义模块列表（逗号分隔），覆盖默认简版列表
   -h, --help            显示本帮助
@@ -67,6 +69,10 @@ while [[ $# -gt 0 ]]; do
     ;;
   --with-herdr)
     WITH_HERDR=true
+    shift
+    ;;
+  --with-agents)
+    WITH_AGENTS=true
     shift
     ;;
   --with-nvim-python)
@@ -121,6 +127,7 @@ else
   [[ "$WITH_ZSH" == "true" ]] && MODULES=(zsh "${MODULES[@]}")
   [[ "$WITH_TMUX" == "true" ]] && MODULES+=("tmux")
   [[ "$WITH_HERDR" == "true" ]] && MODULES+=("herdr")
+  [[ "$WITH_AGENTS" == "true" ]] && MODULES+=("agents")
 fi
 
 # 简版默认跳过 Neovim Python/nvr；完整 setup.sh 不设此变量

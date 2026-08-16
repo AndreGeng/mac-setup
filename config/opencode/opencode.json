@@ -17,6 +17,14 @@
     "w": {
       "description": "用 Herdr worktree-dispatcher 派发任务",
       "template": "使用 worktree-dispatcher skill 分发任务：$ARGUMENTS\n\n要求：\n- 这是 Herdr 下的任务分发命令，和 workmux 无关。\n- 不要在当前 checkout 里直接实现。\n- 按 worktree-dispatcher skill 的规则调用 dispatcher，将任务派发到临时 git worktree 中的 agent。\n- 默认使用 add --merge，让子 agent 在有提交时通过 dispatcher 提供的 merge token 合回。\n- 如果任务是分析、review、解释或计划，也要求子 agent 产出并提交 Markdown 报告文件。\n- 派发完成后立即汇报 branch、worktree path、agent name、cleanup log path，以及有无 merge command，然后停止。"
+    },
+    "dispatch": {
+      "description": "用 Herdr worktree-dispatcher 派发任务",
+      "template": "使用 worktree-dispatcher skill 分发任务：$ARGUMENTS\n\n要求：\n- 不要在当前 checkout 里直接实现。\n- 默认使用 add --merge。\n- 派发完成后立即汇报 branch、worktree path、agent name、cleanup log path，以及有无 merge command，然后停止。"
+    },
+    "dispatch-team": {
+      "description": "用 Herdr worktree-dispatcher 小队模式派发任务",
+      "template": "使用 worktree-dispatcher skill 的小队模式分发任务：$ARGUMENTS\n\n要求：\n- 不要在当前 checkout 里直接实现。\n- 使用 add --team engineering --merge，并仅传递 $ARGUMENTS 作为任务文本。\n- 汇报 team_token、profile、leader、shared worktree、branch 和 merge command，然后停止。"
     }
   },
   "formatter": {

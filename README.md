@@ -43,6 +43,7 @@ cd mac-setup
 | sync | 配置文件符号链接 | macOS, Linux |
 | opencode | OpenCode CLI 与常用 LSP | macOS, Linux |
 | workmux | Workmux 并行开发工作区工具 | macOS, Linux |
+| agents | OpenCode、Claude Code、Codex、Pi 配置与自定义 skills | macOS, Linux |
 
 ## 平台支持
 
@@ -124,6 +125,23 @@ brew install gitleaks
 
 GitHub Actions 会在每个 Pull Request 和 `master` 推送上执行相同检查。规则、误报处理和
 凭据泄露响应流程见 [docs/security.md](docs/security.md)。
+
+## Agent 配置迁移
+
+完整安装会自动部署脱敏后的 Agent 配置，也可以单独执行：
+
+```bash
+bash modules/agents.sh
+```
+
+现有应用配置默认保留。需要用仓库模板刷新时：
+
+```bash
+MAC_SETUP_FORCE_AGENT_CONFIG=1 bash modules/agents.sh
+```
+
+第三方 skills 不复制进仓库，其来源和重建方式见
+[docs/agent-migration.md](docs/agent-migration.md)。
 
 ## 许可证
 

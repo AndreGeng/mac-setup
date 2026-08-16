@@ -1,0 +1,8 @@
+# name	version/source	install strategy
+ecc-universal	1.10.0	Install with the upstream ECC installer; do not vendor its agents, rules, hooks, or skills.
+gstack	v1.56.0.0	https://github.com/garrytan/gstack.git; clone and run ./setup.
+lark-skills	larksuite/cli	Install into ~/.agents/skills with the upstream skills installer.
+gitnexus	upstream	Install GitNexus and let it publish its skills; avoid duplicate opencode/skill copies.
+herdr	upstream	Run Herdr integration setup for each installed agent.
+cmux	upstream	Run cmux hooks setup after installing cmux.
+orca	optional	Let Orca install and manage its own agent hooks and Pi extensions.

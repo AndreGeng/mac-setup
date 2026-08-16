@@ -47,7 +47,22 @@ mkdir -p "$OPENCODE_CONFIG_DIR"
 
 log "Setting up OpenCode configuration..." "$YELLOW"
 
-cp "$SCRIPT_ROOT/../config/opencode/opencode.json" "$OPENCODE_CONFIG_DIR/opencode.json"
+AGENTS_OWNS_CONFIG=false
+for selected_module in "${MODULES[@]:-}"; do
+  if [[ "$selected_module" == "agents" ]]; then
+    AGENTS_OWNS_CONFIG=true
+    break
+  fi
+done
+
+if [[ "$AGENTS_OWNS_CONFIG" == "true" ]]; then
+  log "Agent 模块将管理 OpenCode 配置" "$CYAN"
+elif [[ ! -e "$OPENCODE_CONFIG_DIR/opencode.json" ]]; then
+  cp "$SCRIPT_ROOT/../config/opencode/opencode.json" "$OPENCODE_CONFIG_DIR/opencode.json"
+  log "OpenCode 配置已安装" "$GREEN"
+else
+  log "保留现有 OpenCode 配置" "$YELLOW"
+fi
 
 add_opencode_alias() {
   local config_file="$1"

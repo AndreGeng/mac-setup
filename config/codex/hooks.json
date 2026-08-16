@@ -1,0 +1,34 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v workmux >/dev/null 2>&1 && workmux set-window-status working || true"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v workmux >/dev/null 2>&1 && workmux set-window-status done || true"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v workmux >/dev/null 2>&1 && workmux set-window-status working || true"
+          }
+        ]
+      }
+    ]
+  }
+}

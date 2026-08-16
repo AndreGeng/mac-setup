@@ -1,0 +1,21 @@
+{
+  "providers": {
+    "anthropic": {
+      "baseUrl": "__MIFY_API_ANTHROPIC_URL__",
+      "api": "anthropic-messages",
+      "apiKey": "$MIFY_API_TEAM_KEY",
+      "models": [
+        { "id": "ppio/pa/claude-sonnet-4-6", "reasoning": true, "input": ["text", "image"] },
+        { "id": "ppio/pa/claude-opus-4-8", "reasoning": true, "input": ["text", "image"] }
+      ]
+    },
+    "openai": {
+      "baseUrl": "__MIFY_API_URL__",
+      "api": "openai-completions",
+      "apiKey": "$MIFY_API_TEAM_KEY",
+      "models": [
+        { "id": "ppio/pa/gpt-5.5", "input": ["text", "image"] }
+      ]
+    }
+  }
+}
