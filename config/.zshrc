@@ -225,3 +225,6 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 
 # OpenClaw Completion
 source "/Users/mac/.openclaw/completions/openclaw.zsh"
+
+# Hermes Agent — ensure ~/.local/bin is on PATH
+export PATH="$HOME/.local/bin:$PATH"
