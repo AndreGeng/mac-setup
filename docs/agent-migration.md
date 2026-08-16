@@ -11,6 +11,7 @@ locally maintained shared skills.
 | Repository-owned plugins/extensions | `config/<tool>/` | Symlink |
 | Repository-owned shared skills | `config/agents/skills/` | Symlink under `~/.agents/skills` |
 | Third-party skills/hooks/plugins | Upstream installer | Upstream-owned output |
+| ReMe runtime | Pinned PyPI package | Dedicated venv plus generated project/global configs |
 | Secrets and private endpoints | Keychain/password manager/local secret file | Runtime injection only |
 
 OpenCode, Codex, and Pi discover the shared `~/.agents/skills` directory. Do not create extra
@@ -99,6 +100,112 @@ Quit and restart OpenCode after any configuration, agent, skill, command, or plu
 Start a new Claude or Codex session after configuration changes. Pi extensions may support
 `/reload`; restart Pi for settings or package changes.
 
+## OpenCode Active Memory
+
+Applying the OpenCode target installs `reme-ai[core]==0.4.1.7` into
+`~/.local/share/mac-setup/reme/venv` (or `$XDG_DATA_HOME/mac-setup/reme/venv`) and links the
+repository-owned `reme-memory.ts` plugin. ReMe requires Python 3.11 or newer.
+
+The generated owner-only project config at `~/.config/reme/opencode-candidate.yaml` contains only
+the `auto_memory` workflow and the file jobs it needs. Project capture continues to use ReMe's
+one-shot CLI and does not promote project candidates automatically.
+
+The separate `~/.config/reme/opencode-global.yaml` config runs a private background service at
+`127.0.0.1:2333`. The plugin starts it on demand through an owner-executable launcher and verifies
+that the endpoint reports the expected global workspace before use. The service disables the Web
+UI, exposes only `app_config`, `auto_memory`, `health_check`, `search`, and `version`, maintains its
+indexes in the background, promotes global candidates at `23:00`, and optimizes indexes at `02:00`.
+It inherits provider credentials from OpenCode; credentials are not written to config or process
+arguments. ReMe `0.4.1.7` does not authenticate its HTTP transport, so this loopback service assumes
+a trusted single-user workstation; disable active memory when running untrusted local processes or
+on a shared host.
+
+After a 30-second idle debounce, the plugin submits bounded ordinary user/assistant text to the
+current project's `.reme/` workspace. It excludes system prompts, reasoning, files, tool calls,
+tool results, synthetic text, ignored text, and compaction summaries. A high-confidence literal
+credential match discards the entire capture without logging the matched content. Do not paste
+credentials into Agent conversations; pattern filtering cannot prove arbitrary text is safe. The
+filtered messages travel to the pinned runner over stdin rather than process arguments, and the
+runner uses an owner-only umask. Symlinked `.reme` roots and note files are rejected.
+
+Candidate notes and source evidence remain local:
+
+```text
+.reme/daily/             Candidate memory cards and daily indexes
+.reme/session/dialog/    Filtered source messages used as evidence
+```
+
+`.reme/` is ignored by Git. Project candidates can be retrieved into OpenCode as untrusted context,
+but the integration does not promote them into `.reme/digest/` automatically.
+
+Global memory is stored with owner-only permissions under
+`~/.local/share/mac-setup/reme/global/` (or `$XDG_DATA_HOME/mac-setup/reme/global/`). The original
+project transcript is never submitted there. A separate OpenAI-compatible extraction request
+returns at most one validated cross-project preference, workflow, or reusable lesson; only that
+synthetic summary becomes global source evidence. Responses containing secrets, project paths,
+the active project name, URLs, extra fields, or excessive text are discarded.
+An independent model classification rejects project-specific or verbatim candidates before the
+global write. The global config omits ReMe's resource-ingestion watcher entirely.
+
+Before each model request, the plugin lexically ranks bounded project daily/digest Markdown and
+asks the loopback service for bounded global results. The combined context includes scope and path
+labels and is explicitly marked as untrusted historical data whose instructions must not be
+followed. Retrieval, extraction, service startup, and capture are best-effort and cannot fail the
+active OpenCode request.
+
+### LLM Environment
+
+ReMe reads credentials only from the OpenCode process environment. Dedicated `REME_LLM_*`
+variables take precedence as one complete provider configuration; existing `LLM_*` variables are
+the next complete tier. Partial tiers disable capture rather than mixing a key with another
+provider's endpoint. The integration falls back to `MIFY_API_TEAM_KEY` and `MIFY_API_URL`, with
+model `ppio/pa/gpt-5.5`, for this repository's current OpenCode provider.
+
+```bash
+export REME_LLM_API_KEY="$(security find-generic-password -w -s reme-llm)"
+export REME_LLM_BASE_URL="https://provider.example.invalid/v1"
+export REME_LLM_MODEL_NAME="provider/model"
+```
+
+Never place the resolved key in `config/agents/env.example`, OpenCode JSON, ReMe YAML, shell
+history, or committed files.
+
+Optional controls:
+
+```bash
+REME_OPENCODE_ENABLED=0 opencode       # Disable active memory for this OpenCode process.
+REME_CAPTURE_DELAY_MS=60000 opencode  # Change idle debounce.
+REME_CAPTURE_TIMEOUT_MS=90000 opencode # Bound each one-shot ReMe process.
+REME_MAX_CAPTURE_CHARS=80000 opencode # Change the newest-text payload bound.
+REME_EXTRACTION_TIMEOUT_MS=45000 opencode # Bound cross-project extraction.
+REME_RETRIEVAL_MAX_CHARS=8000 opencode # Bound injected project/global context.
+REME_RETRIEVAL_TIMEOUT_MS=1000 opencode # Bound the complete request-time retrieval path.
+```
+
+Apply and audit:
+
+```bash
+bash modules/agents.sh --apply --only opencode
+bash modules/agents.sh --audit --only opencode
+```
+
+Audit checks the exact package version, executable, both generated-config policies, global
+workspace permissions, loopback/Web/endpoint/cron policy, literal-secret policy, service launcher,
+and managed plugin link. Reapplying regenerates both configs and repairs a missing or wrong ReMe
+version.
+
+Remove the managed integration in one command:
+
+```bash
+bash modules/agents.sh --remove-reme --only opencode
+```
+
+Removal refuses to replace or delete a locally owned plugin path. It stops only a service whose
+command matches the managed pinned executable and global config, then removes the managed plugin
+link, generated configs, launcher, and dedicated venv. It deliberately leaves every project
+`.reme/` directory and the global workspace untouched; deleting either memory store is a separate
+irreversible decision. Reapply the OpenCode target to reinstall.
+
 ## Secrets
 
 Prefer Keychain, a password manager, or a short-lived credential helper. If shell injection is
@@ -128,3 +235,4 @@ generated output because the next upstream update will overwrite it.
 - Databases, caches, logs, backups, downloaded models, and generated catalogs.
 - Codex project trust records, hook hashes, marketplace state, and application paths.
 - Third-party package checkouts and generated installation trees.
+- Project `.reme/` memory workspaces and ReMe runtime state.

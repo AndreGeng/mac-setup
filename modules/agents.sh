@@ -18,14 +18,25 @@ FORCE="${MAC_SETUP_FORCE_AGENT_CONFIG:-0}"
 REPAIR_LINKS=false
 AUDIT_FAILURES=0
 AUDIT_WARNINGS=0
+REME_VERSION="0.4.1.7"
+REME_PYTHON="${MAC_SETUP_REME_PYTHON:-python3}"
+REME_ROOT="${XDG_DATA_HOME:-$HOME/.local/share}/mac-setup/reme"
+REME_VENV="$REME_ROOT/venv"
+REME_VERSIONED_VENV="$REME_ROOT/venv-$REME_VERSION"
+REME_CONFIG="$HOME/.config/reme/opencode-candidate.yaml"
+REME_GLOBAL_CONFIG="$HOME/.config/reme/opencode-global.yaml"
+REME_GLOBAL_WORKSPACE="$REME_ROOT/global"
+REME_SERVICE_LAUNCHER="$HOME/.config/reme/start-global-service.sh"
+REME_PROJECT_RUNNER="$HOME/.config/reme/run-project-capture.py"
 
 usage() {
   cat <<'EOF'
-Usage: agents.sh [--apply | --audit] [--only TARGET] [--force] [--repair-links]
+Usage: agents.sh [--apply | --audit | --remove-reme] [--only TARGET] [options]
 
 Modes:
   --apply          Install missing templates and repair repository-managed links.
   --audit          Check installation, links, permissions, and sensitive config.
+  --remove-reme    Remove managed ReMe files; requires --only opencode.
 
 Options:
   --only TARGET    Limit work to shared, opencode, claude, codex, or pi.
@@ -56,6 +67,10 @@ while [[ $# -gt 0 ]]; do
     ;;
   --audit)
     set_mode audit
+    shift
+    ;;
+  --remove-reme)
+    set_mode remove-reme
     shift
     ;;
   --only)
@@ -95,12 +110,16 @@ all | shared | opencode | claude | codex | pi) ;;
   ;;
 esac
 
-if [[ "$MODE" == "audit" && "$FORCE" == "1" ]]; then
+if [[ "$MODE" != "apply" && "$FORCE" == "1" ]]; then
   printf '%s\n' '--force is only valid with --apply.' >&2
   exit 2
 fi
-if [[ "$MODE" == "audit" && "$REPAIR_LINKS" == "true" ]]; then
+if [[ "$MODE" != "apply" && "$REPAIR_LINKS" == "true" ]]; then
   printf '%s\n' '--repair-links is only valid with --apply.' >&2
+  exit 2
+fi
+if [[ "$MODE" == "remove-reme" && "$TARGET" != "opencode" ]]; then
+  printf '%s\n' '--remove-reme requires --only opencode.' >&2
   exit 2
 fi
 
@@ -450,6 +469,429 @@ render_pi_models() {
   trap - RETURN
 }
 
+reme_python_available() {
+  if [[ "$REME_PYTHON" == */* ]]; then
+    [[ -x "$REME_PYTHON" ]]
+  else
+    command -v "$REME_PYTHON" >/dev/null 2>&1
+  fi
+}
+
+reme_installed_version() {
+  [[ -x "$REME_VENV/bin/python" ]] || return 1
+  "$REME_VENV/bin/python" -c \
+    'from importlib.metadata import version; print(version("reme-ai"))' 2>/dev/null
+}
+
+reme_executable_ready() {
+  local interpreter
+  local shebang
+
+  [[ -x "$REME_VENV/bin/reme" ]] || return 1
+  IFS= read -r shebang <"$REME_VENV/bin/reme" || return 1
+  [[ "$shebang" == '#!'* ]] || return 1
+  interpreter="${shebang#\#!}"
+  [[ "$interpreter" == "$REME_VERSIONED_VENV/bin/python" && -x "$interpreter" ]]
+}
+
+reme_layout_ready() {
+  [[ -L "$REME_VENV" ]] &&
+    [[ "$(readlink "$REME_VENV" 2>/dev/null || true)" == "$REME_VERSIONED_VENV" ]]
+}
+
+reme_config_has_sensitive_value() {
+  local path="$1"
+
+  "$REME_VENV/bin/python" - sensitive "$path" <<'PY'
+import re
+import sys
+
+import yaml
+
+sensitive_url = re.compile(r"https?://[^\s]*(?:token|key|access_token|bearer)=", re.I)
+safe_prefixes = ("$", "{env:", "{file:", "__")
+
+try:
+    with open(sys.argv[2], encoding="utf-8") as source:
+        config = yaml.safe_load(source)
+except Exception:
+    raise SystemExit(2)
+
+
+def contains_secret(value):
+    if isinstance(value, dict):
+        for key, child in value.items():
+            key_parts = set(filter(None, re.split(r"[^a-z0-9]+", str(key).lower())))
+            sensitive_key = bool(
+                key_parts & {"token", "secret", "password", "authorization"}
+                or {"api", "key"} <= key_parts
+                or {"access", "token"} <= key_parts
+                or {"auth", "token"} <= key_parts
+            )
+            if sensitive_key and isinstance(child, str):
+                text = child.strip().strip('"').strip("'")
+                if text and not text.startswith(safe_prefixes):
+                    return True
+            if contains_secret(child):
+                return True
+    elif isinstance(value, list):
+        return any(contains_secret(child) for child in value)
+    elif isinstance(value, str):
+        return bool(sensitive_url.search(value))
+    return False
+
+
+raise SystemExit(0 if contains_secret(config) else 1)
+PY
+}
+
+generate_reme_config() {
+  local tmp
+  local status
+
+  mkdir -p "$(dirname "$REME_CONFIG")"
+  if [[ -f "$REME_CONFIG" ]]; then
+    if reme_config_has_sensitive_value "$REME_CONFIG"; then
+      report_unsafe_config "$REME_CONFIG" 1
+      return 1
+    else
+      status=$?
+      if [[ "$status" != "1" ]]; then
+        report_unsafe_config "$REME_CONFIG" 3
+        return 1
+      fi
+    fi
+  fi
+
+  tmp="$(mktemp "${REME_CONFIG}.tmp.XXXXXX")"
+  if ! "$REME_VENV/bin/python" - generate "$tmp" <<'PY'; then
+import sys
+from importlib.resources import files
+
+import yaml
+
+allowed_jobs = {
+    "auto_memory",
+    "daily_list",
+    "daily_write",
+    "edit",
+    "frontmatter_update",
+    "move",
+    "read",
+    "write",
+}
+allowed_components = {
+    "agent_wrapper": {"default"},
+    "as_llm": {"default"},
+    "file_graph": {"default"},
+    "file_store": {"default"},
+    "keyword_index": {"default"},
+    "tokenizer": {"default"},
+}
+
+with files("reme.config").joinpath("default.yaml").open(encoding="utf-8") as source:
+    config = yaml.safe_load(source)
+
+missing_jobs = allowed_jobs - set(config["jobs"])
+if missing_jobs:
+    raise SystemExit(f"Pinned ReMe config is missing jobs: {sorted(missing_jobs)}")
+
+config["service"] = {"backend": "cli", "web_enabled": False}
+config["jobs"] = {name: config["jobs"][name] for name in sorted(allowed_jobs)}
+config["components"] = {
+    group: {
+        name: config["components"][group][name]
+        for name in sorted(names)
+    }
+    for group, names in allowed_components.items()
+}
+config["enable_logo"] = False
+config["log_to_console"] = False
+config["log_to_file"] = False
+
+with open(sys.argv[2], "w", encoding="utf-8") as target:
+    yaml.safe_dump(config, target, sort_keys=False)
+PY
+    rm -f "$tmp"
+    return 1
+  fi
+  chmod 600 "$tmp"
+  mv "$tmp" "$REME_CONFIG"
+}
+
+generate_reme_global_config() {
+  local status
+  local tmp
+
+  mkdir -p "$(dirname "$REME_GLOBAL_CONFIG")" "$REME_GLOBAL_WORKSPACE"
+  chmod 700 "$REME_GLOBAL_WORKSPACE"
+  if [[ -f "$REME_GLOBAL_CONFIG" ]]; then
+    if reme_config_has_sensitive_value "$REME_GLOBAL_CONFIG"; then
+      report_unsafe_config "$REME_GLOBAL_CONFIG" 1
+      return 1
+    else
+      status=$?
+      if [[ "$status" != "1" ]]; then
+        report_unsafe_config "$REME_GLOBAL_CONFIG" 3
+        return 1
+      fi
+    fi
+  fi
+
+  tmp="$(mktemp "${REME_GLOBAL_CONFIG}.tmp.XXXXXX")"
+  if ! "$REME_VENV/bin/python" - generate-global "$tmp" \
+    "$REME_GLOBAL_WORKSPACE" <<'PY'; then
+import sys
+from importlib.resources import files
+
+import yaml
+
+served_jobs = {
+    "app_config",
+    "auto_memory",
+    "health_check",
+    "search",
+    "version",
+}
+runtime_jobs = served_jobs | {
+    "daily_list",
+    "daily_write",
+    "digest_watch_loop",
+    "dream_cron",
+    "edit",
+    "frontmatter_update",
+    "index_update_loop",
+    "move",
+    "optimize_index_cron",
+    "read",
+    "write",
+}
+
+with files("reme.config").joinpath("default.yaml").open(encoding="utf-8") as source:
+    config = yaml.safe_load(source)
+
+missing_jobs = runtime_jobs - set(config["jobs"])
+if missing_jobs:
+    raise SystemExit(f"Pinned ReMe config is missing global jobs: {sorted(missing_jobs)}")
+
+config["workspace_dir"] = sys.argv[3]
+config["service"] = {
+    "backend": "http",
+    "host": "127.0.0.1",
+    "port": 2333,
+    "web_enabled": False,
+    "jobs": sorted(served_jobs),
+}
+config["jobs"] = {name: config["jobs"][name] for name in sorted(runtime_jobs)}
+for name, job in config["jobs"].items():
+    job["enable_serve"] = name in served_jobs
+config["enable_logo"] = False
+config["log_to_console"] = False
+config["log_to_file"] = False
+
+with open(sys.argv[2], "w", encoding="utf-8") as target:
+    yaml.safe_dump(config, target, sort_keys=False)
+PY
+    rm -f "$tmp"
+    return 1
+  fi
+  chmod 600 "$tmp"
+  mv "$tmp" "$REME_GLOBAL_CONFIG"
+}
+
+install_reme() {
+  local installed=""
+  local link="${REME_VENV}.link.$$"
+  local package="reme-ai[core]==${REME_VERSION}"
+
+  stop_reme_global_service
+  installed="$(reme_installed_version || true)"
+  if [[ "$installed" != "$REME_VERSION" ]] || ! reme_layout_ready ||
+    ! reme_executable_ready; then
+    reme_python_available || {
+      log "ERROR ReMe requires Python 3.11 or newer: $REME_PYTHON" "$RED"
+      return 1
+    }
+    if ! "$REME_PYTHON" -c \
+      'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)'; then
+      log "ERROR ReMe requires Python 3.11 or newer: $REME_PYTHON" "$RED"
+      return 1
+    fi
+
+    mkdir -p "$REME_ROOT"
+    rm -rf "$REME_VERSIONED_VENV"
+    if ! "$REME_PYTHON" -m venv "$REME_VERSIONED_VENV" ||
+      ! "$REME_VERSIONED_VENV/bin/python" -m pip install \
+        --disable-pip-version-check --no-input "$package"; then
+      rm -rf "$REME_VERSIONED_VENV"
+      return 1
+    fi
+    if [[ "$("$REME_VERSIONED_VENV/bin/python" -c \
+      'from importlib.metadata import version; print(version("reme-ai"))')" != "$REME_VERSION" ]]; then
+      rm -rf "$REME_VERSIONED_VENV"
+      log "ERROR ReMe installed version does not match $REME_VERSION" "$RED"
+      return 1
+    fi
+    rm -f "$link"
+    ln -s "$REME_VERSIONED_VENV" "$link"
+    rm -rf "$REME_VENV"
+    mv "$link" "$REME_VENV"
+    log "安装 ReMe: $package" "$GREEN"
+  else
+    log "ReMe 已是固定版本: $REME_VERSION" "$GREEN"
+  fi
+
+  generate_reme_config
+  log "安装 ReMe 候选记忆配置: $REME_CONFIG" "$GREEN"
+  generate_reme_global_config
+  log "安装 ReMe 全局记忆配置: $REME_GLOBAL_CONFIG" "$GREEN"
+}
+
+stop_reme_global_service() {
+  reme_python_available || {
+    log "ERROR cannot stop ReMe service without Python: $REME_PYTHON" "$RED"
+    return 1
+  }
+
+  "$REME_PYTHON" - stop-global "$REME_GLOBAL_CONFIG" \
+    "$REME_VENV/bin/reme" <<'PY'
+import os
+import signal
+import shlex
+import subprocess
+import sys
+import time
+
+expected_config = f"config={sys.argv[2]}"
+expected_reme = sys.argv[3]
+matches = []
+
+try:
+    import psutil
+except ImportError:
+    psutil = None
+process_errors = (OSError, subprocess.CalledProcessError, ValueError)
+if psutil is not None:
+    process_errors += (psutil.Error,)
+
+
+def process_argv(pid):
+    try:
+        if psutil is not None:
+            return psutil.Process(pid).cmdline()
+        command = subprocess.check_output(
+            ["ps", "-ww", "-p", str(pid), "-o", "command="],
+            text=True,
+        ).strip()
+        return shlex.split(command)
+    except process_errors:
+        return []
+
+
+def is_managed(pid):
+    argv = process_argv(pid)
+    return expected_reme in argv and "start" in argv and expected_config in argv
+
+
+if psutil is not None:
+    candidates = [proc.pid for proc in psutil.process_iter()]
+else:
+    output = subprocess.check_output(["ps", "-axo", "pid="], text=True)
+    candidates = [int(value) for value in output.split() if value.isdigit()]
+
+matches = [pid for pid in candidates if is_managed(pid)]
+
+for pid in matches:
+    if not is_managed(pid):
+        continue
+    try:
+        os.kill(pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+
+deadline = time.monotonic() + 5
+alive = matches
+while alive and time.monotonic() < deadline:
+    time.sleep(0.1)
+    remaining = []
+    for pid in alive:
+        try:
+            os.kill(pid, 0)
+            remaining.append(pid)
+        except ProcessLookupError:
+            pass
+    alive = remaining
+
+for pid in alive:
+    if not is_managed(pid):
+        continue
+    try:
+        os.kill(pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+
+if alive:
+    time.sleep(0.1)
+    for pid in alive:
+        if is_managed(pid):
+            raise SystemExit(f"Failed to stop managed ReMe process: {pid}")
+PY
+}
+
+remove_reme() {
+  local plugin="$HOME/.config/opencode/plugins/reme-memory.ts"
+  local source="$REPO_ROOT/config/opencode/plugins/reme-memory.ts"
+  local launcher_source="$REPO_ROOT/config/reme/start-global-service.sh"
+  local runner_source="$REPO_ROOT/config/reme/run-project-capture.py"
+  local launcher_target=""
+  local runner_target=""
+  local target=""
+
+  if [[ -L "$plugin" ]]; then
+    target="$(readlink "$plugin")"
+    if [[ "$target" != "$source" ]]; then
+      log "ERROR managed-link-conflict $plugin" "$RED"
+      return 1
+    fi
+  elif [[ -e "$plugin" ]]; then
+    log "ERROR managed-link-conflict $plugin" "$RED"
+    return 1
+  fi
+  if [[ -L "$REME_SERVICE_LAUNCHER" ]]; then
+    launcher_target="$(readlink "$REME_SERVICE_LAUNCHER")"
+    if [[ "$launcher_target" != "$launcher_source" ]]; then
+      log "ERROR managed-link-conflict $REME_SERVICE_LAUNCHER" "$RED"
+      return 1
+    fi
+  elif [[ -e "$REME_SERVICE_LAUNCHER" ]]; then
+    log "ERROR managed-link-conflict $REME_SERVICE_LAUNCHER" "$RED"
+    return 1
+  fi
+  if [[ -L "$REME_PROJECT_RUNNER" ]]; then
+    runner_target="$(readlink "$REME_PROJECT_RUNNER")"
+    if [[ "$runner_target" != "$runner_source" ]]; then
+      log "ERROR managed-link-conflict $REME_PROJECT_RUNNER" "$RED"
+      return 1
+    fi
+  elif [[ -e "$REME_PROJECT_RUNNER" ]]; then
+    log "ERROR managed-link-conflict $REME_PROJECT_RUNNER" "$RED"
+    return 1
+  fi
+  case "$REME_ROOT" in
+  */mac-setup/reme) ;;
+  *)
+    log "ERROR unsafe ReMe install path: $REME_ROOT" "$RED"
+    return 1
+    ;;
+  esac
+
+  stop_reme_global_service
+  rm -f "$plugin" "$REME_CONFIG" "$REME_GLOBAL_CONFIG" "$REME_SERVICE_LAUNCHER" \
+    "$REME_PROJECT_RUNNER"
+  rm -rf "$REME_VENV" "$REME_VERSIONED_VENV"
+  log "已移除 OpenCode ReMe 集成；项目和全局记忆数据未修改" "$GREEN"
+}
+
 apply_shared() {
   local skill
 
@@ -465,6 +907,7 @@ apply_shared() {
 }
 
 apply_opencode() {
+  install_reme
   install_agent_template \
     "$REPO_ROOT/config/opencode/opencode.json" \
     "$HOME/.config/opencode/opencode.json" 600
@@ -483,6 +926,15 @@ apply_opencode() {
   install_managed_link \
     "$REPO_ROOT/config/opencode/plugins/workmux-status.ts" \
     "$HOME/.config/opencode/plugins/workmux-status.ts"
+  install_managed_link \
+    "$REPO_ROOT/config/opencode/plugins/reme-memory.ts" \
+    "$HOME/.config/opencode/plugins/reme-memory.ts"
+  install_managed_link \
+    "$REPO_ROOT/config/reme/start-global-service.sh" \
+    "$REME_SERVICE_LAUNCHER"
+  install_managed_link \
+    "$REPO_ROOT/config/reme/run-project-capture.py" \
+    "$REME_PROJECT_RUNNER"
 }
 
 apply_claude() {
@@ -563,7 +1015,7 @@ audit_mode() {
   local numeric
   local owner
 
-  [[ -f "$path" ]] || return 0
+  [[ -e "$path" ]] || return 0
   if mode="$(stat -f '%Lp' "$path" 2>/dev/null)"; then
     :
   elif mode="$(stat -c '%a' "$path" 2>/dev/null)"; then
@@ -644,6 +1096,169 @@ audit_managed_link() {
   audit_ok managed-link "$dest"
 }
 
+audit_reme() {
+  local installed=""
+  local status
+
+  if ! reme_layout_ready || [[ ! -x "$REME_VENV/bin/python" ]] ||
+    ! reme_executable_ready; then
+    audit_fail reme-install "$REME_VENV"
+    return
+  fi
+  installed="$(reme_installed_version || true)"
+  if [[ "$installed" == "$REME_VERSION" ]]; then
+    audit_ok reme-version "$REME_VERSION"
+  else
+    audit_fail reme-version "$REME_VENV"
+  fi
+
+  if [[ ! -f "$REME_CONFIG" ]]; then
+    audit_fail reme-config "$REME_CONFIG"
+    return
+  fi
+  if "$REME_VENV/bin/python" - audit "$REME_CONFIG" >/dev/null 2>&1 <<'PY'; then
+import sys
+from importlib.resources import files
+
+import yaml
+
+allowed_jobs = {
+    "auto_memory",
+    "daily_list",
+    "daily_write",
+    "edit",
+    "frontmatter_update",
+    "move",
+    "read",
+    "write",
+}
+allowed_components = {
+    "agent_wrapper": {"default"},
+    "as_llm": {"default"},
+    "file_graph": {"default"},
+    "file_store": {"default"},
+    "keyword_index": {"default"},
+    "tokenizer": {"default"},
+}
+
+with open(sys.argv[2], encoding="utf-8") as source:
+    actual = yaml.safe_load(source)
+with files("reme.config").joinpath("default.yaml").open(encoding="utf-8") as source:
+    expected = yaml.safe_load(source)
+
+missing_jobs = allowed_jobs - set(expected["jobs"])
+if missing_jobs:
+    raise SystemExit(1)
+
+expected["service"] = {"backend": "cli", "web_enabled": False}
+expected["jobs"] = {name: expected["jobs"][name] for name in sorted(allowed_jobs)}
+expected["components"] = {
+    group: {
+        name: expected["components"][group][name]
+        for name in sorted(names)
+    }
+    for group, names in allowed_components.items()
+}
+expected["enable_logo"] = False
+expected["log_to_console"] = False
+expected["log_to_file"] = False
+
+raise SystemExit(0 if actual == expected else 1)
+PY
+    audit_ok reme-config-policy "$REME_CONFIG"
+  else
+    audit_fail reme-config-policy "$REME_CONFIG"
+  fi
+  audit_mode "$REME_CONFIG"
+  if reme_config_has_sensitive_value "$REME_CONFIG"; then
+    audit_fail sensitive-config "$REME_CONFIG"
+  else
+    status=$?
+    case "$status" in
+    1) audit_ok no-literal-secret "$REME_CONFIG" ;;
+    *) audit_fail invalid-config "$REME_CONFIG" ;;
+    esac
+  fi
+
+  if [[ ! -f "$REME_GLOBAL_CONFIG" ]]; then
+    audit_fail reme-global-config "$REME_GLOBAL_CONFIG"
+    return
+  fi
+  if "$REME_VENV/bin/python" - audit-global "$REME_GLOBAL_CONFIG" \
+    "$REME_GLOBAL_WORKSPACE" >/dev/null 2>&1 <<'PY'; then
+import sys
+from importlib.resources import files
+
+import yaml
+
+served_jobs = {
+    "app_config",
+    "auto_memory",
+    "health_check",
+    "search",
+    "version",
+}
+runtime_jobs = served_jobs | {
+    "daily_list",
+    "daily_write",
+    "digest_watch_loop",
+    "dream_cron",
+    "edit",
+    "frontmatter_update",
+    "index_update_loop",
+    "move",
+    "optimize_index_cron",
+    "read",
+    "write",
+}
+
+with open(sys.argv[2], encoding="utf-8") as source:
+    actual = yaml.safe_load(source)
+with files("reme.config").joinpath("default.yaml").open(encoding="utf-8") as source:
+    expected = yaml.safe_load(source)
+
+missing_jobs = runtime_jobs - set(expected["jobs"])
+if missing_jobs:
+    raise SystemExit(1)
+
+expected["workspace_dir"] = sys.argv[3]
+expected["service"] = {
+    "backend": "http",
+    "host": "127.0.0.1",
+    "port": 2333,
+    "web_enabled": False,
+    "jobs": sorted(served_jobs),
+}
+expected["jobs"] = {name: expected["jobs"][name] for name in sorted(runtime_jobs)}
+for name, job in expected["jobs"].items():
+    job["enable_serve"] = name in served_jobs
+expected["enable_logo"] = False
+expected["log_to_console"] = False
+expected["log_to_file"] = False
+
+raise SystemExit(0 if actual == expected else 1)
+PY
+    audit_ok reme-global-policy "$REME_GLOBAL_CONFIG"
+  else
+    audit_fail reme-global-policy "$REME_GLOBAL_CONFIG"
+  fi
+  audit_mode "$REME_GLOBAL_CONFIG"
+  if reme_config_has_sensitive_value "$REME_GLOBAL_CONFIG"; then
+    audit_fail sensitive-config "$REME_GLOBAL_CONFIG"
+  else
+    status=$?
+    case "$status" in
+    1) audit_ok no-literal-secret "$REME_GLOBAL_CONFIG" ;;
+    *) audit_fail invalid-config "$REME_GLOBAL_CONFIG" ;;
+    esac
+  fi
+  if [[ ! -d "$REME_GLOBAL_WORKSPACE" ]]; then
+    audit_fail reme-global-workspace "$REME_GLOBAL_WORKSPACE"
+  else
+    audit_mode "$REME_GLOBAL_WORKSPACE"
+  fi
+}
+
 audit_shared() {
   local skill
 
@@ -665,6 +1280,7 @@ audit_shared() {
 }
 
 audit_opencode() {
+  audit_reme
   audit_template \
     "$REPO_ROOT/config/opencode/opencode.json" \
     "$HOME/.config/opencode/opencode.json"
@@ -697,6 +1313,20 @@ audit_opencode() {
   audit_managed_link \
     "$REPO_ROOT/config/opencode/plugins/workmux-status.ts" \
     "$HOME/.config/opencode/plugins/workmux-status.ts"
+  audit_managed_link \
+    "$REPO_ROOT/config/opencode/plugins/reme-memory.ts" \
+    "$HOME/.config/opencode/plugins/reme-memory.ts"
+  audit_managed_link \
+    "$REPO_ROOT/config/reme/start-global-service.sh" \
+    "$REME_SERVICE_LAUNCHER"
+  audit_managed_link \
+    "$REPO_ROOT/config/reme/run-project-capture.py" \
+    "$REME_PROJECT_RUNNER"
+  if [[ -x "$REME_SERVICE_LAUNCHER" ]]; then
+    audit_ok executable "$REME_SERVICE_LAUNCHER"
+  else
+    audit_fail executable "$REME_SERVICE_LAUNCHER"
+  fi
 }
 
 audit_claude() {
@@ -748,6 +1378,11 @@ audit_pi() {
     "$REPO_ROOT/config/pi/extensions/workmux-status.ts" \
     "$HOME/.pi/agent/extensions/workmux-status.ts"
 }
+
+if [[ "$MODE" == "remove-reme" ]]; then
+  remove_reme
+  exit 0
+fi
 
 if [[ "$MODE" == "apply" ]]; then
   preflight_force

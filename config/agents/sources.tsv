@@ -9,3 +9,4 @@ cmux	upstream	Run cmux hooks setup after installing cmux.
 orca	optional	Let Orca install and manage its own agent hooks and Pi extensions.
 ego-browser	upstream	Use the upstream installer; record its shared skill and browser integration as one owner.
 understand-anything	upstream	Use the upstream installer; do not copy generated skills between tools.
+reme	0.4.1.7	https://github.com/agentscope-ai/ReMe; use the dedicated mac-setup venv, local project memory, and synthetic-only global memory.
