@@ -245,6 +245,39 @@ test_vim_module_publishes_fd_compat_command_on_ubuntu() {
   [[ "$(<"$output")" == "fdfind-ok" ]]
 }
 
+test_vim_module_activates_mise_python_for_downstream_modules() {
+  local home="$TEMP_ROOT/vim-python.home"
+  local fake_bin="$TEMP_ROOT/vim-python.bin"
+  local python_root="$TEMP_ROOT/vim-python-runtime"
+  local venv_bin="$home/.local/share/neovim/neovim3/bin"
+  local output="$TEMP_ROOT/vim-python.out"
+  mkdir -p "$home/.local/bin" "$fake_bin" "$python_root/bin" "$venv_bin"
+  printf '%s\n' '#!/usr/bin/env bash' 'exit 0' >"$fake_bin/fd"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'case "$*" in' \
+    '  "activate bash") exit 0 ;;' \
+    '  "ls python") printf "%s\n" "python 3.11.16" ;;' \
+    '  "where python@3.11") printf "%s\n" "$PINNED_PYTHON_ROOT" ;;' \
+    '  *) exit 1 ;;' \
+    'esac' >"$home/.local/bin/mise"
+  printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\n" pinned-python' \
+    >"$python_root/bin/python3"
+  printf '%s\n' '#!/usr/bin/env bash' '[[ "${1:-}" == "show" ]]' >"$venv_bin/pip"
+  chmod +x "$fake_bin/fd" "$home/.local/bin/mise" "$python_root/bin/python3" \
+    "$venv_bin/pip"
+
+  ROOT_DIR="$ROOT_DIR" HOME="$home" PINNED_PYTHON_ROOT="$python_root" \
+    PATH="$fake_bin:/usr/bin:/bin" MAC_SETUP_SKIP_NVIM_CONFIG=1 bash -c '
+      log() { :; }
+      install_mise() { :; }
+      pkg_install() { :; }
+      source "$ROOT_DIR/modules/vim.sh"
+      command -v python3
+    ' >"$output" 2>&1 || return 1
+
+  [[ "$(<"$output")" == "$python_root/bin/python3" ]]
+}
+
 test_tool_command_mapping() {
   local output
   output="$(ROOT_DIR="$ROOT_DIR" bash -c '
@@ -530,6 +563,8 @@ run_test opencode-resolves-pinned-npm-without-shell-activation \
   test_opencode_resolves_pinned_npm_without_shell_activation
 run_test vim-module-publishes-fd-compat-command-on-ubuntu \
   test_vim_module_publishes_fd_compat_command_on_ubuntu
+run_test vim-module-activates-mise-python-for-downstream-modules \
+  test_vim_module_activates_mise_python_for_downstream_modules
 run_test tool-command-mapping test_tool_command_mapping
 run_test node-module-installs-pinned-bun-runtime test_node_module_installs_pinned_bun_runtime
 run_test node-manifest-validator-rejects-invalid-entries \
