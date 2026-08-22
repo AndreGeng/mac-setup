@@ -182,6 +182,7 @@ test_tool_command_mapping() {
 
 test_node_module_installs_pinned_bun_runtime() {
   local trace="$TEMP_ROOT/node-runtime.trace"
+  local npm_trace="$TEMP_ROOT/node-npm.trace"
   local fake_mise="$TEMP_ROOT/fake-mise"
   local home="$TEMP_ROOT/node-runtime.home"
   mkdir -p "$home"
@@ -190,19 +191,50 @@ test_node_module_installs_pinned_bun_runtime() {
     'exit 0' >"$fake_mise"
   chmod +x "$fake_mise"
 
-  ROOT_DIR="$ROOT_DIR" HOME="$home" FAKE_MISE="$fake_mise" MISE_TRACE="$trace" bash -c '
+  ROOT_DIR="$ROOT_DIR" HOME="$home" FAKE_MISE="$fake_mise" MISE_TRACE="$trace" \
+    NPM_TRACE="$npm_trace" bash -c '
     log() { :; }
     install_mise() { :; }
     resolve_mise_executable() { printf "%s\n" "$FAKE_MISE"; }
     npm() {
-      [[ "${1:-}" == "list" ]] && return 0
+      [[ "${1:-}" == "list" ]] && return 1
+      printf "%s\n" "$*" >>"$NPM_TRACE"
       return 0
     }
     source "$ROOT_DIR/modules/nodejs.sh"
   ' >/dev/null 2>&1 || return 1
 
   grep -q '^use -g node@22.20.0$' "$trace" || return 1
-  grep -q '^use -g bun@1.3.7$' "$trace"
+  grep -q '^use -g bun@1.3.7$' "$trace" || return 1
+
+  local kind name version
+  while IFS=$'\t' read -r kind name version; do
+    [[ "$kind" == npm ]] || continue
+    grep -Fqx "install -g ${name}@${version}" "$npm_trace" || return 1
+  done <"$ROOT_DIR/config/runtime/node.tsv"
+}
+
+test_node_manifest_validator_rejects_invalid_entries() {
+  local manifest_root="$TEMP_ROOT/node-manifest-invalid"
+  mkdir -p "$manifest_root/config/runtime"
+  printf '%s\n' \
+    $'runtime\tnode\tlts' \
+    $'runtime\tbun\t1.3.7' \
+    $'npm\tprettier\t3.9.6' >"$manifest_root/config/runtime/node.tsv"
+  ROOT_DIR="$ROOT_DIR" MANIFEST_ROOT="$manifest_root" bash -c '
+    source "$ROOT_DIR/lib/runtime-manifest.sh"
+    ! validate_node_manifest "$MANIFEST_ROOT"
+  ' >/dev/null 2>&1 || return 1
+
+  printf '%s\n' \
+    $'runtime\tnode\t22.20.0' \
+    $'runtime\tnode\t22.20.0' \
+    $'runtime\tbun\t1.3.7' \
+    $'npm\tprettier\t3.9.6' >"$manifest_root/config/runtime/node.tsv"
+  ROOT_DIR="$ROOT_DIR" MANIFEST_ROOT="$manifest_root" bash -c '
+    source "$ROOT_DIR/lib/runtime-manifest.sh"
+    ! validate_node_manifest "$MANIFEST_ROOT"
+  ' >/dev/null 2>&1
 }
 
 test_binary_downloads_use_private_temporary_directories() {
@@ -243,6 +275,8 @@ run_test no-root-package-install-is-clean-skip test_no_root_package_install_is_a
 run_test opencode-module-has-no-implicit-sudo test_opencode_module_has_no_implicit_sudo
 run_test tool-command-mapping test_tool_command_mapping
 run_test node-module-installs-pinned-bun-runtime test_node_module_installs_pinned_bun_runtime
+run_test node-manifest-validator-rejects-invalid-entries \
+  test_node_manifest_validator_rejects_invalid_entries
 run_test binary-downloads-use-private-temporary-directories \
   test_binary_downloads_use_private_temporary_directories
 run_test platform-script-directories-include-linux-base \

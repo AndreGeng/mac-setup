@@ -135,7 +135,8 @@ test_describes_node_alias_with_stable_canonical_id() {
   local output="$TEMP_ROOT/describe-node.json"
   "$CLI" describe node --format json >"$output" || return 1
   json_assert "$output" 'value["capability"]["id"] == "runtime.node"' || return 1
-  json_assert "$output" 'value["capability"]["aliases"] == ["node", "nodejs"]'
+  json_assert "$output" 'value["capability"]["aliases"] == ["node", "nodejs"]' || return 1
+  json_assert "$output" 'value["capability"]["configPolicy"] == "none"'
 }
 
 test_unknown_capability_has_structured_error() {
@@ -392,13 +393,18 @@ test_node_apply_and_verify_complete_agent_workflow() {
   local plan="$TEMP_ROOT/node-plan-apply.json"
   local apply="$TEMP_ROOT/node-apply.json"
   local verify="$TEMP_ROOT/node-verify.json"
-  mkdir -p "$home" "$fake_bin"
+  local node_root="$TEMP_ROOT/node-runtime"
+  local bun_root="$TEMP_ROOT/bun-runtime"
+  mkdir -p "$home" "$fake_bin" "$node_root/bin" "$bun_root/bin"
+  printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\n" v22.20.0' >"$node_root/bin/node"
+  printf '%s\n' '#!/usr/bin/env bash' 'exit 0' >"$node_root/bin/npm"
+  printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\n" 1.3.7' >"$bun_root/bin/bun"
+  chmod +x "$node_root/bin/node" "$node_root/bin/npm" "$bun_root/bin/bun"
   printf '%s\n' '#!/usr/bin/env bash' \
     'case "$*" in' \
-    '  "exec node@22.20.0 -- node --version") printf "%s\n" v22.20.0 ;;' \
-    '  "exec bun@1.3.7 -- bun --version") printf "%s\n" 1.3.7 ;;' \
-    '  exec\ node@22.20.0\ --\ npm\ list\ -g\ --depth=0\ *) exit 0 ;;' \
-    '  *) exit 0 ;;' \
+    "  \"where node@22.20.0\") printf '%s\\n' '$node_root' ;;" \
+    "  \"where bun@1.3.7\") printf '%s\\n' '$bun_root' ;;" \
+    '  *) exit 1 ;;' \
     'esac' >"$fake_bin/mise"
   chmod +x "$fake_bin/mise"
 
@@ -414,6 +420,15 @@ test_node_apply_and_verify_complete_agent_workflow() {
   json_assert "$verify" 'value["status"] == "COMPLIANT"' || return 1
   json_assert "$verify" \
     'len([item for item in value["checks"] if item["member"] == "runtime.node" and item["status"] == "PASS"]) == 11'
+}
+
+test_node_runtime_drift_schedules_member_module() {
+  ROOT_DIR="$ROOT_DIR" bash -c '
+    source "$ROOT_DIR/lib/mac-setup/engine.sh"
+    PLAN_CHANGE_TYPES=(CONFIGURE_RUNTIME INSTALL_NPM_PACKAGE)
+    PLAN_CHANGE_MEMBERS=(runtime.node runtime.node)
+    plan_member_needs_install_module runtime.node
+  ' >/dev/null 2>&1
 }
 
 test_terminal_profile_plan_aggregates_changes_and_approvals() {
@@ -569,6 +584,8 @@ run_test node-plan-uses-pinned-manifest-without-mutation \
   test_node_plan_uses_pinned_manifest_without_mutation
 run_test node-apply-and-verify-complete-agent-workflow \
   test_node_apply_and_verify_complete_agent_workflow
+run_test node-runtime-drift-schedules-member-module \
+  test_node_runtime_drift_schedules_member_module
 run_test terminal-profile-plan-aggregates-changes-and-approvals \
   test_terminal_profile_plan_aggregates_changes_and_approvals
 run_test terminal-profile-apply-and-verify-complete-agent-workflow \
