@@ -103,7 +103,7 @@ setup_python_env() {
 
   local venv_dir="$HOME/.local/share/neovim"
   local python3_version="3.11"
-  local mise_cmd
+  local mise_cmd python_root
 
   if ! mise_cmd="$(resolve_mise_executable 2>/dev/null)"; then
     log "未找到 mise 可执行文件。若存在目录 ~/.local/bin/mise，请删除后重试安装 mise。" "$RED"
@@ -117,6 +117,16 @@ setup_python_env() {
     log "安装 Python $python3_version..." "$GREEN"
     "$mise_cmd" install python@"$python3_version"
   fi
+
+  python_root="$("$mise_cmd" where "python@${python3_version}" 2>/dev/null)" || {
+    log "无法解析 mise Python $python3_version 的安装目录" "$RED"
+    return 1
+  }
+  if [[ ! -x "$python_root/bin/python3" ]]; then
+    log "mise Python $python3_version 缺少 python3 命令" "$RED"
+    return 1
+  fi
+  export PATH="$python_root/bin:$PATH"
 
   # 创建虚拟环境
   local venv_path="$venv_dir/neovim3"

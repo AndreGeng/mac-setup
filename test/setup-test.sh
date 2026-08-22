@@ -271,6 +271,7 @@ test_vim_module_activates_mise_python_for_downstream_modules() {
       log() { :; }
       install_mise() { :; }
       pkg_install() { :; }
+      resolve_mise_executable() { printf "%s\n" "$HOME/.local/bin/mise"; }
       source "$ROOT_DIR/modules/vim.sh"
       command -v python3
     ' >"$output" 2>&1 || return 1
