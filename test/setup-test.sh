@@ -208,22 +208,27 @@ test_node_module_installs_pinned_bun_runtime() {
   local npm_trace="$TEMP_ROOT/node-npm.trace"
   local fake_mise="$TEMP_ROOT/fake-mise"
   local home="$TEMP_ROOT/node-runtime.home"
-  mkdir -p "$home"
+  local node_root="$TEMP_ROOT/node-module-runtime"
+  mkdir -p "$home" "$node_root/bin"
   printf '%s\n' '#!/usr/bin/env bash' \
+    '[[ "${1:-}" == "list" ]] && exit 1' \
+    'printf "%s\n" "$*" >>"$NPM_TRACE"' \
+    'exit 0' >"$node_root/bin/npm"
+  chmod +x "$node_root/bin/npm"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'if [[ "$*" == "where node@22.20.0" ]]; then' \
+    '  printf "%s\n" "$NODE_MODULE_RUNTIME"' \
+    '  exit 0' \
+    'fi' \
     'printf "%s\n" "$*" >>"$MISE_TRACE"' \
     'exit 0' >"$fake_mise"
   chmod +x "$fake_mise"
 
   ROOT_DIR="$ROOT_DIR" HOME="$home" FAKE_MISE="$fake_mise" MISE_TRACE="$trace" \
-    NPM_TRACE="$npm_trace" bash -c '
+    NPM_TRACE="$npm_trace" NODE_MODULE_RUNTIME="$node_root" bash -c '
     log() { :; }
     install_mise() { :; }
     resolve_mise_executable() { printf "%s\n" "$FAKE_MISE"; }
-    npm() {
-      [[ "${1:-}" == "list" ]] && return 1
-      printf "%s\n" "$*" >>"$NPM_TRACE"
-      return 0
-    }
     source "$ROOT_DIR/modules/nodejs.sh"
   ' >/dev/null 2>&1 || return 1
 
