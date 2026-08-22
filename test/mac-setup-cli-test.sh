@@ -90,7 +90,7 @@ test_lists_agent_discoverable_capabilities() {
   json_assert "$output" 'value["schemaVersion"] == "1"' || return 1
   json_assert "$output" 'value["operation"] == "list"' || return 1
   json_assert "$output" \
-    'set(item["id"] for item in value["capabilities"]) == {"editor.nvim", "shell.zsh"}'
+    'set(item["id"] for item in value["capabilities"]) == {"editor.nvim", "shell.zsh", "terminal.tmux"}'
   json_assert "$output" \
     'set(item["id"] for item in value["profiles"]) == {"profile.terminal"}' || return 1
   json_assert "$output" \
@@ -120,6 +120,14 @@ test_describes_alias_with_stable_canonical_id() {
   json_assert "$output" 'value["capability"]["id"] == "editor.nvim"' || return 1
   json_assert "$output" '"python-provider" in value["capability"]["optionalFeatures"]' ||
     return 1
+  json_assert "$output" 'value["capability"]["configPolicy"] == "replace"'
+}
+
+test_describes_tmux_alias_with_stable_canonical_id() {
+  local output="$TEMP_ROOT/describe-tmux.json"
+  "$CLI" describe tmux --format json >"$output" || return 1
+  json_assert "$output" 'value["capability"]["id"] == "terminal.tmux"' || return 1
+  json_assert "$output" 'value["capability"]["aliases"] == ["tmux"]' || return 1
   json_assert "$output" 'value["capability"]["configPolicy"] == "replace"'
 }
 
@@ -228,6 +236,79 @@ test_zsh_apply_and_verify_complete_agent_workflow() {
 
   cli_env "$home" "$state" "$fake_bin" verify zsh --format json >"$verify" || return 1
   json_assert "$verify" 'value["status"] == "COMPLIANT"'
+}
+
+test_tmux_plan_is_read_only_and_declares_approvals() {
+  local home="$TEMP_ROOT/tmux-plan-home"
+  local state="$TEMP_ROOT/tmux-plan-state"
+  local fake_bin="$TEMP_ROOT/tmux-plan-bin"
+  local output="$TEMP_ROOT/tmux-plan.json"
+  mkdir -p "$home" "$fake_bin"
+  printf '%s\n' existing >"$home/.tmux.conf"
+
+  cli_env "$home" "$state" "$fake_bin" plan tmux --format json >"$output" || return 1
+  [[ ! -e "$state" ]] || return 1
+  [[ "$(cat "$home/.tmux.conf")" == existing ]] || return 1
+  json_assert "$output" 'value["capability"] == "terminal.tmux"' || return 1
+  json_assert "$output" \
+    'len([item for item in value["changes"] if item["resource"].endswith("/.tmux.conf")]) == 1' ||
+    return 1
+  json_assert "$output" \
+    '"network" in set(item["type"] for item in value["requiredApprovals"])' || return 1
+  json_assert "$output" \
+    '"replace-config" in set(item["type"] for item in value["requiredApprovals"])'
+}
+
+test_tmux_apply_and_verify_complete_agent_workflow() {
+  local home="$TEMP_ROOT/tmux-home"
+  local state="$TEMP_ROOT/tmux-state"
+  local fake_bin="$TEMP_ROOT/tmux-bin"
+  local plan="$TEMP_ROOT/tmux-plan-apply.json"
+  local apply="$TEMP_ROOT/tmux-apply.json"
+  local verify="$TEMP_ROOT/tmux-verify.json"
+  mkdir -p "$home/.tmux/plugins/tpm/.git" "$fake_bin"
+  write_fake_command "$fake_bin/tmux"
+  write_fake_command "$fake_bin/git"
+  write_fake_command "$fake_bin/bc"
+
+  cli_env "$home" "$state" "$fake_bin" plan tmux --format json >"$plan" || return 1
+  local plan_id
+  plan_id="$(json_value "$plan" planId)" || return 1
+  cli_env "$home" "$state" "$fake_bin" apply tmux \
+    --plan-id "$plan_id" --non-interactive --format json >"$apply" || return 1
+
+  [[ -L "$home/.tmux.conf" ]] || return 1
+  [[ "$(readlink "$home/.tmux.conf")" == "$ROOT_DIR/config/.tmux.conf" ]] || return 1
+  json_assert "$apply" 'value["status"] == "SUCCESS"' || return 1
+  cli_env "$home" "$state" "$fake_bin" verify tmux --format json >"$verify" || return 1
+  json_assert "$verify" 'value["status"] == "COMPLIANT"' || return 1
+  json_assert "$verify" \
+    'set(item["member"] for item in value["checks"]) == {"terminal.tmux"}'
+}
+
+test_tmux_module_installs_declared_runtime_dependencies() {
+  local home="$TEMP_ROOT/tmux-module-home"
+  local fake_bin="$TEMP_ROOT/tmux-module-bin"
+  local output="$TEMP_ROOT/tmux-module-packages.txt"
+  mkdir -p "$home/.tmux/plugins/tpm/.git" "$fake_bin"
+
+  env HOME="$home" PATH="$fake_bin" /bin/bash -c '
+    log() { :; }
+    pkg_install() { printf "%s\n" "$1"; }
+    is_macos() { return 1; }
+    source "$1/modules/tmux.sh"
+  ' _ "$ROOT_DIR" >"$output" || return 1
+
+  grep -qx tmux "$output" || return 1
+  grep -qx git "$output" || return 1
+  grep -qx bc "$output"
+}
+
+test_tmux_config_guards_macos_clipboard_helpers() {
+  local config="$ROOT_DIR/config/.tmux.conf"
+  grep -q "if-shell 'command -v reattach-to-user-namespace" "$config" || return 1
+  grep -q "if-shell 'command -v pbcopy" "$config" || return 1
+  ! grep -q '^set -g default-command "reattach-to-user-namespace' "$config"
 }
 
 test_terminal_profile_plan_aggregates_changes_and_approvals() {
@@ -342,6 +423,7 @@ test_shared_agent_skill_documents_safe_operator_flow() {
   grep -q 'mac-setup apply' "$skill" || return 1
   grep -q 'mac-setup verify' "$skill" || return 1
   grep -q 'profile.terminal' "$skill" || return 1
+  grep -q 'terminal.tmux' "$skill" || return 1
   grep -q 'Operator mode' "$skill"
 }
 
@@ -351,6 +433,8 @@ run_test describes-terminal-profile-with-ordered-members \
 run_test human-list-includes-terminal-profile test_human_list_includes_terminal_profile
 run_test describes-alias-with-stable-canonical-id \
   test_describes_alias_with_stable_canonical_id
+run_test describes-tmux-alias-with-stable-canonical-id \
+  test_describes_tmux_alias_with_stable_canonical_id
 run_test unknown-capability-has-structured-error \
   test_unknown_capability_has_structured_error
 run_test plan-is-read-only-and-declares-approvals \
@@ -361,6 +445,14 @@ run_test vim-apply-and-verify-complete-agent-workflow \
   test_vim_apply_and_verify_complete_agent_workflow
 run_test zsh-apply-and-verify-complete-agent-workflow \
   test_zsh_apply_and_verify_complete_agent_workflow
+run_test tmux-plan-is-read-only-and-declares-approvals \
+  test_tmux_plan_is_read_only_and_declares_approvals
+run_test tmux-apply-and-verify-complete-agent-workflow \
+  test_tmux_apply_and_verify_complete_agent_workflow
+run_test tmux-module-installs-declared-runtime-dependencies \
+  test_tmux_module_installs_declared_runtime_dependencies
+run_test tmux-config-guards-macos-clipboard-helpers \
+  test_tmux_config_guards_macos_clipboard_helpers
 run_test terminal-profile-plan-aggregates-changes-and-approvals \
   test_terminal_profile_plan_aggregates_changes_and_approvals
 run_test terminal-profile-apply-and-verify-complete-agent-workflow \
