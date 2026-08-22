@@ -191,6 +191,60 @@ test_opencode_module_has_no_implicit_sudo() {
   [[ "$(<"$result")" == "$ROOT_DIR" ]]
 }
 
+test_opencode_resolves_pinned_npm_without_shell_activation() {
+  local home="$TEMP_ROOT/opencode-pinned.home"
+  local node_root="$TEMP_ROOT/opencode-pinned-node"
+  local output="$TEMP_ROOT/opencode-pinned.out"
+  mkdir -p "$home/.local/bin" "$node_root/bin"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'if [[ "$*" == "where node@22.23.2" ]]; then' \
+    '  printf "%s\n" "$PINNED_NODE_ROOT"' \
+    '  exit 0' \
+    'fi' \
+    'exit 1' >"$home/.local/bin/mise"
+  chmod +x "$home/.local/bin/mise"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'if [[ "$*" == "install -g opencode-ai" ]]; then' \
+    '  bin_dir="$(cd "$(dirname "$0")" && pwd)"' \
+    '  printf "%s\n" "#!/usr/bin/env bash" "printf \"%s\\n\" test-opencode" >"$bin_dir/opencode"' \
+    '  chmod +x "$bin_dir/opencode"' \
+    '  exit 0' \
+    'fi' \
+    'exit 1' >"$node_root/bin/npm"
+  chmod +x "$node_root/bin/npm"
+
+  ROOT_DIR="$ROOT_DIR" HOME="$home" PINNED_NODE_ROOT="$node_root" \
+    PATH="$home/.local/bin:/usr/bin:/bin" bash -c '
+      MODULES=()
+      source "$ROOT_DIR/modules/opencode.sh"
+      command -v npm
+      command -v opencode
+    ' >"$output" 2>&1 || return 1
+
+  grep -Fxq "$node_root/bin/npm" "$output" || return 1
+  grep -Fxq "$node_root/bin/opencode" "$output"
+}
+
+test_vim_module_publishes_fd_compat_command_on_ubuntu() {
+  local home="$TEMP_ROOT/vim-fd.home"
+  local fake_bin="$TEMP_ROOT/vim-fd.bin"
+  local output="$TEMP_ROOT/vim-fd.out"
+  mkdir -p "$home" "$fake_bin"
+  printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\n" fdfind-ok' >"$fake_bin/fdfind"
+  chmod +x "$fake_bin/fdfind"
+
+  ROOT_DIR="$ROOT_DIR" HOME="$home" PATH="$fake_bin:/usr/bin:/bin" \
+    MAC_SETUP_SKIP_NVIM_CONFIG=1 MAC_SETUP_SKIP_NVIM_PYTHON=1 bash -c '
+      log() { :; }
+      install_mise() { :; }
+      pkg_install() { :; }
+      source "$ROOT_DIR/modules/vim.sh"
+      "$HOME/.local/bin/fd"
+    ' >"$output" 2>&1 || return 1
+
+  [[ "$(<"$output")" == "fdfind-ok" ]]
+}
+
 test_tool_command_mapping() {
   local output
   output="$(ROOT_DIR="$ROOT_DIR" bash -c '
@@ -209,6 +263,7 @@ test_node_module_installs_pinned_bun_runtime() {
   local fake_mise="$TEMP_ROOT/fake-mise"
   local home="$TEMP_ROOT/node-runtime.home"
   local node_root="$TEMP_ROOT/node-module-runtime"
+  local path_result="$TEMP_ROOT/node-runtime-path.out"
   mkdir -p "$home" "$node_root/bin"
   printf '%s\n' '#!/usr/bin/env bash' \
     '[[ "${1:-}" == "list" ]] && exit 1' \
@@ -225,11 +280,13 @@ test_node_module_installs_pinned_bun_runtime() {
   chmod +x "$fake_mise"
 
   ROOT_DIR="$ROOT_DIR" HOME="$home" FAKE_MISE="$fake_mise" MISE_TRACE="$trace" \
-    NPM_TRACE="$npm_trace" NODE_MODULE_RUNTIME="$node_root" bash -c '
+    NPM_TRACE="$npm_trace" NODE_MODULE_RUNTIME="$node_root" PATH_RESULT="$path_result" \
+    PATH="/usr/bin:/bin" bash -c '
     log() { :; }
     install_mise() { :; }
     resolve_mise_executable() { printf "%s\n" "$FAKE_MISE"; }
     source "$ROOT_DIR/modules/nodejs.sh"
+    command -v npm >"$PATH_RESULT"
   ' >/dev/null 2>&1 || return 1
 
   grep -q '^use -g node@22.23.2$' "$trace" || return 1
@@ -240,6 +297,7 @@ test_node_module_installs_pinned_bun_runtime() {
     [[ "$kind" == npm ]] || continue
     grep -Fqx "install -g ${name}@${version}" "$npm_trace" || return 1
   done <"$ROOT_DIR/config/runtime/node.tsv"
+  [[ "$(<"$path_result")" == "$node_root/bin/npm" ]]
 }
 
 test_node_manifest_validator_rejects_invalid_entries() {
@@ -468,6 +526,10 @@ run_test linux-package-install-stops-when-apt-update-fails \
   test_linux_package_install_stops_when_apt_update_fails
 run_test no-root-package-install-is-clean-skip test_no_root_package_install_is_a_clean_skip
 run_test opencode-module-has-no-implicit-sudo test_opencode_module_has_no_implicit_sudo
+run_test opencode-resolves-pinned-npm-without-shell-activation \
+  test_opencode_resolves_pinned_npm_without_shell_activation
+run_test vim-module-publishes-fd-compat-command-on-ubuntu \
+  test_vim_module_publishes_fd_compat_command_on_ubuntu
 run_test tool-command-mapping test_tool_command_mapping
 run_test node-module-installs-pinned-bun-runtime test_node_module_installs_pinned_bun_runtime
 run_test node-manifest-validator-rejects-invalid-entries \
