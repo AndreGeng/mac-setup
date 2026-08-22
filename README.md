@@ -180,6 +180,9 @@ bash test/agents-test.sh
 bun test ./test/reme-memory-test.ts ./test/reme-bridge-test.ts
 bash test/security-scan-test.sh
 bash scripts/privacy-scan.sh
+
+# Docker 中真实执行 Agent terminal 的 plan/apply/verify/replan 闭环
+bash test/ubuntu-terminal-test.sh
 ```
 
 ## 安全检查
