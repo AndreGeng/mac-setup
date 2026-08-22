@@ -142,11 +142,13 @@ test_no_root_package_install_is_a_clean_skip() {
 
 test_opencode_module_has_no_implicit_sudo() {
   local trace="$TEMP_ROOT/opencode.trace"
+  local result="$TEMP_ROOT/opencode-root.out"
   local home="$TEMP_ROOT/opencode.home"
   mkdir -p "$home"
 
-  TRACE_FILE="$trace" ROOT_DIR="$ROOT_DIR" HOME="$home" bash -c '
+  TRACE_FILE="$trace" RESULT_FILE="$result" ROOT_DIR="$ROOT_DIR" HOME="$home" bash -c '
     MODULES=()
+    SCRIPT_ROOT="$ROOT_DIR"
     opencode() {
       [[ "${1:-}" == "--version" ]] && printf "%s\n" test-version
       return 0
@@ -159,9 +161,11 @@ test_opencode_module_has_no_implicit_sudo() {
     sleep() { return 0; }
     kill() { return 1; }
     source "$ROOT_DIR/modules/opencode.sh"
+    printf "%s\n" "$SCRIPT_ROOT" >"$RESULT_FILE"
   ' >/dev/null 2>&1 || return 1
 
-  [[ ! -s "$trace" ]]
+  [[ ! -s "$trace" ]] || return 1
+  [[ "$(<"$result")" == "$ROOT_DIR" ]]
 }
 
 test_tool_command_mapping() {
