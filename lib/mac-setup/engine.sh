@@ -438,14 +438,19 @@ first_missing_approval() {
   return 1
 }
 
+change_requires_module() {
+  case "$1" in
+  INSTALL_TOOL | INSTALL_GIT_REPOSITORY | CONFIGURE_FEATURE | CONFIGURE_RUNTIME | INSTALL_NPM_PACKAGE)
+    return 0
+    ;;
+  *) return 1 ;;
+  esac
+}
+
 plan_needs_install_module() {
   local type
   for type in "${PLAN_CHANGE_TYPES[@]:-}"; do
-    case "$type" in
-    INSTALL_TOOL | INSTALL_GIT_REPOSITORY | CONFIGURE_FEATURE | CONFIGURE_RUNTIME | INSTALL_NPM_PACKAGE)
-      return 0
-      ;;
-    esac
+    change_requires_module "$type" && return 0
   done
   return 1
 }
@@ -455,11 +460,7 @@ plan_member_needs_install_module() {
   local index
   for ((index = 0; index < ${#PLAN_CHANGE_TYPES[@]}; index++)); do
     [[ "${PLAN_CHANGE_MEMBERS[$index]}" == "$member" ]] || continue
-    case "${PLAN_CHANGE_TYPES[$index]}" in
-    INSTALL_TOOL | INSTALL_GIT_REPOSITORY | CONFIGURE_FEATURE | CONFIGURE_RUNTIME | INSTALL_NPM_PACKAGE)
-      return 0
-      ;;
-    esac
+    change_requires_module "${PLAN_CHANGE_TYPES[$index]}" && return 0
   done
   return 1
 }
