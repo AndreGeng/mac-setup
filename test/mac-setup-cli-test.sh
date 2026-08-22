@@ -381,9 +381,25 @@ test_node_plan_uses_pinned_manifest_without_mutation() {
   [[ ! -e "$state" ]] || return 1
   json_assert "$output" 'value["capability"] == "runtime.node"' || return 1
   json_assert "$output" \
-    'set(item["resource"] for item in value["changes"]) >= {"mise", "node@22.20.0", "bun@1.3.7", "typescript@7.0.2"}' || return 1
+    'set(item["resource"] for item in value["changes"]) >= {"mise@2025.10.6", "node@22.20.0", "bun@1.3.7", "typescript@7.0.2"}' || return 1
   json_assert "$output" \
     'set(item["type"] for item in value["requiredApprovals"]) == {"network"}'
+}
+
+test_node_plan_detects_mise_version_drift() {
+  local home="$TEMP_ROOT/node-mise-drift-home"
+  local state="$TEMP_ROOT/node-mise-drift-state"
+  local fake_bin="$TEMP_ROOT/node-mise-drift-bin"
+  local output="$TEMP_ROOT/node-mise-drift.json"
+  mkdir -p "$home" "$fake_bin"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    '[[ "${1:-}" == "--version" ]] && printf "%s\n" "2024.1.0 linux-x64"' \
+    'exit 1' >"$fake_bin/mise"
+  chmod +x "$fake_bin/mise"
+
+  cli_env "$home" "$state" "$fake_bin" plan node --format json >"$output" || return 1
+  json_assert "$output" \
+    'len([item for item in value["changes"] if item["type"] == "CONFIGURE_BOOTSTRAP" and item["resource"] == "mise@2025.10.6"]) == 1'
 }
 
 test_node_apply_and_verify_complete_agent_workflow() {
@@ -402,6 +418,7 @@ test_node_apply_and_verify_complete_agent_workflow() {
   chmod +x "$node_root/bin/node" "$node_root/bin/npm" "$bun_root/bin/bun"
   printf '%s\n' '#!/usr/bin/env bash' \
     'case "$*" in' \
+    '  "--version") printf "%s\n" "2025.10.6 test" ;;' \
     "  \"where node@22.20.0\") printf '%s\\n' '$node_root' ;;" \
     "  \"where bun@1.3.7\") printf '%s\\n' '$bun_root' ;;" \
     '  *) exit 1 ;;' \
@@ -425,8 +442,8 @@ test_node_apply_and_verify_complete_agent_workflow() {
 test_node_runtime_drift_schedules_member_module() {
   ROOT_DIR="$ROOT_DIR" bash -c '
     source "$ROOT_DIR/lib/mac-setup/engine.sh"
-    PLAN_CHANGE_TYPES=(CONFIGURE_RUNTIME INSTALL_NPM_PACKAGE)
-    PLAN_CHANGE_MEMBERS=(runtime.node runtime.node)
+    PLAN_CHANGE_TYPES=(CONFIGURE_BOOTSTRAP CONFIGURE_RUNTIME INSTALL_NPM_PACKAGE)
+    PLAN_CHANGE_MEMBERS=(runtime.node runtime.node runtime.node)
     plan_member_needs_install_module runtime.node
   ' >/dev/null 2>&1
 }
@@ -582,6 +599,8 @@ run_test node-manifest-pins-every-dependency \
   test_node_manifest_pins_every_dependency
 run_test node-plan-uses-pinned-manifest-without-mutation \
   test_node_plan_uses_pinned_manifest_without_mutation
+run_test node-plan-detects-mise-version-drift \
+  test_node_plan_detects_mise_version_drift
 run_test node-apply-and-verify-complete-agent-workflow \
   test_node_apply_and_verify_complete_agent_workflow
 run_test node-runtime-drift-schedules-member-module \

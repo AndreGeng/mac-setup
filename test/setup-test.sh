@@ -237,6 +237,118 @@ test_node_manifest_validator_rejects_invalid_entries() {
   ' >/dev/null 2>&1
 }
 
+test_mise_bootstrap_manifest_pins_supported_assets() {
+  local manifest="$ROOT_DIR/config/bootstrap/mise.tsv"
+  [[ -f "$manifest" ]] || return 1
+  python3 - "$manifest" <<'PY'
+import pathlib
+import re
+import sys
+
+records = []
+for line in pathlib.Path(sys.argv[1]).read_text(encoding="utf-8").splitlines():
+    if not line or line.startswith("#"):
+        continue
+    fields = line.split("\t")
+    if len(fields) != 5:
+        raise SystemExit(1)
+    version, os_name, arch, filename, sha256 = fields
+    if version != "2025.10.6":
+        raise SystemExit(1)
+    if filename != f"mise-v{version}-{os_name}-{arch}.tar.gz":
+        raise SystemExit(1)
+    if not re.fullmatch(r"[0-9a-f]{64}", sha256):
+        raise SystemExit(1)
+    records.append((os_name, arch))
+
+if set(records) != {
+    ("macos", "arm64"),
+    ("macos", "x64"),
+    ("linux", "arm64"),
+    ("linux", "x64"),
+}:
+    raise SystemExit(1)
+if len(records) != 4:
+    raise SystemExit(1)
+PY
+}
+
+test_mise_manifest_validator_rejects_invalid_entries() {
+  local manifest_root="$TEMP_ROOT/mise-manifest-invalid"
+  mkdir -p "$manifest_root/config/bootstrap"
+  printf '%s\n' \
+    $'2025.10.6\tmacos\tarm64\tmise-v2025.10.6-macos-arm64.tar.gz\tnot-a-digest' \
+    $'2025.10.6\tmacos\tx64\tmise-v2025.10.6-macos-x64.tar.gz\t9750847121fb2af54aa2f100e260ab95c5ac1778466f17b94ff92ea91e9c60e7' \
+    $'2025.10.6\tlinux\tarm64\tmise-v2025.10.6-linux-arm64.tar.gz\tbd816ebaaec2d98a4ba6f4c44b5d1f9486b6cc507e467d7724a43e069a03004d' \
+    $'2025.10.6\tlinux\tx64\tmise-v2025.10.6-linux-x64.tar.gz\tb79ed91bbeae692101f8d838cb6a26698250bc340fe9b491565c9d04e8856ddf' \
+    >"$manifest_root/config/bootstrap/mise.tsv"
+  ROOT_DIR="$ROOT_DIR" MANIFEST_ROOT="$manifest_root" bash -c '
+    set -e
+    source "$ROOT_DIR/lib/bootstrap-manifest.sh"
+    ! validate_mise_bootstrap_manifest "$MANIFEST_ROOT"
+  ' >/dev/null 2>&1 || return 1
+
+  printf '%s\n' \
+    $'2025.10.6\tmacos\tarm64\tmise-v2025.10.6-macos-arm64.tar.gz\t4d6ffc66cb392ac527e27bdc0ffd42268839b7caa10aab84ff222435ab28865d' \
+    $'2025.10.6\tmacos\tarm64\tmise-v2025.10.6-macos-arm64.tar.gz\t4d6ffc66cb392ac527e27bdc0ffd42268839b7caa10aab84ff222435ab28865d' \
+    $'2025.10.6\tlinux\tarm64\tmise-v2025.10.6-linux-arm64.tar.gz\tbd816ebaaec2d98a4ba6f4c44b5d1f9486b6cc507e467d7724a43e069a03004d' \
+    $'2025.10.6\tlinux\tx64\tmise-v2025.10.6-linux-x64.tar.gz\tb79ed91bbeae692101f8d838cb6a26698250bc340fe9b491565c9d04e8856ddf' \
+    >"$manifest_root/config/bootstrap/mise.tsv"
+  ROOT_DIR="$ROOT_DIR" MANIFEST_ROOT="$manifest_root" bash -c '
+    set -e
+    source "$ROOT_DIR/lib/bootstrap-manifest.sh"
+    ! validate_mise_bootstrap_manifest "$MANIFEST_ROOT"
+  ' >/dev/null 2>&1
+}
+
+test_mise_checksum_mismatch_fails_closed() {
+  local home="$TEMP_ROOT/mise-checksum.home"
+  local curl_trace="$TEMP_ROOT/mise-checksum.curl"
+  local tar_trace="$TEMP_ROOT/mise-checksum.tar"
+  local output="$TEMP_ROOT/mise-checksum.out"
+  mkdir -p "$home"
+
+  ROOT_DIR="$ROOT_DIR" HOME="$home" CURL_TRACE="$curl_trace" TAR_TRACE="$tar_trace" \
+    bash -c '
+    source "$ROOT_DIR/lib/utils.sh"
+    uname() {
+      [[ "${1:-}" == "-m" ]] && printf "%s\n" arm64 || printf "%s\n" Darwin
+    }
+    curl() {
+      printf "%s\n" "$*" >>"$CURL_TRACE"
+      if [[ "$*" == *"api.github.com"* ]]; then
+        printf "%s\n" "{\"tag_name\":\"v999.0.0\"}"
+        return 0
+      fi
+      local argument output_path="" take_next=false
+      for argument in "$@"; do
+        if [[ "$take_next" == true ]]; then
+          output_path="$argument"
+          take_next=false
+          continue
+        fi
+        case "$argument" in
+        -o | -fLo) take_next=true ;;
+        esac
+      done
+      [[ -n "$output_path" ]] || return 1
+      printf "%s\n" tampered-download >"$output_path"
+    }
+    tar() {
+      printf "%s\n" "$*" >>"$TAR_TRACE"
+      return 0
+    }
+    ! install_mise
+  ' >"$output" 2>&1 || return 1
+
+  grep -q \
+    'https://github.com/jdx/mise/releases/download/v2025.10.6/mise-v2025.10.6-macos-arm64.tar.gz' \
+    "$curl_trace" || return 1
+  [[ ! -e "$tar_trace" ]] || return 1
+  [[ ! -e "$home/.local/bin/mise" ]] || return 1
+  grep -q 'SHA-256' "$output"
+}
+
 test_binary_downloads_use_private_temporary_directories() {
   ! grep -Eq 'tmp_dir="/tmp/mise-install"|"/tmp/(fzf|yazi)\.' \
     "$ROOT_DIR/lib/utils.sh" "$ROOT_DIR/modules/cli-tools.sh" || return 1
@@ -277,6 +389,12 @@ run_test tool-command-mapping test_tool_command_mapping
 run_test node-module-installs-pinned-bun-runtime test_node_module_installs_pinned_bun_runtime
 run_test node-manifest-validator-rejects-invalid-entries \
   test_node_manifest_validator_rejects_invalid_entries
+run_test mise-bootstrap-manifest-pins-supported-assets \
+  test_mise_bootstrap_manifest_pins_supported_assets
+run_test mise-manifest-validator-rejects-invalid-entries \
+  test_mise_manifest_validator_rejects_invalid_entries
+run_test mise-checksum-mismatch-fails-closed \
+  test_mise_checksum_mismatch_fails_closed
 run_test binary-downloads-use-private-temporary-directories \
   test_binary_downloads_use_private_temporary_directories
 run_test platform-script-directories-include-linux-base \
