@@ -250,6 +250,42 @@ describe('Claude and Codex bridge subprocess protocol', () => {
   });
 });
 
+describe('Claude and Codex hook failure bounds', () => {
+  test('keeps retrieval synchronous and bounds it to three seconds', async () => {
+    for (const path of ['config/claude/settings.json', 'config/codex/hooks.json']) {
+      const config = JSON.parse(
+        await Bun.file(join(import.meta.dir, '..', path)).text(),
+      ) as Record<string, any>;
+      const handlers = config.hooks.UserPromptSubmit[0].hooks as Array<Record<string, unknown>>;
+      const memory = handlers.find((handler) =>
+        String(handler.command).includes('reme-memory-bridge.ts'),
+      );
+
+      expect(memory).toBeDefined();
+      expect(memory?.timeout).toBe(3);
+      expect(memory?.async).not.toBe(true);
+      expect(String(memory?.command)).toContain('command -v bun');
+      expect(String(memory?.command)).toContain('test -f');
+      expect(String(memory?.command)).toEndWith('|| true');
+    }
+  });
+
+  test('runs best-effort stop capture asynchronously with a short timeout', async () => {
+    const config = JSON.parse(
+      await Bun.file(join(import.meta.dir, '..', 'config', 'codex', 'hooks.json')).text(),
+    ) as Record<string, any>;
+    const handlers = config.hooks.Stop[0].hooks as Array<Record<string, unknown>>;
+    const memory = handlers.find((handler) =>
+      String(handler.command).includes('reme-memory-bridge.ts'),
+    );
+
+    expect(memory).toBeDefined();
+    expect(memory?.timeout).toBe(3);
+    expect(memory?.async).toBe(true);
+    expect(String(memory?.command)).toEndWith('|| true');
+  });
+});
+
 describe('Pi ReMe extension', () => {
   test('preserves the system prompt and injects cached memory as one idempotent ephemeral message', async () => {
     const handlers = new Map<string, Function>();

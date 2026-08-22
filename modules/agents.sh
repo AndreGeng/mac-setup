@@ -1296,6 +1296,14 @@ PY
 }
 
 audit_reme_runtime() {
+  local bun_path=""
+
+  bun_path="$(command -v bun 2>/dev/null || true)"
+  if [[ -n "$bun_path" && -f "$bun_path" && -x "$bun_path" ]]; then
+    audit_ok bun-runtime "$bun_path"
+  else
+    audit_fail bun-runtime missing
+  fi
   audit_reme
   audit_managed_link \
     "$REPO_ROOT/config/agents/reme-memory-bridge.ts" \

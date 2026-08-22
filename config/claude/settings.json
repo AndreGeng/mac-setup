@@ -31,7 +31,8 @@
           },
           {
             "type": "command",
-            "command": "REME_HOOK_HOST=claude REME_HOOK_EVENT=Stop bun \"$HOME/.config/agents/reme-memory-bridge.ts\""
+            "command": "command -v bun >/dev/null 2>&1 && test -f \"$HOME/.config/agents/reme-memory-bridge.ts\" && REME_HOOK_HOST=claude REME_HOOK_EVENT=Stop bun \"$HOME/.config/agents/reme-memory-bridge.ts\" || true",
+            "timeout": 3
           }
         ]
       }
@@ -45,7 +46,8 @@
           },
           {
             "type": "command",
-            "command": "REME_HOOK_HOST=claude REME_HOOK_EVENT=UserPromptSubmit bun \"$HOME/.config/agents/reme-memory-bridge.ts\""
+            "command": "command -v bun >/dev/null 2>&1 && test -f \"$HOME/.config/agents/reme-memory-bridge.ts\" && REME_HOOK_HOST=claude REME_HOOK_EVENT=UserPromptSubmit bun \"$HOME/.config/agents/reme-memory-bridge.ts\" || true",
+            "timeout": 3
           }
         ]
       }

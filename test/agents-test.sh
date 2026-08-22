@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEMP_ROOT="$(mktemp -d)"
 NO_JQ_BIN="$TEMP_ROOT/no-jq-bin"
+NO_BUN_BIN="$TEMP_ROOT/no-bun-bin"
 FAKE_REME_PYTHON="$TEMP_ROOT/fake-reme-python"
 REME_TEST_LOG="$TEMP_ROOT/reme-install.log"
 trap 'rm -rf "$TEMP_ROOT"' EXIT
@@ -11,6 +12,12 @@ trap 'rm -rf "$TEMP_ROOT"' EXIT
 mkdir -p "$NO_JQ_BIN"
 for command_name in cat chmod cmp cp date dirname grep id ln mkdir mktemp mv pwd readlink rm stat; do
   ln -s "$(command -v "$command_name")" "$NO_JQ_BIN/$command_name"
+done
+
+mkdir -p "$NO_BUN_BIN"
+for command_name in cat chmod cmp cp date dirname grep id jq ln mkdir mktemp mv pwd python3 \
+  readlink rm stat; do
+  ln -s "$(command -v "$command_name")" "$NO_BUN_BIN/$command_name"
 done
 
 cat >"$FAKE_REME_PYTHON" <<'EOF'
@@ -202,6 +209,14 @@ run_module_without_jq() {
     PATH="$NO_JQ_BIN" HOME="$home" /bin/bash "$ROOT_DIR/modules/agents.sh" "$@"
 }
 
+run_module_without_bun() {
+  local home="$1"
+  shift
+  env -u MIFY_API_URL -u MIFY_API_ANTHROPIC_URL \
+    MAC_SETUP_REME_PYTHON="$FAKE_REME_PYTHON" REME_TEST_LOG="$REME_TEST_LOG" \
+    PATH="$NO_BUN_BIN" HOME="$home" /bin/bash "$ROOT_DIR/modules/agents.sh" "$@"
+}
+
 expect_fail() {
   local output="$1"
   shift
@@ -221,6 +236,9 @@ grep -q '.codex/config.toml' "$TEMP_ROOT/audit-before.out"
 grep -q '.pi/agent/settings.json' "$TEMP_ROOT/audit-before.out"
 
 run_module_quiet "$home" --apply
+
+expect_fail "$TEMP_ROOT/audit-no-bun.out" run_module_without_bun "$home" --audit --only codex
+grep -q 'bun-runtime' "$TEMP_ROOT/audit-no-bun.out"
 
 test -f "$home/.config/opencode/opencode.json"
 test -f "$home/.config/opencode/AGENTS.md"
