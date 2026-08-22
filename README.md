@@ -7,7 +7,7 @@
 ### macOS
 
 ```bash
-git clone https://github.com/yourname/mac-setup.git
+git clone https://github.com/AndreGeng/mac-setup.git
 cd mac-setup
 ./setup.sh
 ```
@@ -15,7 +15,7 @@ cd mac-setup
 ### Linux (Ubuntu/Debian)
 
 ```bash
-git clone https://github.com/yourname/mac-setup.git
+git clone https://github.com/AndreGeng/mac-setup.git
 cd mac-setup
 ./setup.sh
 ```
@@ -26,9 +26,17 @@ cd mac-setup
 ./setup.sh                    # 全部安装
 ./setup.sh --dry-run          # 预览将执行的操作
 ./setup.sh --modules zsh,vim  # 只安装指定模块
+./setup.sh --modules sync --with-platform  # 指定模块，并显式执行平台模块
 ./setup.sh --no-root          # 跳过需要 root 的步骤
 ./setup.sh --help             # 显示帮助
 ```
+
+指定 `--modules` 时默认只执行列出的通用模块，不执行 `platforms/`；需要平台应用、字体等
+额外配置时再加 `--with-platform`。`--dry-run` 不请求 sudo、不修改 Homebrew，也不执行安装。
+
+这是面向新电脑的个人环境模板。`sync` 模块会用仓库配置接管 Neovim、Zsh、Tmux 等路径；
+如果目标电脑已经有同名配置，请先自行备份。Agent 工具的可变配置是例外，默认保留已有文件，
+只有显式使用 `modules/agents.sh --force` 才会备份并刷新。
 
 ## 可用模块
 
@@ -38,7 +46,7 @@ cd mac-setup
 | vim | Neovim + Python 环境 | macOS, Linux |
 | tmux | Tmux + TPM | macOS, Linux |
 | cli-tools | lazygit, fzf, ripgrep, delta 等 | macOS, Linux |
-| nodejs | Node.js LTS + 全局 npm 包 | macOS, Linux |
+| nodejs | Node.js LTS、Bun 1.3.7 + 全局 npm 包 | macOS, Linux |
 | herdr | Herdr agent multiplexer + 配置 | macOS, Linux |
 | sync | 配置文件符号链接 | macOS, Linux |
 | opencode | OpenCode CLI 与常用 LSP | macOS, Linux |
@@ -62,7 +70,7 @@ cd mac-setup
 ```
 .
 ├── setup.sh           # 统一入口脚本
-├── setup-macos.sh     # macOS 原入口 (备份)
+├── setup-lite.sh      # 精简开发环境入口
 ├── lib/               # 核心库
 │   ├── platform.sh    # 平台检测
 │   ├── package.sh     # 包管理器抽象
@@ -113,6 +121,20 @@ cd mac-setup
 - curl, git (预装或手动安装)
 - macOS: Homebrew
 - Linux: apt (Ubuntu/Debian)
+
+`nodejs` 模块通过 mise 安装并固定 Bun 1.3.7；Agent ReMe 记忆桥接依赖这个运行时。
+
+## 测试
+
+修改安装器后优先运行不触碰真实用户目录的回归测试：
+
+```bash
+bash test/setup-test.sh
+bash test/agents-test.sh
+bun test ./test/reme-memory-test.ts ./test/reme-bridge-test.ts
+bash test/security-scan-test.sh
+bash scripts/privacy-scan.sh
+```
 
 ## 安全检查
 

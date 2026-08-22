@@ -1,10 +1,10 @@
 {
   "name": "mac-setup",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Reproducible macOS and Linux development environment bootstrap",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "bun test ./test/reme-memory-test.ts ./test/reme-bridge-test.ts"
   },
   "repository": {
     "type": "git",
@@ -12,7 +12,7 @@
   },
   "keywords": [],
   "author": "Andre Geng",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/AndreGeng/mac-setup/issues"
   },

@@ -36,14 +36,16 @@ appears to contain a literal credential.
 Run the focused checks for the files changed:
 
 ```bash
+bash test/setup-test.sh
 bash test/agents-test.sh
 bun test ./test/reme-memory-test.ts
+bun test ./test/reme-bridge-test.ts
 bash test/security-scan-test.sh
 bash test/ubuntu-test.sh
 bash scripts/privacy-scan.sh
 bash scripts/security-scan.sh
 bash -n modules/agents.sh
-shfmt -d -i 2 modules/agents.sh test/agents-test.sh
+shfmt -d -i 2 setup.sh lib/*.sh modules/*.sh test/*.sh
 ```
 
 Do not run the full setup merely to validate one module. Agent configuration tests use a
