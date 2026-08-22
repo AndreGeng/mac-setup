@@ -90,7 +90,7 @@ test_lists_agent_discoverable_capabilities() {
   json_assert "$output" 'value["schemaVersion"] == "1"' || return 1
   json_assert "$output" 'value["operation"] == "list"' || return 1
   json_assert "$output" \
-    'set(item["id"] for item in value["capabilities"]) == {"editor.nvim", "shell.zsh", "terminal.tmux"}'
+    'set(item["id"] for item in value["capabilities"]) == {"editor.nvim", "shell.zsh", "terminal.tmux", "runtime.node"}'
   json_assert "$output" \
     'set(item["id"] for item in value["profiles"]) == {"profile.terminal"}' || return 1
   json_assert "$output" \
@@ -129,6 +129,13 @@ test_describes_tmux_alias_with_stable_canonical_id() {
   json_assert "$output" 'value["capability"]["id"] == "terminal.tmux"' || return 1
   json_assert "$output" 'value["capability"]["aliases"] == ["tmux"]' || return 1
   json_assert "$output" 'value["capability"]["configPolicy"] == "replace"'
+}
+
+test_describes_node_alias_with_stable_canonical_id() {
+  local output="$TEMP_ROOT/describe-node.json"
+  "$CLI" describe node --format json >"$output" || return 1
+  json_assert "$output" 'value["capability"]["id"] == "runtime.node"' || return 1
+  json_assert "$output" 'value["capability"]["aliases"] == ["node", "nodejs"]'
 }
 
 test_unknown_capability_has_structured_error() {
@@ -335,6 +342,80 @@ test_tmux_config_guards_macos_clipboard_helpers() {
   ! grep -q '^set -g default-command "reattach-to-user-namespace' "$config"
 }
 
+test_node_manifest_pins_every_dependency() {
+  local manifest="$ROOT_DIR/config/runtime/node.tsv"
+  [[ -f "$manifest" ]] || return 1
+  python3 - "$manifest" <<'PY'
+import pathlib
+import sys
+
+records = []
+for line in pathlib.Path(sys.argv[1]).read_text(encoding="utf-8").splitlines():
+    if not line or line.startswith("#"):
+        continue
+    fields = line.split("\t")
+    if len(fields) != 3 or fields[0] not in {"runtime", "npm"}:
+        raise SystemExit(1)
+    if fields[2] in {"latest", "lts", "*"}:
+        raise SystemExit(1)
+    records.append(tuple(fields))
+
+if ("runtime", "node", "22.20.0") not in records:
+    raise SystemExit(1)
+if ("runtime", "bun", "1.3.7") not in records:
+    raise SystemExit(1)
+if len([record for record in records if record[0] == "npm"]) != 8:
+    raise SystemExit(1)
+PY
+}
+
+test_node_plan_uses_pinned_manifest_without_mutation() {
+  local home="$TEMP_ROOT/node-plan-home"
+  local state="$TEMP_ROOT/node-plan-state"
+  local fake_bin="$TEMP_ROOT/node-plan-bin"
+  local output="$TEMP_ROOT/node-plan.json"
+  mkdir -p "$home" "$fake_bin"
+
+  cli_env "$home" "$state" "$fake_bin" plan node --format json >"$output" || return 1
+  [[ ! -e "$state" ]] || return 1
+  json_assert "$output" 'value["capability"] == "runtime.node"' || return 1
+  json_assert "$output" \
+    'set(item["resource"] for item in value["changes"]) >= {"mise", "node@22.20.0", "bun@1.3.7", "typescript@7.0.2"}' || return 1
+  json_assert "$output" \
+    'set(item["type"] for item in value["requiredApprovals"]) == {"network"}'
+}
+
+test_node_apply_and_verify_complete_agent_workflow() {
+  local home="$TEMP_ROOT/node-home"
+  local state="$TEMP_ROOT/node-state"
+  local fake_bin="$TEMP_ROOT/node-bin"
+  local plan="$TEMP_ROOT/node-plan-apply.json"
+  local apply="$TEMP_ROOT/node-apply.json"
+  local verify="$TEMP_ROOT/node-verify.json"
+  mkdir -p "$home" "$fake_bin"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'case "$*" in' \
+    '  "exec node@22.20.0 -- node --version") printf "%s\n" v22.20.0 ;;' \
+    '  "exec bun@1.3.7 -- bun --version") printf "%s\n" 1.3.7 ;;' \
+    '  exec\ node@22.20.0\ --\ npm\ list\ -g\ --depth=0\ *) exit 0 ;;' \
+    '  *) exit 0 ;;' \
+    'esac' >"$fake_bin/mise"
+  chmod +x "$fake_bin/mise"
+
+  cli_env "$home" "$state" "$fake_bin" plan node --format json >"$plan" || return 1
+  json_assert "$plan" 'value["status"] == "COMPLIANT"' || return 1
+  local plan_id
+  plan_id="$(json_value "$plan" planId)" || return 1
+  cli_env "$home" "$state" "$fake_bin" apply node \
+    --plan-id "$plan_id" --non-interactive --format json >"$apply" || return 1
+  json_assert "$apply" 'value["status"] == "SUCCESS"' || return 1
+
+  cli_env "$home" "$state" "$fake_bin" verify node --format json >"$verify" || return 1
+  json_assert "$verify" 'value["status"] == "COMPLIANT"' || return 1
+  json_assert "$verify" \
+    'len([item for item in value["checks"] if item["member"] == "runtime.node" and item["status"] == "PASS"]) == 11'
+}
+
 test_terminal_profile_plan_aggregates_changes_and_approvals() {
   local home="$TEMP_ROOT/profile-plan-home"
   local state="$TEMP_ROOT/profile-plan-state"
@@ -448,6 +529,7 @@ test_shared_agent_skill_documents_safe_operator_flow() {
   grep -q 'mac-setup verify' "$skill" || return 1
   grep -q 'profile.terminal' "$skill" || return 1
   grep -q 'terminal.tmux' "$skill" || return 1
+  grep -q 'runtime.node' "$skill" || return 1
   grep -q 'Operator mode' "$skill"
 }
 
@@ -459,6 +541,8 @@ run_test describes-alias-with-stable-canonical-id \
   test_describes_alias_with_stable_canonical_id
 run_test describes-tmux-alias-with-stable-canonical-id \
   test_describes_tmux_alias_with_stable_canonical_id
+run_test describes-node-alias-with-stable-canonical-id \
+  test_describes_node_alias_with_stable_canonical_id
 run_test unknown-capability-has-structured-error \
   test_unknown_capability_has_structured_error
 run_test plan-is-read-only-and-declares-approvals \
@@ -479,6 +563,12 @@ run_test tmux-module-installs-declared-runtime-dependencies \
   test_tmux_module_installs_declared_runtime_dependencies
 run_test tmux-config-guards-macos-clipboard-helpers \
   test_tmux_config_guards_macos_clipboard_helpers
+run_test node-manifest-pins-every-dependency \
+  test_node_manifest_pins_every_dependency
+run_test node-plan-uses-pinned-manifest-without-mutation \
+  test_node_plan_uses_pinned_manifest_without_mutation
+run_test node-apply-and-verify-complete-agent-workflow \
+  test_node_apply_and_verify_complete_agent_workflow
 run_test terminal-profile-plan-aggregates-changes-and-approvals \
   test_terminal_profile_plan_aggregates_changes_and_approvals
 run_test terminal-profile-apply-and-verify-complete-agent-workflow \

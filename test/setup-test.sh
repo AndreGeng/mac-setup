@@ -201,7 +201,7 @@ test_node_module_installs_pinned_bun_runtime() {
     source "$ROOT_DIR/modules/nodejs.sh"
   ' >/dev/null 2>&1 || return 1
 
-  grep -q '^use -g node@lts$' "$trace" || return 1
+  grep -q '^use -g node@22.20.0$' "$trace" || return 1
   grep -q '^use -g bun@1.3.7$' "$trace"
 }
 
