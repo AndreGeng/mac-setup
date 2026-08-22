@@ -216,7 +216,7 @@ test_node_module_installs_pinned_bun_runtime() {
     'exit 0' >"$node_root/bin/npm"
   chmod +x "$node_root/bin/npm"
   printf '%s\n' '#!/usr/bin/env bash' \
-    'if [[ "$*" == "where node@22.20.0" ]]; then' \
+    'if [[ "$*" == "where node@22.23.2" ]]; then' \
     '  printf "%s\n" "$NODE_MODULE_RUNTIME"' \
     '  exit 0' \
     'fi' \
@@ -232,7 +232,7 @@ test_node_module_installs_pinned_bun_runtime() {
     source "$ROOT_DIR/modules/nodejs.sh"
   ' >/dev/null 2>&1 || return 1
 
-  grep -q '^use -g node@22.20.0$' "$trace" || return 1
+  grep -q '^use -g node@22.23.2$' "$trace" || return 1
   grep -q '^use -g bun@1.3.7$' "$trace" || return 1
 
   local kind name version

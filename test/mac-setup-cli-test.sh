@@ -361,7 +361,7 @@ for line in pathlib.Path(sys.argv[1]).read_text(encoding="utf-8").splitlines():
         raise SystemExit(1)
     records.append(tuple(fields))
 
-if ("runtime", "node", "22.20.0") not in records:
+if ("runtime", "node", "22.23.2") not in records:
     raise SystemExit(1)
 if ("runtime", "bun", "1.3.7") not in records:
     raise SystemExit(1)
@@ -381,7 +381,7 @@ test_node_plan_uses_pinned_manifest_without_mutation() {
   [[ ! -e "$state" ]] || return 1
   json_assert "$output" 'value["capability"] == "runtime.node"' || return 1
   json_assert "$output" \
-    'set(item["resource"] for item in value["changes"]) >= {"mise@2025.10.6", "node@22.20.0", "bun@1.3.7", "typescript@7.0.2"}' || return 1
+    'set(item["resource"] for item in value["changes"]) >= {"mise@2025.10.6", "node@22.23.2", "bun@1.3.7", "typescript@7.0.2"}' || return 1
   json_assert "$output" \
     'set(item["type"] for item in value["requiredApprovals"]) == {"network"}'
 }
@@ -412,14 +412,14 @@ test_node_apply_and_verify_complete_agent_workflow() {
   local node_root="$TEMP_ROOT/node-runtime"
   local bun_root="$TEMP_ROOT/bun-runtime"
   mkdir -p "$home" "$fake_bin" "$node_root/bin" "$bun_root/bin"
-  printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\n" v22.20.0' >"$node_root/bin/node"
+  printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\n" v22.23.2' >"$node_root/bin/node"
   printf '%s\n' '#!/usr/bin/env bash' 'exit 0' >"$node_root/bin/npm"
   printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\n" 1.3.7' >"$bun_root/bin/bun"
   chmod +x "$node_root/bin/node" "$node_root/bin/npm" "$bun_root/bin/bun"
   printf '%s\n' '#!/usr/bin/env bash' \
     'case "$*" in' \
     '  "--version") printf "%s\n" "2025.10.6 test" ;;' \
-    "  \"where node@22.20.0\") printf '%s\\n' '$node_root' ;;" \
+    "  \"where node@22.23.2\") printf '%s\\n' '$node_root' ;;" \
     "  \"where bun@1.3.7\") printf '%s\\n' '$bun_root' ;;" \
     '  *) exit 1 ;;' \
     'esac' >"$fake_bin/mise"
