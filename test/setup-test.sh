@@ -108,14 +108,35 @@ test_linux_package_install_uses_sudo_for_non_root() {
       fi
       printf "sudo-call:%s\n" "$*"
     }
-    apt() {
-      printf "direct-apt-call:%s\n" "$*"
+    apt-get() {
+      printf "direct-apt-get-call:%s\n" "$*"
     }
-    _pkg_install_linux demo-package
+    _pkg_install_linux demo-package-one
+    _pkg_install_linux demo-package-two
   ' >"$output" 2>&1 || return 1
 
-  grep -q '^sudo-call:apt install -y demo-package$' "$output" || return 1
-  ! grep -q '^direct-apt-call:' "$output"
+  [[ "$(grep -c '^sudo-call:apt-get update$' "$output")" == "1" ]] || return 1
+  grep -q '^sudo-call:apt-get install -y demo-package-one$' "$output" || return 1
+  grep -q '^sudo-call:apt-get install -y demo-package-two$' "$output" || return 1
+  ! grep -q '^direct-apt-get-call:' "$output"
+}
+
+test_linux_package_install_stops_when_apt_update_fails() {
+  [[ $EUID -ne 0 ]] || return 0
+  local output="$TEMP_ROOT/linux-package-update-failure.out"
+
+  ROOT_DIR="$ROOT_DIR" bash -c '
+    source "$ROOT_DIR/lib/package.sh"
+    sudo() {
+      printf "sudo-call:%s\n" "$*"
+      [[ "$*" != "apt-get update" ]]
+    }
+    apt-get() { return 0; }
+    ! _pkg_install_linux demo-package
+  ' >"$output" 2>&1 || return 1
+
+  grep -q '^sudo-call:apt-get update$' "$output" || return 1
+  ! grep -q 'apt-get install' "$output"
 }
 
 test_no_root_package_install_is_a_clean_skip() {
@@ -436,6 +457,8 @@ run_test missing-modules-value-is-reported test_missing_modules_value_is_reporte
 run_test no-root-skips-sudo test_no_root_skips_sudo
 run_test scoped-user-module-skips-sudo test_scoped_user_module_skips_sudo
 run_test linux-package-install-uses-sudo test_linux_package_install_uses_sudo_for_non_root
+run_test linux-package-install-stops-when-apt-update-fails \
+  test_linux_package_install_stops_when_apt_update_fails
 run_test no-root-package-install-is-clean-skip test_no_root_package_install_is_a_clean_skip
 run_test opencode-module-has-no-implicit-sudo test_opencode_module_has_no_implicit_sudo
 run_test tool-command-mapping test_tool_command_mapping
