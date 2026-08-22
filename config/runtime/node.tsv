@@ -1,0 +1,12 @@
+# schemaVersion=1
+# kind<TAB>name<TAB>exact-version
+runtime	node	22.20.0
+runtime	bun	1.3.7
+npm	js-beautify	2.0.3
+npm	prettier	3.9.6
+npm	typescript	7.0.2
+npm	bash-language-server	5.6.0
+npm	typescript-language-server	6.0.0
+npm	@olrtg/emmet-language-server	2.8.0
+npm	eslint_d	15.0.3
+npm	vscode-langservers-extracted	4.10.0

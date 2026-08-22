@@ -8,6 +8,7 @@ source "$MAC_SETUP_LIB_DIR/package.sh"
 source "$MAC_SETUP_LIB_DIR/utils.sh"
 source "$MAC_SETUP_LIB_DIR/mac-setup/json.sh"
 source "$MAC_SETUP_LIB_DIR/mac-setup/capabilities.sh"
+source "$MAC_SETUP_LIB_DIR/runtime-manifest.sh"
 
 PLAN_CHANGE_TYPES=()
 PLAN_CHANGE_RESOURCES=()
@@ -118,6 +119,40 @@ zsh_permissions_need_sudo() {
   return 1
 }
 
+node_mise_executable() {
+  resolve_mise_executable 2>/dev/null
+}
+
+node_runtime_root() {
+  local name="$1"
+  local version="$2"
+  local mise_bin
+  mise_bin="$(node_mise_executable)" || return 1
+  "$mise_bin" where "${name}@${version}" 2>/dev/null
+}
+
+node_runtime_matches() {
+  local name="$1"
+  local version="$2"
+  local runtime_root output executable
+  runtime_root="$(node_runtime_root "$name" "$version")" || return 1
+  executable="$runtime_root/bin/$name"
+  [[ -f "$executable" && -x "$executable" ]] || return 1
+  output="$("$executable" --version 2>/dev/null)" || return 1
+  [[ "${output#v}" == "$version" ]]
+}
+
+node_npm_package_matches() {
+  local package_name="$1"
+  local package_version="$2"
+  local node_version node_root npm_bin
+  node_version="$(node_manifest_version "$MAC_SETUP_REPO_ROOT" runtime node)" || return 1
+  node_root="$(node_runtime_root node "$node_version")" || return 1
+  npm_bin="$node_root/bin/npm"
+  [[ -f "$npm_bin" && -x "$npm_bin" ]] || return 1
+  "$npm_bin" list -g --depth=0 "${package_name}@${package_version}" >/dev/null 2>&1
+}
+
 plan_member_changes() {
   local capability="$1"
   local feature_python="${2:-false}"
@@ -148,6 +183,28 @@ plan_member_changes() {
       add_plan_change INSTALL_GIT_REPOSITORY tpm 'Install the Tmux Plugin Manager.'
       add_plan_approval network 'TPM must be downloaded from its upstream repository.'
     fi
+    ;;
+  runtime.node)
+    if ! node_mise_executable >/dev/null; then
+      add_plan_change INSTALL_TOOL mise 'Install the mise runtime manager.'
+      add_plan_approval network 'mise and the declared runtimes must be downloaded.'
+    fi
+    local runtime_name runtime_version
+    while IFS='|' read -r runtime_name runtime_version; do
+      if ! node_runtime_matches "$runtime_name" "$runtime_version"; then
+        add_plan_change CONFIGURE_RUNTIME "${runtime_name}@${runtime_version}" \
+          'Install the exact runtime version declared by the repository.'
+        add_plan_approval network 'Declared runtime versions must be downloaded.'
+      fi
+    done < <(node_manifest_records "$MAC_SETUP_REPO_ROOT" runtime)
+    local package_name package_version
+    while IFS='|' read -r package_name package_version; do
+      if ! node_npm_package_matches "$package_name" "$package_version"; then
+        add_plan_change INSTALL_NPM_PACKAGE "${package_name}@${package_version}" \
+          'Install the exact global npm package declared by the repository.'
+        add_plan_approval network 'Declared npm packages must be downloaded.'
+      fi
+    done < <(node_manifest_records "$MAC_SETUP_REPO_ROOT" npm)
     ;;
   esac
 
@@ -262,7 +319,9 @@ emit_describe_json() {
   json_string "$(capability_description "$capability")"
   printf ',"optionalFeatures":'
   capability_optional_features "$capability" | emit_string_lines_json
-  printf ',"configPolicy":"replace"}}\n'
+  printf ',"configPolicy":'
+  json_string "$(capability_config_policy "$capability")"
+  printf '}}\n'
 }
 
 emit_describe_profile_json() {
@@ -383,7 +442,9 @@ plan_needs_install_module() {
   local type
   for type in "${PLAN_CHANGE_TYPES[@]:-}"; do
     case "$type" in
-    INSTALL_TOOL | INSTALL_GIT_REPOSITORY | CONFIGURE_FEATURE) return 0 ;;
+    INSTALL_TOOL | INSTALL_GIT_REPOSITORY | CONFIGURE_FEATURE | CONFIGURE_RUNTIME | INSTALL_NPM_PACKAGE)
+      return 0
+      ;;
     esac
   done
   return 1
@@ -395,7 +456,9 @@ plan_member_needs_install_module() {
   for ((index = 0; index < ${#PLAN_CHANGE_TYPES[@]}; index++)); do
     [[ "${PLAN_CHANGE_MEMBERS[$index]}" == "$member" ]] || continue
     case "${PLAN_CHANGE_TYPES[$index]}" in
-    INSTALL_TOOL | INSTALL_GIT_REPOSITORY | CONFIGURE_FEATURE) return 0 ;;
+    INSTALL_TOOL | INSTALL_GIT_REPOSITORY | CONFIGURE_FEATURE | CONFIGURE_RUNTIME | INSTALL_NPM_PACKAGE)
+      return 0
+      ;;
     esac
   done
   return 1
@@ -552,6 +615,33 @@ build_verify_member() {
     fi
     tmux -L "$socket_name" kill-server >/dev/null 2>&1 || true
     [[ -z "$tmux_log" ]] || rm -f "$tmux_log"
+    ;;
+  runtime.node)
+    local mise_path=""
+    mise_path="$(node_mise_executable)" || true
+    if [[ -n "$mise_path" ]]; then
+      add_verify_check mise-executable PASS "$mise_path"
+    else
+      add_verify_check mise-executable FAIL 'mise is unavailable.'
+    fi
+    local runtime_name runtime_version
+    while IFS='|' read -r runtime_name runtime_version; do
+      if node_runtime_matches "$runtime_name" "$runtime_version"; then
+        add_verify_check "runtime-$runtime_name" PASS "${runtime_name}@${runtime_version}"
+      else
+        add_verify_check "runtime-$runtime_name" FAIL \
+          "${runtime_name}@${runtime_version} is unavailable."
+      fi
+    done < <(node_manifest_records "$MAC_SETUP_REPO_ROOT" runtime)
+    local package_name package_version check_id
+    while IFS='|' read -r package_name package_version; do
+      check_id="npm-$(printf '%s' "$package_name" | tr '@/.' '----')"
+      if node_npm_package_matches "$package_name" "$package_version"; then
+        add_verify_check "$check_id" PASS "${package_name}@${package_version}"
+      else
+        add_verify_check "$check_id" FAIL "${package_name}@${package_version} is unavailable."
+      fi
+    done < <(node_manifest_records "$MAC_SETUP_REPO_ROOT" npm)
     ;;
   esac
 }

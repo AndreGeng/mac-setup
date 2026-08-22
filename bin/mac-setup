@@ -208,6 +208,13 @@ if [[ "$FEATURE_PYTHON" == true ]] && ! target_has_member "$CAPABILITY" editor.n
   exit 2
 fi
 
+if target_has_member "$CAPABILITY" runtime.node &&
+  ! validate_node_manifest "$MAC_SETUP_REPO_ROOT"; then
+  emit_cli_error "$COMMAND" FAILED INVALID_MANIFEST \
+    'The repository Node runtime manifest is invalid.'
+  exit 2
+fi
+
 if [[ "$COMMAND" == describe ]]; then
   if [[ "$FORMAT" == json ]]; then
     if [[ "$(target_kind "$CAPABILITY")" == profile ]]; then

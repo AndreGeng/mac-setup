@@ -40,6 +40,9 @@ directly. Explain `requiredApprovals`, obtain the necessary authorization, and c
 only after `verify` returns `COMPLIANT`. For repository development requests, edit sources and
 tests but do not run a real apply unless explicitly requested.
 
+Use `runtime.node` (`node`, `nodejs`) for Node.js, Bun, and repository-declared global npm
+tools. Its desired state is `config/runtime/node.tsv`; do not substitute floating versions.
+
 Agent configuration:
 
 ```bash

@@ -73,13 +73,23 @@ sudo 和配置接管需求，获得授权后执行同一个 plan，最后独立�
 ```
 
 当前提供 `editor.nvim`（别名 `vim`、`nvim`、`neovim`）、`shell.zsh`（别名 `zsh`、
-`shell`）和 `terminal.tmux`（别名 `tmux`）三个完整 capability，以及按固定顺序组合
-Zsh 与 Neovim 的 `profile.terminal`（别名 `terminal`）。Profile 会生成一份合并计划，对
-重复的 network、sudo、replace-config 审批
+`shell`）、`terminal.tmux`（别名 `tmux`）和 `runtime.node`（别名 `node`、`nodejs`）
+四个完整 capability，以及按固定顺序组合 Zsh 与 Neovim 的 `profile.terminal`（别名
+`terminal`）。Profile 会生成一份合并计划，对重复的 network、sudo、replace-config 审批
 去重，并在 change 和 verify check 中标明所属 member。Neovim Python provider 可在单独
 capability 或 terminal profile 的 plan、apply、verify 中一致地增加
 `--with python-provider`。`plan` 不访问网络、不请求 sudo、不写用户目录；JSON 模式只在
 stdout 输出协议数据，进度日志写入 stderr。
+
+`runtime.node` 从 `config/runtime/node.tsv` 读取唯一 desired state。Node、Bun 和全局 npm
+工具都使用精确版本；安装、plan 和 verify 共享这份 manifest，避免清单漂移。可以使用：
+
+```bash
+./bin/mac-setup plan node --format json
+./bin/mac-setup apply node --plan-id <plan-id> --allow network \
+  --non-interactive --format json
+./bin/mac-setup verify node --format json
+```
 
 仓库自带的 `mac-setup` shared skill 会发布到 `~/.agents/skills/mac-setup`，供 Codex、
 OpenCode、Claude Code 和 Pi 复用。可以直接对 Agent 说：“用 mac-setup 帮我配置好终端
