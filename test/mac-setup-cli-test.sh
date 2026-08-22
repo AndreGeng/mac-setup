@@ -31,7 +31,11 @@ import sys
 
 with open(sys.argv[1], encoding="utf-8") as handle:
     value = json.load(handle)
-if not eval(sys.argv[2], {"__builtins__": {}}, {"value": value, "set": set, "all": all}):
+if not eval(
+    sys.argv[2],
+    {"__builtins__": {}},
+    {"value": value, "set": set, "all": all, "len": len, "sum": sum},
+):
     raise SystemExit(1)
 ' "$path" "$expression"
 }
@@ -87,6 +91,19 @@ test_lists_agent_discoverable_capabilities() {
   json_assert "$output" 'value["operation"] == "list"' || return 1
   json_assert "$output" \
     'set(item["id"] for item in value["capabilities"]) == {"editor.nvim", "shell.zsh"}'
+  json_assert "$output" \
+    'set(item["id"] for item in value["profiles"]) == {"profile.terminal"}' || return 1
+  json_assert "$output" \
+    'value["profiles"][0]["members"] == ["shell.zsh", "editor.nvim"]'
+}
+
+test_describes_terminal_profile_with_ordered_members() {
+  local output="$TEMP_ROOT/describe-profile.json"
+  "$CLI" describe terminal --format json >"$output" || return 1
+  json_assert "$output" 'value["profile"]["id"] == "profile.terminal"' || return 1
+  json_assert "$output" 'value["profile"]["aliases"] == ["terminal"]' || return 1
+  json_assert "$output" \
+    'value["profile"]["members"] == ["shell.zsh", "editor.nvim"]'
 }
 
 test_describes_alias_with_stable_canonical_id() {
@@ -205,6 +222,65 @@ test_zsh_apply_and_verify_complete_agent_workflow() {
   json_assert "$verify" 'value["status"] == "COMPLIANT"'
 }
 
+test_terminal_profile_plan_aggregates_changes_and_approvals() {
+  local home="$TEMP_ROOT/profile-plan-home"
+  local state="$TEMP_ROOT/profile-plan-state"
+  local fake_bin="$TEMP_ROOT/profile-plan-bin"
+  local output="$TEMP_ROOT/profile-plan.json"
+  mkdir -p "$home/.config/nvim" "$fake_bin"
+  printf '%s\n' existing >"$home/.config/nvim/local.lua"
+
+  cli_env "$home" "$state" "$fake_bin" plan terminal --format json >"$output" || return 1
+  [[ ! -e "$state" ]] || return 1
+  json_assert "$output" 'value["capability"] == "profile.terminal"' || return 1
+  json_assert "$output" \
+    'value["members"] == ["shell.zsh", "editor.nvim"]' || return 1
+  json_assert "$output" \
+    'set(item["resource"] for item in value["changes"]) >= {"zsh", "nvim"}' || return 1
+  json_assert "$output" \
+    'len([item for item in value["changes"] if item["resource"].endswith("/.zshrc")]) == 1' ||
+    return 1
+  json_assert "$output" \
+    'len([item for item in value["changes"] if item["resource"].endswith("/.config/nvim")]) == 1' ||
+    return 1
+  json_assert "$output" \
+    'sum(item["type"] == "network" for item in value["requiredApprovals"]) == 1' ||
+    return 1
+  json_assert "$output" \
+    'sum(item["type"] == "replace-config" for item in value["requiredApprovals"]) == 1'
+}
+
+test_terminal_profile_apply_and_verify_complete_agent_workflow() {
+  local home="$TEMP_ROOT/profile-home"
+  local state="$TEMP_ROOT/profile-state"
+  local fake_bin="$TEMP_ROOT/profile-bin"
+  local plan="$TEMP_ROOT/profile-plan-apply.json"
+  local apply="$TEMP_ROOT/profile-apply.json"
+  local verify="$TEMP_ROOT/profile-verify.json"
+  mkdir -p "$home/.local/share/zinit/.git" "$fake_bin"
+  write_fake_command "$fake_bin/zsh"
+  write_fake_command "$fake_bin/nvim"
+  write_fake_command "$fake_bin/rg"
+  write_fake_command "$fake_bin/fd"
+
+  cli_env "$home" "$state" "$fake_bin" plan terminal --format json >"$plan" || return 1
+  local plan_id
+  plan_id="$(json_value "$plan" planId)" || return 1
+  cli_env "$home" "$state" "$fake_bin" apply terminal \
+    --plan-id "$plan_id" --non-interactive --format json >"$apply" || return 1
+
+  [[ -L "$home/.zshrc" ]] || return 1
+  [[ -L "$home/.config/nvim" ]] || return 1
+  json_assert "$apply" 'value["capability"] == "profile.terminal"' || return 1
+  json_assert "$apply" 'value["members"] == ["shell.zsh", "editor.nvim"]' || return 1
+  json_assert "$apply" 'value["status"] == "SUCCESS"' || return 1
+
+  cli_env "$home" "$state" "$fake_bin" verify terminal --format json >"$verify" || return 1
+  json_assert "$verify" 'value["status"] == "COMPLIANT"' || return 1
+  json_assert "$verify" \
+    'set(item["member"] for item in value["checks"]) == {"shell.zsh", "editor.nvim"}'
+}
+
 test_apply_uses_an_exclusive_lock() {
   local home="$TEMP_ROOT/lock-home"
   local state="$TEMP_ROOT/lock-state"
@@ -261,6 +337,8 @@ test_shared_agent_skill_documents_safe_operator_flow() {
 }
 
 run_test lists-agent-discoverable-capabilities test_lists_agent_discoverable_capabilities
+run_test describes-terminal-profile-with-ordered-members \
+  test_describes_terminal_profile_with_ordered_members
 run_test describes-alias-with-stable-canonical-id \
   test_describes_alias_with_stable_canonical_id
 run_test unknown-capability-has-structured-error \
@@ -273,6 +351,10 @@ run_test vim-apply-and-verify-complete-agent-workflow \
   test_vim_apply_and_verify_complete_agent_workflow
 run_test zsh-apply-and-verify-complete-agent-workflow \
   test_zsh_apply_and_verify_complete_agent_workflow
+run_test terminal-profile-plan-aggregates-changes-and-approvals \
+  test_terminal_profile_plan_aggregates_changes_and_approvals
+run_test terminal-profile-apply-and-verify-complete-agent-workflow \
+  test_terminal_profile_apply_and_verify_complete_agent_workflow
 run_test apply-uses-an-exclusive-lock test_apply_uses_an_exclusive_lock
 run_test non-interactive-apply-never-prompts-for-sudo \
   test_non_interactive_apply_never_prompts_for_sudo
