@@ -286,6 +286,30 @@ test_tmux_apply_and_verify_complete_agent_workflow() {
     'set(item["member"] for item in value["checks"]) == {"terminal.tmux"}'
 }
 
+test_tmux_verify_rejects_loader_diagnostics() {
+  local home="$TEMP_ROOT/tmux-diagnostic-home"
+  local state="$TEMP_ROOT/tmux-diagnostic-state"
+  local fake_bin="$TEMP_ROOT/tmux-diagnostic-bin"
+  local output="$TEMP_ROOT/tmux-diagnostic-verify.json"
+  mkdir -p "$home/.tmux/plugins/tpm/.git" "$fake_bin"
+  ln -s "$ROOT_DIR/config/.tmux.conf" "$home/.tmux.conf"
+  write_fake_command "$fake_bin/git"
+  write_fake_command "$fake_bin/bc"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'case " $* " in' \
+    '  *" source-file "*) printf "%s\n" "bad tmux config" >&2 ;;' \
+    'esac' \
+    'exit 0' >"$fake_bin/tmux"
+  chmod +x "$fake_bin/tmux"
+
+  cli_env "$home" "$state" "$fake_bin" verify tmux --format json >"$output" 2>/dev/null
+  local status=$?
+  [[ $status -eq 10 ]] || return 1
+  json_assert "$output" 'value["status"] == "DRIFT"' || return 1
+  json_assert "$output" \
+    'len([item for item in value["checks"] if item["id"] == "tmux-config-load" and item["status"] == "FAIL"]) == 1'
+}
+
 test_tmux_module_installs_declared_runtime_dependencies() {
   local home="$TEMP_ROOT/tmux-module-home"
   local fake_bin="$TEMP_ROOT/tmux-module-bin"
@@ -449,6 +473,8 @@ run_test tmux-plan-is-read-only-and-declares-approvals \
   test_tmux_plan_is_read_only_and_declares_approvals
 run_test tmux-apply-and-verify-complete-agent-workflow \
   test_tmux_apply_and_verify_complete_agent_workflow
+run_test tmux-verify-rejects-loader-diagnostics \
+  test_tmux_verify_rejects_loader_diagnostics
 run_test tmux-module-installs-declared-runtime-dependencies \
   test_tmux_module_installs_declared_runtime_dependencies
 run_test tmux-config-guards-macos-clipboard-helpers \
