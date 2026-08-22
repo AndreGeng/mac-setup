@@ -90,7 +90,9 @@ alias v='nvim .'
 alias dvim=$'docker run -it -v $(pwd):/$(basename $(pwd)) andregeng/neovim /bin/bash -c "nvim -c \'cd /$(basename $(pwd))\' /$(basename $(pwd))"'
 alias ovim='\vim'
 alias mux='tmuxinator'
-alias ctags="`brew --prefix`/bin/ctags"
+if command -v brew >/dev/null 2>&1; then
+  alias ctags="$(brew --prefix)/bin/ctags"
+fi
 alias proxy='export ALL_PROXY=http://127.0.0.1:1087'
 alias unproxy='unset ALL_PROXY'
 alias lg='lazygit'
@@ -200,17 +202,15 @@ zinit ice wait lucid
 zinit light-mode for \
     zdharma-continuum/zinit-annex-as-monitor \
     zdharma-continuum/zinit-annex-bin-gem-node
-eval "$(mise activate zsh)"
+command -v mise >/dev/null 2>&1 && eval "$(mise activate zsh)"
 
-. "$HOME/.local/bin/env"
+[[ -r "$HOME/.local/bin/env" ]] && source "$HOME/.local/bin/env"
 
 # opencode
 export PATH="$HOME/.opencode/bin:$PATH"
 
 # OpenCode AI Coding Agent Aliases
 alias oc="opencode"
-alias oc-init="opencode && /init"
-alias oc-share="opencode && /share"
 
 # bun completions
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
@@ -219,12 +219,9 @@ alias oc-share="opencode && /share"
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
-
 # OpenClaw Completion
-source "$HOME/.openclaw/completions/openclaw.zsh"
+[[ -r "$HOME/.openclaw/completions/openclaw.zsh" ]] && \
+  source "$HOME/.openclaw/completions/openclaw.zsh"
 
 # Hermes Agent — ensure ~/.local/bin is on PATH
 export PATH="$HOME/.local/bin:$PATH"

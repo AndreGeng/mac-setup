@@ -74,11 +74,25 @@ pkg_map_name() {
   esac
 }
 
+# 将包名映射到用于幂等探测的主可执行文件名。
+tool_command_name() {
+  case "$1" in
+  git-delta) echo "delta" ;;
+  the_silver_searcher) echo "ag" ;;
+  imagemagick) echo "magick" ;;
+  sevenzip) echo "7zz" ;;
+  poppler) echo "pdftotext" ;;
+  *) echo "$1" ;;
+  esac
+}
+
 # 若已安装则跳过；Linux 侧通过 _pkg_install_linux 调用 apt/dnf/pacman
 pkg_install() {
   local pkg="$1"
-  local platform=$(detect_platform)
-  local mapped_pkg=$(pkg_map_name "$pkg" "$platform")
+  local platform
+  local mapped_pkg
+  platform=$(detect_platform)
+  mapped_pkg=$(pkg_map_name "$pkg" "$platform")
 
   if pkg_exists "$mapped_pkg"; then
     log "$mapped_pkg 已安装，跳过" "$YELLOW"
@@ -92,6 +106,10 @@ pkg_install() {
     brew install "$mapped_pkg"
     ;;
   ubuntu | fedora | arch | linux)
+    if [[ "${MAC_SETUP_NO_ROOT:-0}" == "1" ]]; then
+      log "跳过 $mapped_pkg（--no-root）" "$YELLOW"
+      return 0
+    fi
     if ! can_sudo; then
       log "需要 sudo 权限安装 $mapped_pkg" "$RED"
       return 1
@@ -107,19 +125,18 @@ pkg_install() {
 
 _pkg_install_linux() {
   local pkg="$1"
-  local SUDO=""
+  local sudo_cmd=()
 
-  # 非 root 且无缓存的免密 sudo 时，命令前加 sudo（与 can_sudo 前置检查配合）
-  if [[ $EUID -ne 0 ]] && ! sudo -n true 2>/dev/null; then
-    SUDO="sudo"
+  if [[ $EUID -ne 0 ]]; then
+    sudo_cmd=(sudo)
   fi
 
   if command -v apt &>/dev/null; then
-    $SUDO apt install -y "$pkg"
+    "${sudo_cmd[@]}" apt install -y "$pkg"
   elif command -v dnf &>/dev/null; then
-    $SUDO dnf install -y "$pkg"
+    "${sudo_cmd[@]}" dnf install -y "$pkg"
   elif command -v pacman &>/dev/null; then
-    $SUDO pacman -S --noconfirm "$pkg"
+    "${sudo_cmd[@]}" pacman -S --noconfirm "$pkg"
   else
     log "未找到支持的包管理器" "$RED"
     return 1
@@ -129,7 +146,8 @@ _pkg_install_linux() {
 # 判断「包是否已由包管理器安装」；未知平台则退化为检测可执行文件是否存在
 pkg_exists() {
   local pkg="$1"
-  local platform=$(detect_platform)
+  local platform
+  platform=$(detect_platform)
 
   case "$platform" in
   macos)

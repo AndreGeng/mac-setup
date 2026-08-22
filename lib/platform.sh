@@ -23,8 +23,28 @@ detect_platform() {
 }
 
 is_macos() { [[ "$(detect_platform)" == "macos" ]]; }
-# 非 macOS 一律视为 linux 族（含 ubuntu/fedora/arch 等子类）
-is_linux() { [[ "$(detect_platform)" != "macos" ]]; }
+is_linux() {
+  case "$(detect_platform)" in
+  ubuntu | fedora | arch | linux) return 0 ;;
+  *) return 1 ;;
+  esac
+}
+
+# Linux 发行版先加载通用 linux 层，再加载 ubuntu/fedora/arch 专属层。
+platform_script_dirs() {
+  local root="$1"
+  local platform
+  platform=$(detect_platform)
+
+  case "$platform" in
+  ubuntu | fedora | arch)
+    printf '%s\n' "$root/linux" "$root/$platform"
+    ;;
+  linux | macos)
+    printf '%s\n' "$root/$platform"
+    ;;
+  esac
+}
 
 has_root() {
   [[ $EUID -eq 0 ]] || sudo -n true 2>/dev/null
@@ -32,5 +52,5 @@ has_root() {
 
 # 可无密码 sudo 或已是 root（-n 表示非交互，失败则返回假）
 can_sudo() {
-  sudo -n true 2>/dev/null || [[ $EUID -eq 0 ]]
+  [[ $EUID -eq 0 ]] || sudo -n true 2>/dev/null
 }

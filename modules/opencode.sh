@@ -5,28 +5,27 @@
 
 SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-for f in "$SCRIPT_ROOT/../utils"/*.sh; do
-  source "$f"
-done
+# 只加载零副作用函数库；禁止通配 source 旧 utils（其中包含安装和 sudo 顶层代码）。
+source "$SCRIPT_ROOT/../lib/utils.sh"
 
-if command_exists "opencode"; then
+if command -v opencode &>/dev/null; then
   log "OpenCode is already installed" "$GREEN"
   log "Current version: $(opencode --version 2>/dev/null || echo 'unknown')" "$CYAN"
 else
   log "Installing OpenCode..." "$YELLOW"
 
-  if command_exists "brew"; then
+  if command -v brew &>/dev/null; then
     log "Installing OpenCode via Homebrew..." "$YELLOW"
     brew install anomalyco/tap/opencode || {
       log "Homebrew installation failed, trying npm..." "$YELLOW"
-      if command_exists "npm"; then
+      if command -v npm &>/dev/null; then
         npm install -g opencode-ai
       else
         log "Neither Homebrew nor npm found." "$RED"
         exit 1
       fi
     }
-  elif command_exists "npm"; then
+  elif command -v npm &>/dev/null; then
     log "Installing OpenCode via npm..." "$YELLOW"
     npm install -g opencode-ai
   else
@@ -34,7 +33,7 @@ else
     exit 1
   fi
 
-  if command_exists "opencode"; then
+  if command -v opencode &>/dev/null; then
     log "OpenCode installed successfully!" "$GREEN"
   else
     log "OpenCode installation failed" "$RED"
@@ -72,8 +71,6 @@ add_opencode_alias() {
 
 # OpenCode AI Coding Agent Aliases
 alias oc="opencode"
-alias oc-init="opencode && /init"
-alias oc-share="opencode && /share"
 ALIAS
       log "Added OpenCode aliases to $config_file" "$GREEN"
     else
@@ -86,12 +83,12 @@ add_opencode_alias "$HOME/.zshrc"
 add_opencode_alias "$HOME/.bashrc"
 add_opencode_alias "$HOME/.bash_profile"
 
-if command_exists "npm"; then
-  if ! command_exists "bash-language-server"; then
+if command -v npm &>/dev/null; then
+  if ! command -v bash-language-server &>/dev/null; then
     log "Installing bash-language-server..." "$YELLOW"
     npm install -g bash-language-server
   fi
-  if ! command_exists "yaml-language-server"; then
+  if ! command -v yaml-language-server &>/dev/null; then
     log "Installing yaml-language-server..." "$YELLOW"
     npm install -g yaml-language-server
   fi

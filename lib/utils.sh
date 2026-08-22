@@ -7,6 +7,7 @@
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 
 # $1 消息 $2 可选颜色，默认绿色
@@ -56,21 +57,26 @@ get_realpath() {
 
 # 修复 zsh 相关目录权限
 fix_zsh_permissions() {
+  if [[ "${MAC_SETUP_NO_ROOT:-0}" == "1" ]]; then
+    log "跳过 zsh 系统目录权限修复（--no-root）" "$YELLOW"
+    return 0
+  fi
+
   local zsh_dirs=(
     "/usr/local/share/zsh"
     "/usr/local/share/zsh/site-functions"
   )
 
-  local SUDO=""
-  if [[ $EUID -ne 0 ]] && ! sudo -n true 2>/dev/null; then
-    SUDO="sudo"
+  local sudo_cmd=()
+  if [[ $EUID -ne 0 ]]; then
+    sudo_cmd=(sudo)
   fi
 
   for dir in "${zsh_dirs[@]}"; do
     if [[ -d "$dir" ]] && [[ ! -w "$dir" ]]; then
       log "修复目录权限: $dir" "$YELLOW"
-      $SUDO chown -R "$(whoami)" "$dir" 2>/dev/null || true
-      chmod -R u+w "$dir" 2>/dev/null || true
+      "${sudo_cmd[@]}" chown -R "$(whoami)" "$dir" 2>/dev/null || true
+      "${sudo_cmd[@]}" chmod -R u+w "$dir" 2>/dev/null || true
     fi
   done
 }
@@ -152,21 +158,14 @@ install_mise() {
   version=$(curl -sSL "https://api.github.com/repos/jdx/mise/releases/latest" 2>/dev/null | grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/' || echo "")
 
   if [[ -z "$version" ]]; then
-    log "无法获取 mise 版本，尝试安装脚本..." "$YELLOW"
-    # 备用：使用安装脚本
-    if curl --proto '=https' --tlsv1.2 -sSf https://mise.run | sh -s -- -y; then
-      log "mise 安装成功" "$GREEN"
-      return 0
-    fi
-    log "mise 安装失败，请手动安装: https://mise.run" "$RED"
+    log "无法获取 mise 版本；拒绝执行未固定的远程安装脚本" "$RED"
     return 1
   fi
 
   local filename="mise-v${version}-${os}-${arch}.tar.gz"
   local url="https://github.com/jdx/mise/releases/download/v${version}/${filename}"
-  local tmp_dir="/tmp/mise-install"
-
-  mkdir -p "$tmp_dir"
+  local tmp_dir
+  tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/mise-install.XXXXXX")"
 
   log "下载 mise v${version}..." "$GREEN"
   if curl -fLo "$tmp_dir/mise.tar.gz" "$url"; then
@@ -179,12 +178,7 @@ install_mise() {
     return 0
   else
     rm -rf "$tmp_dir"
-    log "下载失败，尝试安装脚本..." "$YELLOW"
-    if curl --proto '=https' --tlsv1.2 -sSf https://mise.run | sh -s -- -y; then
-      log "mise 安装成功" "$GREEN"
-      return 0
-    fi
-    log "mise 安装失败，请手动安装: https://mise.run" "$RED"
+    log "mise 下载失败；未执行远程安装脚本" "$RED"
     return 1
   fi
 }

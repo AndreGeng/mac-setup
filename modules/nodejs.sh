@@ -29,6 +29,10 @@ install_nodejs() {
   log "安装 Node.js LTS..." "$GREEN"
   "$_mise_bin" use -g node@lts
 
+  # ReMe 的跨 Agent bridge 使用 Bun 执行 TypeScript；固定版本保证新机可复现。
+  log "安装 Bun 1.3.7..." "$GREEN"
+  "$_mise_bin" use -g bun@1.3.7
+
   # 全局 npm 包
   local npm_packages=(
     "js-beautify"

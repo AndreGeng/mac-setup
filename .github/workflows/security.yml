@@ -45,6 +45,9 @@ jobs:
       - name: Test privacy scanner
         run: ./test/security-scan-test.sh
 
+      - name: Test setup regressions
+        run: bash ./test/setup-test.sh
+
       - name: Scan repository and history
         run: ./scripts/security-scan.sh
 
