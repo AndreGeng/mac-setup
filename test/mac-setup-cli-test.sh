@@ -221,6 +221,23 @@ test_vim_apply_and_verify_complete_agent_workflow() {
   json_assert "$verify" 'all(item["status"] == "PASS" for item in value["checks"])'
 }
 
+test_vim_verify_discovers_user_local_fd_compat_command() {
+  local home="$TEMP_ROOT/vim-local-fd-home"
+  local state="$TEMP_ROOT/vim-local-fd-state"
+  local fake_bin="$TEMP_ROOT/vim-local-fd-bin"
+  local output="$TEMP_ROOT/vim-local-fd-verify.json"
+  mkdir -p "$home/.config" "$home/.local/bin" "$fake_bin"
+  ln -s "$ROOT_DIR/config/nvim" "$home/.config/nvim"
+  write_fake_command "$fake_bin/nvim"
+  write_fake_command "$fake_bin/rg"
+  write_fake_command "$home/.local/bin/fd"
+
+  cli_env "$home" "$state" "$fake_bin" verify vim --format json >"$output" || return 1
+  json_assert "$output" 'value["status"] == "COMPLIANT"' || return 1
+  json_assert "$output" \
+    'len([item for item in value["checks"] if item["id"] == "fd-executable" and item["status"] == "PASS" and item["details"].endswith("/.local/bin/fd")]) == 1'
+}
+
 test_zsh_apply_and_verify_complete_agent_workflow() {
   local home="$TEMP_ROOT/zsh-home"
   local state="$TEMP_ROOT/zsh-state"
@@ -637,6 +654,8 @@ run_test apply-refuses-missing-approval-without-mutation \
   test_apply_refuses_missing_approval_without_mutation
 run_test vim-apply-and-verify-complete-agent-workflow \
   test_vim_apply_and_verify_complete_agent_workflow
+run_test vim-verify-discovers-user-local-fd-compat-command \
+  test_vim_verify_discovers_user_local_fd_compat_command
 run_test zsh-apply-and-verify-complete-agent-workflow \
   test_zsh_apply_and_verify_complete_agent_workflow
 run_test zsh-module-installs-canonical-zinit-layout \
