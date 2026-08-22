@@ -1,13 +1,13 @@
 ---
 name: mac-setup
-description: Configure or verify this computer's Vim, Neovim, Zsh, or complete terminal development environment through mac-setup's safe plan/apply/verify interface.
+description: Configure or verify this computer's Vim, Neovim, Zsh, Tmux, or terminal development environment through mac-setup's safe plan/apply/verify interface.
 ---
 
 # mac-setup operator
 
 Use this skill when the user asks to configure, install, repair, inspect, or verify a local
 development environment managed by mac-setup. Common triggers include Vim, Neovim, Nvim,
-Zsh, shell configuration, or setting up a new computer.
+Zsh, Tmux, shell configuration, terminal multiplexing, or setting up a new computer.
 
 ## Operator mode
 
@@ -37,6 +37,7 @@ Canonical capability mappings:
 
 - Vim, Nvim, Neovim, editor environment: `editor.nvim` (aliases: `vim`, `nvim`, `neovim`)
 - Zsh or shell environment: `shell.zsh` (aliases: `zsh`, `shell`)
+- Tmux environment: `terminal.tmux` (alias: `tmux`)
 
 Canonical profile mappings:
 

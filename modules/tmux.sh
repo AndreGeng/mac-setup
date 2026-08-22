@@ -8,6 +8,14 @@ install_tmux() {
 
   pkg_install tmux || return 1
 
+  if ! command -v git >/dev/null 2>&1; then
+    pkg_install git || return 1
+  fi
+
+  if ! command -v bc >/dev/null 2>&1; then
+    pkg_install bc || return 1
+  fi
+
   # macOS 专属：剪贴板支持
   if is_macos; then
     pkg_install reattach-to-user-namespace || true
@@ -18,7 +26,7 @@ install_tmux() {
   if [[ ! -d "$tpm_dir" ]]; then
     log "安装 TPM..." "$GREEN"
     mkdir -p "$HOME/.tmux/plugins"
-    git clone https://github.com/tmux-plugins/tpm "$tpm_dir"
+    git clone https://github.com/tmux-plugins/tpm "$tpm_dir" || return 1
   else
     log "TPM 已安装，跳过" "$YELLOW"
   fi

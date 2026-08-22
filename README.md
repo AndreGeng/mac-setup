@@ -72,9 +72,10 @@ sudo 和配置接管需求，获得授权后执行同一个 plan，最后独立�
 ./bin/mac-setup verify terminal --format json
 ```
 
-当前提供 `editor.nvim`（别名 `vim`、`nvim`、`neovim`）和 `shell.zsh`（别名 `zsh`、
-`shell`）两个完整 capability，以及按固定顺序组合二者的 `profile.terminal`（别名
-`terminal`）。Profile 会生成一份合并计划，对重复的 network、sudo、replace-config 审批
+当前提供 `editor.nvim`（别名 `vim`、`nvim`、`neovim`）、`shell.zsh`（别名 `zsh`、
+`shell`）和 `terminal.tmux`（别名 `tmux`）三个完整 capability，以及按固定顺序组合
+Zsh 与 Neovim 的 `profile.terminal`（别名 `terminal`）。Profile 会生成一份合并计划，对
+重复的 network、sudo、replace-config 审批
 去重，并在 change 和 verify check 中标明所属 member。Neovim Python provider 可在单独
 capability 或 terminal profile 的 plan、apply、verify 中一致地增加
 `--with python-provider`。`plan` 不访问网络、不请求 sudo、不写用户目录；JSON 模式只在

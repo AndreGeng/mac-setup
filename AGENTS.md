@@ -32,7 +32,8 @@ Agent-facing computer configuration:
 ```
 
 For operator requests such as “configure Vim” or “configure Zsh”, use the corresponding
-capability. For a complete terminal development environment, use the `profile.terminal`
+capability. Use `terminal.tmux` (`tmux`) for Tmux requests. For a complete Zsh and Neovim
+environment, use the `profile.terminal`
 (`terminal`) profile, which composes `shell.zsh` and `editor.nvim`. Always use the CLI's
 plan/apply/verify flow instead of editing installed HOME files or invoking package managers
 directly. Explain `requiredApprovals`, obtain the necessary authorization, and claim success

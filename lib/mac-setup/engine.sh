@@ -143,6 +143,12 @@ plan_member_changes() {
       add_plan_approval sudo 'Unwritable Zsh completion directories require permission repair.'
     fi
     ;;
+  terminal.tmux)
+    if [[ ! -d "$HOME/.tmux/plugins/tpm/.git" ]]; then
+      add_plan_change INSTALL_GIT_REPOSITORY tpm 'Install the Tmux Plugin Manager.'
+      add_plan_approval network 'TPM must be downloaded from its upstream repository.'
+    fi
+    ;;
   esac
 
   plan_configs "$capability"
@@ -519,6 +525,33 @@ build_verify_member() {
     else
       add_verify_check zsh-config-syntax FAIL 'The managed .zshrc failed syntax validation.'
     fi
+    ;;
+  terminal.tmux)
+    verify_command tmux-executable tmux
+    verify_command git-executable git
+    verify_command bc-executable bc
+    if [[ -d "$HOME/.tmux/plugins/tpm/.git" ]]; then
+      add_verify_check tpm-repository PASS "$HOME/.tmux/plugins/tpm"
+    else
+      add_verify_check tpm-repository FAIL 'The TPM repository is missing.'
+    fi
+    verify_configs "$capability"
+    local socket_name="mac-setup-verify-$$"
+    local tmux_log=""
+    local tmux_status=1
+    tmux_log="$(mktemp "${TMPDIR:-/tmp}/mac-setup-tmux-verify.XXXXXX")" || true
+    if [[ -n "$tmux_log" ]] && command -v tmux >/dev/null 2>&1; then
+      tmux_status=0
+      tmux -f /dev/null -L "$socket_name" start-server \; \
+        source-file "$HOME/.tmux.conf" >/dev/null 2>"$tmux_log" || tmux_status=$?
+    fi
+    if [[ $tmux_status -eq 0 && -n "$tmux_log" && ! -s "$tmux_log" ]]; then
+      add_verify_check tmux-config-load PASS 'Tmux loads the managed configuration.'
+    else
+      add_verify_check tmux-config-load FAIL 'Tmux failed to load the managed configuration.'
+    fi
+    tmux -L "$socket_name" kill-server >/dev/null 2>&1 || true
+    [[ -z "$tmux_log" ]] || rm -f "$tmux_log"
     ;;
   esac
 }
