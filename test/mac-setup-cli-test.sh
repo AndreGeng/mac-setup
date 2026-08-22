@@ -31,7 +31,7 @@ import sys
 
 with open(sys.argv[1], encoding="utf-8") as handle:
     value = json.load(handle)
-if not eval(sys.argv[2], {"__builtins__": {}}, {"value": value}):
+if not eval(sys.argv[2], {"__builtins__": {}}, {"value": value, "set": set, "all": all}):
     raise SystemExit(1)
 ' "$path" "$expression"
 }
@@ -58,12 +58,24 @@ write_fake_command() {
   chmod +x "$path"
 }
 
+write_fake_linux_uname() {
+  local path="$1"
+  mkdir -p "$(dirname "$path")"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'case "${1:-}" in' \
+    '  -s) printf "%s\n" Linux ;;' \
+    '  -m) printf "%s\n" x86_64 ;;' \
+    '  *) printf "%s\n" Linux ;;' \
+    'esac' >"$path"
+  chmod +x "$path"
+}
+
 cli_env() {
   local home="$1"
   local state="$2"
   local fake_bin="$3"
   shift 3
-  HOME="$home" XDG_STATE_HOME="$state" \
+  env OSTYPE="${MAC_SETUP_TEST_OSTYPE:-$OSTYPE}" HOME="$home" XDG_STATE_HOME="$state" \
     PATH="$fake_bin:/usr/bin:/bin:/usr/sbin:/sbin" \
     "$CLI" "$@"
 }
@@ -88,10 +100,9 @@ test_describes_alias_with_stable_canonical_id() {
 
 test_unknown_capability_has_structured_error() {
   local output="$TEMP_ROOT/unknown.json"
-  if "$CLI" describe unknown --format json >"$output" 2>/dev/null; then
-    return 1
-  fi
+  "$CLI" describe unknown --format json >"$output" 2>/dev/null
   local status=$?
+  [[ $status -ne 0 ]] || return 1
   [[ $status -eq 2 ]] || return 1
   json_assert "$output" 'value["status"] == "FAILED"' || return 1
   json_assert "$output" 'value["error"]["code"] == "UNKNOWN_CAPABILITY"'
@@ -129,11 +140,10 @@ test_apply_refuses_missing_approval_without_mutation() {
   cli_env "$home" "$state" "$fake_bin" plan vim --format json >"$plan" || return 1
   local plan_id
   plan_id="$(json_value "$plan" planId)" || return 1
-  if cli_env "$home" "$state" "$fake_bin" apply vim \
-    --plan-id "$plan_id" --non-interactive --format json >"$output" 2>/dev/null; then
-    return 1
-  fi
+  cli_env "$home" "$state" "$fake_bin" apply vim \
+    --plan-id "$plan_id" --non-interactive --format json >"$output" 2>/dev/null
   local status=$?
+  [[ $status -ne 0 ]] || return 1
   [[ $status -eq 20 ]] || return 1
   [[ -f "$home/.config/nvim/local.lua" ]] || return 1
   json_assert "$output" 'value["status"] == "BLOCKED"' || return 1
@@ -207,13 +217,38 @@ test_apply_uses_an_exclusive_lock() {
   cli_env "$home" "$state" "$fake_bin" plan zsh --format json >"$plan" || return 1
   local plan_id
   plan_id="$(json_value "$plan" planId)" || return 1
-  if cli_env "$home" "$state" "$fake_bin" apply zsh \
-    --plan-id "$plan_id" --non-interactive --format json >"$output" 2>/dev/null; then
-    return 1
-  fi
+  cli_env "$home" "$state" "$fake_bin" apply zsh \
+    --plan-id "$plan_id" --non-interactive --format json >"$output" 2>/dev/null
   local status=$?
+  [[ $status -ne 0 ]] || return 1
   [[ $status -eq 75 ]] || return 1
   json_assert "$output" 'value["error"]["code"] == "CONCURRENT_RUN"'
+}
+
+test_non_interactive_apply_never_prompts_for_sudo() {
+  local home="$TEMP_ROOT/sudo-home"
+  local state="$TEMP_ROOT/sudo-state"
+  local fake_bin="$TEMP_ROOT/sudo-bin"
+  local plan="$TEMP_ROOT/sudo-plan.json"
+  local output="$TEMP_ROOT/sudo-apply.json"
+  mkdir -p "$home" "$fake_bin"
+  write_fake_linux_uname "$fake_bin/uname"
+  printf '%s\n' '#!/usr/bin/env bash' 'exit 1' >"$fake_bin/sudo"
+  chmod +x "$fake_bin/sudo"
+
+  MAC_SETUP_TEST_OSTYPE=linux-gnu \
+    cli_env "$home" "$state" "$fake_bin" plan vim --format json >"$plan" || return 1
+  json_assert "$plan" \
+    '"sudo" in set(item["type"] for item in value["requiredApprovals"])' || return 1
+  local plan_id
+  plan_id="$(json_value "$plan" planId)" || return 1
+  MAC_SETUP_TEST_OSTYPE=linux-gnu \
+    cli_env "$home" "$state" "$fake_bin" apply vim --plan-id "$plan_id" \
+    --allow network --allow sudo --non-interactive --format json >"$output" 2>/dev/null
+  local status=$?
+  [[ $status -eq 20 ]] || return 1
+  [[ ! -e "$home/.config/nvim" ]] || return 1
+  json_assert "$output" 'value["error"]["code"] == "SUDO_AUTH_REQUIRED"'
 }
 
 test_shared_agent_skill_documents_safe_operator_flow() {
@@ -239,6 +274,8 @@ run_test vim-apply-and-verify-complete-agent-workflow \
 run_test zsh-apply-and-verify-complete-agent-workflow \
   test_zsh_apply_and_verify_complete_agent_workflow
 run_test apply-uses-an-exclusive-lock test_apply_uses_an_exclusive_lock
+run_test non-interactive-apply-never-prompts-for-sudo \
+  test_non_interactive_apply_never_prompts_for_sudo
 run_test shared-agent-skill-documents-safe-operator-flow \
   test_shared_agent_skill_documents_safe_operator_flow
 

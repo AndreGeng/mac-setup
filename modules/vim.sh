@@ -37,27 +37,22 @@ install_neovim() {
     log "跳过 setup_python_env（无 pynvim/nvr venv；由 setup-lite 默认开启）" "$YELLOW"
   fi
 
-  # 复制 nvim 配置
-  local nvim_config_src
-  nvim_config_src="$(cd "$(dirname "${BASH_SOURCE[0]}")/../config/nvim" && pwd)"
+  # setup 的 sync 模块和 Agent-facing capability 都有统一配置发布者；仅在单独执行
+  # vim 模块时保留历史上的复制行为。
+  if [[ "${MAC_SETUP_SKIP_NVIM_CONFIG:-0}" != "1" ]]; then
+    local nvim_config_src
+    local target_home="${HOME:-/root}"
+    local nvim_config_dest="$target_home/.config/nvim"
+    nvim_config_src="$(cd "$(dirname "${BASH_SOURCE[0]}")/../config/nvim" && pwd)"
 
-  # 确保 HOME 正确
-  local target_home="${HOME:-/root}"
-
-  local nvim_config_dest="$target_home/.config/nvim"
-  local config_dir="$target_home/.config"
-
-  # 确保 .config 目录存在
-  mkdir -p "$config_dir"
-
-  # 处理已存在的 nvim（可能是软链接或目录）
-  if [[ -e "$nvim_config_dest" ]]; then
-    log "nvim 配置已存在，删除后重新复制..." "$YELLOW"
-    rm -rf "$nvim_config_dest" 2>/dev/null || true
+    mkdir -p "$target_home/.config"
+    if [[ -e "$nvim_config_dest" || -L "$nvim_config_dest" ]]; then
+      log "nvim 配置已存在，删除后重新复制..." "$YELLOW"
+      rm -rf "$nvim_config_dest" 2>/dev/null || true
+    fi
+    log "复制 nvim 配置到 $nvim_config_dest..." "$GREEN"
+    cp -rf "$nvim_config_src" "$nvim_config_dest"
   fi
-
-  log "复制 nvim 配置到 $nvim_config_dest..." "$GREEN"
-  cp -rf "$nvim_config_src" "$nvim_config_dest"
 }
 
 install_fd_safe() {

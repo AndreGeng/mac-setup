@@ -3,10 +3,10 @@
 # OpenCode 模块：安装 OpenCode CLI 并配置
 #
 
-SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OPENCODE_MODULE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # 只加载零副作用函数库；禁止通配 source 旧 utils（其中包含安装和 sudo 顶层代码）。
-source "$SCRIPT_ROOT/../lib/utils.sh"
+source "$OPENCODE_MODULE_DIR/../lib/utils.sh"
 
 if command -v opencode &>/dev/null; then
   log "OpenCode is already installed" "$GREEN"
@@ -57,7 +57,8 @@ done
 if [[ "$AGENTS_OWNS_CONFIG" == "true" ]]; then
   log "Agent 模块将管理 OpenCode 配置" "$CYAN"
 elif [[ ! -e "$OPENCODE_CONFIG_DIR/opencode.json" ]]; then
-  cp "$SCRIPT_ROOT/../config/opencode/opencode.json" "$OPENCODE_CONFIG_DIR/opencode.json"
+  cp "$OPENCODE_MODULE_DIR/../config/opencode/opencode.json" \
+    "$OPENCODE_CONFIG_DIR/opencode.json"
   log "OpenCode 配置已安装" "$GREEN"
 else
   log "保留现有 OpenCode 配置" "$YELLOW"

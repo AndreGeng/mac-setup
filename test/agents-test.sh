@@ -244,6 +244,12 @@ test -f "$home/.config/opencode/opencode.json"
 test -f "$home/.config/opencode/AGENTS.md"
 test -L "$home/.config/opencode/plugins/workmux-status.ts"
 test -L "$home/.config/opencode/plugins/reme-memory.ts"
+test -L "$home/.agents/skills/mac-setup"
+test -L "$home/.local/bin/mac-setup"
+test -x "$home/.local/bin/mac-setup"
+HOME="$home" "$home/.local/bin/mac-setup" list --format json \
+  >"$TEMP_ROOT/mac-setup-list.json"
+grep -q '"editor.nvim"' "$TEMP_ROOT/mac-setup-list.json"
 test -L "$home/.config/agents/reme-memory-bridge.ts"
 test -L "$home/.local/share/mac-setup/reme/venv"
 test "$(readlink "$home/.local/share/mac-setup/reme/venv")" = \

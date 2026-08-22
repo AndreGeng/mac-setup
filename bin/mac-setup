@@ -1,0 +1,320 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+SOURCE_PATH="${BASH_SOURCE[0]}"
+LINK_DEPTH=0
+while [[ -L "$SOURCE_PATH" ]]; do
+  LINK_DEPTH=$((LINK_DEPTH + 1))
+  if ((LINK_DEPTH > 20)); then
+    printf '%s\n' 'mac-setup: symbolic link depth exceeded.' >&2
+    exit 2
+  fi
+  SOURCE_DIR="$(cd "$(dirname "$SOURCE_PATH")" && pwd)"
+  LINK_TARGET="$(readlink "$SOURCE_PATH")"
+  case "$LINK_TARGET" in
+  /*) SOURCE_PATH="$LINK_TARGET" ;;
+  *) SOURCE_PATH="$SOURCE_DIR/$LINK_TARGET" ;;
+  esac
+done
+BIN_DIR="$(cd "$(dirname "$SOURCE_PATH")" && pwd)"
+REPO_ROOT="$(cd "$BIN_DIR/.." && pwd)"
+source "$REPO_ROOT/lib/mac-setup/engine.sh"
+
+FORMAT=human
+COMMAND="${1:-}"
+TARGET=""
+PLAN_ID_ARG=""
+NON_INTERACTIVE=false
+FEATURE_PYTHON=false
+ALLOW_VALUES=()
+
+usage() {
+  cat <<'EOF'
+Usage: mac-setup <command> [capability] [options]
+
+Commands:
+  list                       List Agent-operable capabilities.
+  describe <capability>      Describe one capability and its optional features.
+  doctor                     Diagnose the local bootstrap prerequisites.
+  plan <capability>          Produce a read-only convergence plan.
+  apply <capability>         Apply a previously reviewed plan.
+  verify <capability>        Verify the desired state without modifying it.
+
+Options:
+  --format human|json
+  --plan-id ID
+  --allow network|sudo|replace-config
+  --with python-provider
+  --non-interactive
+  --no-color
+EOF
+}
+
+emit_cli_error() {
+  local operation="$1"
+  local status="$2"
+  local code="$3"
+  local message="$4"
+  if [[ "$FORMAT" == json ]]; then
+    json_error "$operation" "$status" "$code" "$message"
+  else
+    printf '%s: %s\n' "$code" "$message" >&2
+  fi
+}
+
+[[ -n "$COMMAND" ]] || {
+  usage >&2
+  exit 2
+}
+shift || true
+
+case "$COMMAND" in
+list | doctor) ;;
+describe | plan | apply | verify)
+  if [[ $# -gt 0 && "$1" != --* ]]; then
+    TARGET="$1"
+    shift
+  fi
+  ;;
+-h | --help | help)
+  usage
+  exit 0
+  ;;
+*)
+  printf 'Unknown command: %s\n' "$COMMAND" >&2
+  usage >&2
+  exit 2
+  ;;
+esac
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+  --format)
+    [[ $# -ge 2 ]] || {
+      printf '%s\n' '--format requires a value.' >&2
+      exit 2
+    }
+    FORMAT="$2"
+    shift 2
+    ;;
+  --format=*)
+    FORMAT="${1#*=}"
+    shift
+    ;;
+  --json)
+    FORMAT=json
+    shift
+    ;;
+  --plan-id)
+    [[ $# -ge 2 ]] || {
+      emit_cli_error "$COMMAND" FAILED INVALID_ARGUMENT '--plan-id requires a value.'
+      exit 2
+    }
+    PLAN_ID_ARG="$2"
+    shift 2
+    ;;
+  --allow)
+    [[ $# -ge 2 ]] || {
+      emit_cli_error "$COMMAND" FAILED INVALID_ARGUMENT '--allow requires a value.'
+      exit 2
+    }
+    case "$2" in
+    network | sudo | replace-config) ALLOW_VALUES+=("$2") ;;
+    *)
+      emit_cli_error "$COMMAND" FAILED INVALID_APPROVAL "Unknown approval: $2"
+      exit 2
+      ;;
+    esac
+    shift 2
+    ;;
+  --with)
+    [[ $# -ge 2 ]] || {
+      emit_cli_error "$COMMAND" FAILED INVALID_ARGUMENT '--with requires a value.'
+      exit 2
+    }
+    if [[ "$2" == python-provider ]]; then
+      FEATURE_PYTHON=true
+    else
+      emit_cli_error "$COMMAND" FAILED UNKNOWN_FEATURE "Unknown feature: $2"
+      exit 2
+    fi
+    shift 2
+    ;;
+  --non-interactive)
+    NON_INTERACTIVE=true
+    shift
+    ;;
+  --no-color)
+    shift
+    ;;
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  *)
+    emit_cli_error "$COMMAND" FAILED INVALID_ARGUMENT "Unknown argument: $1"
+    exit 2
+    ;;
+  esac
+done
+
+case "$FORMAT" in
+human | json) ;;
+*)
+  printf 'Unsupported format: %s\n' "$FORMAT" >&2
+  exit 2
+  ;;
+esac
+
+if [[ "$FORMAT" == json ]]; then
+  log() {
+    local message="$1"
+    printf '%s\n' "$message" >&2
+  }
+fi
+
+if [[ "$COMMAND" == list ]]; then
+  if [[ "$FORMAT" == json ]]; then
+    emit_list_json
+  else
+    capability_ids
+  fi
+  exit 0
+fi
+
+if [[ "$COMMAND" == doctor ]]; then
+  if [[ "$FORMAT" == json ]]; then
+    emit_doctor_json
+  else
+    printf 'Platform: %s\nRepository: %s\n' "$(detect_platform)" "$MAC_SETUP_REPO_ROOT"
+  fi
+  exit 0
+fi
+
+[[ -n "$TARGET" ]] || {
+  emit_cli_error "$COMMAND" FAILED INVALID_ARGUMENT "$COMMAND requires a capability."
+  exit 2
+}
+
+CAPABILITY="$(canonical_capability "$TARGET" 2>/dev/null || true)"
+[[ -n "$CAPABILITY" ]] || {
+  emit_cli_error "$COMMAND" FAILED UNKNOWN_CAPABILITY "Unknown capability: $TARGET"
+  exit 2
+}
+
+if [[ "$FEATURE_PYTHON" == true && "$CAPABILITY" != editor.nvim ]]; then
+  emit_cli_error "$COMMAND" FAILED UNKNOWN_FEATURE \
+    'python-provider is only available for editor.nvim.'
+  exit 2
+fi
+
+if [[ "$COMMAND" == describe ]]; then
+  if [[ "$FORMAT" == json ]]; then
+    emit_describe_json "$CAPABILITY"
+  else
+    printf '%s\n%s\n' "$CAPABILITY" "$(capability_description "$CAPABILITY")"
+  fi
+  exit 0
+fi
+
+if [[ "$COMMAND" == verify ]]; then
+  build_verify "$CAPABILITY" "$FEATURE_PYTHON"
+  status="$(verify_status)"
+  if [[ "$FORMAT" == json ]]; then
+    emit_verify_json "$CAPABILITY"
+  else
+    printf '%s: %s\n' "$CAPABILITY" "$status"
+  fi
+  [[ "$status" == COMPLIANT ]] && exit 0
+  exit 10
+fi
+
+plan_capability "$CAPABILITY" "$FEATURE_PYTHON"
+
+if [[ "$COMMAND" == plan ]]; then
+  if [[ "$FORMAT" == json ]]; then
+    emit_plan_json
+  else
+    emit_plan_human
+  fi
+  exit 0
+fi
+
+[[ "$COMMAND" == apply ]] || {
+  emit_cli_error "$COMMAND" FAILED INVALID_ARGUMENT "Unsupported operation: $COMMAND"
+  exit 2
+}
+
+[[ -n "$PLAN_ID_ARG" ]] || {
+  emit_cli_error apply BLOCKED PLAN_REQUIRED 'apply requires a reviewed --plan-id.'
+  exit 20
+}
+[[ "$PLAN_ID_ARG" == "$PLAN_ID" ]] || {
+  emit_cli_error apply BLOCKED PLAN_STALE \
+    'The plan no longer matches the current repository or machine state.'
+  exit 20
+}
+
+missing_approval="$(first_missing_approval "${ALLOW_VALUES[@]:-}" || true)"
+if [[ -n "$missing_approval" ]]; then
+  emit_cli_error apply BLOCKED APPROVAL_REQUIRED \
+    "The plan requires approval: $missing_approval"
+  exit 20
+fi
+
+if [[ "$NON_INTERACTIVE" == true ]] && plan_requires_approval sudo && ! can_sudo; then
+  emit_cli_error apply BLOCKED SUDO_AUTH_REQUIRED \
+    'Non-interactive apply cannot continue until sudo credentials are available.'
+  exit 20
+fi
+
+STATE_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/mac-setup"
+LOCK_DIR="$STATE_ROOT/apply.lock"
+mkdir -p "$STATE_ROOT"
+if ! mkdir "$LOCK_DIR" 2>/dev/null; then
+  emit_cli_error apply BLOCKED CONCURRENT_RUN 'Another mac-setup apply is active.'
+  exit 75
+fi
+release_lock() {
+  rmdir "$LOCK_DIR" 2>/dev/null || true
+}
+trap release_lock EXIT INT TERM
+
+if plan_needs_install_module; then
+  if [[ "$FORMAT" == json ]]; then
+    if ! run_capability_module "$CAPABILITY" "$FEATURE_PYTHON" >&2; then
+      emit_cli_error apply FAILED APPLY_FAILED "The $CAPABILITY install module failed."
+      exit 40
+    fi
+  elif ! run_capability_module "$CAPABILITY" "$FEATURE_PYTHON"; then
+    emit_cli_error apply FAILED APPLY_FAILED "The $CAPABILITY install module failed."
+    exit 40
+  fi
+fi
+
+if [[ "$FORMAT" == json ]]; then
+  if ! publish_capability_configs "$CAPABILITY" >&2; then
+    emit_cli_error apply FAILED APPLY_FAILED \
+      "Failed to publish the $CAPABILITY managed configuration."
+    exit 40
+  fi
+elif ! publish_capability_configs "$CAPABILITY"; then
+  emit_cli_error apply FAILED APPLY_FAILED \
+    "Failed to publish the $CAPABILITY managed configuration."
+  exit 40
+fi
+
+build_verify "$CAPABILITY" "$FEATURE_PYTHON"
+apply_status=SUCCESS
+[[ "$(verify_status)" == COMPLIANT ]] || apply_status=FAILED
+run_id="run-$(date +%Y%m%d%H%M%S)-$$"
+report="$(write_apply_report "$CAPABILITY" "$PLAN_ID" "$run_id" "$apply_status" "$STATE_ROOT")"
+
+if [[ "$FORMAT" == json ]]; then
+  cat "$report"
+else
+  printf '%s: %s\nRun report: %s\n' "$CAPABILITY" "$apply_status" "$report"
+fi
+
+[[ "$apply_status" == SUCCESS ]] && exit 0
+exit 50

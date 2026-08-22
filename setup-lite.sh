@@ -141,6 +141,13 @@ if [[ "${MAC_SETUP_SKIP_NVIM_PYTHON:-}" == "1" ]]; then
   log "vim 将跳过 setup_python_env（需要 pynvim/nvr 时用 --with-nvim-python）" "$YELLOW"
 fi
 
+for module in "${MODULES[@]}"; do
+  if [[ "$module" == "sync" ]]; then
+    export MAC_SETUP_SKIP_NVIM_CONFIG=1
+    break
+  fi
+done
+
 log "将安装模块: ${MODULES[*]}" "$GREEN"
 
 for module in "${MODULES[@]}"; do

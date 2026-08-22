@@ -53,6 +53,28 @@ cd mac-setup
 | workmux | Workmux 并行开发工作区工具 | macOS, Linux |
 | agents | OpenCode、Claude Code、Codex、Pi 配置与自定义 skills | macOS, Linux |
 
+## 让 Codex / OpenCode 配置电脑
+
+`bin/mac-setup` 是面向人和 Agent 的稳定操作接口。Agent 应当先生成只读计划，说明网络、
+sudo 和配置接管需求，获得授权后执行同一个 plan，最后独立验证结果：
+
+```bash
+./bin/mac-setup list --format json
+./bin/mac-setup plan vim --format json
+./bin/mac-setup apply vim --plan-id <plan-id> --allow network --allow sudo \
+  --allow replace-config --non-interactive --format json
+./bin/mac-setup verify vim --format json
+```
+
+当前提供 `editor.nvim`（别名 `vim`、`nvim`、`neovim`）和 `shell.zsh`（别名 `zsh`、
+`shell`）两个完整 capability。Neovim Python provider 可在 plan、apply、verify 中一致地
+增加 `--with python-provider`。`plan` 不访问网络、不请求 sudo、不写用户目录；JSON 模式
+只在 stdout 输出协议数据，进度日志写入 stderr。
+
+仓库自带的 `mac-setup` shared skill 会发布到 `~/.agents/skills/mac-setup`，供 Codex、
+OpenCode、Claude Code 和 Pi 复用。可以直接对 Agent 说：“用 mac-setup 帮我配置好 Vim，
+先给我看计划，确认后执行并验证。”
+
 ## 平台支持
 
 ### macOS 专属

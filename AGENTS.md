@@ -16,6 +16,22 @@ stable configuration with symlinks.
 ./setup-lite.sh --with-agents
 ```
 
+Agent-facing computer configuration:
+
+```bash
+./bin/mac-setup list --format json
+./bin/mac-setup plan vim --format json
+./bin/mac-setup apply vim --plan-id <id> --allow network --allow sudo \
+  --allow replace-config --non-interactive --format json
+./bin/mac-setup verify vim --format json
+```
+
+For operator requests such as “configure Vim” or “configure Zsh”, use the CLI's
+plan/apply/verify flow instead of editing installed HOME files or invoking package managers
+directly. Explain `requiredApprovals`, obtain the necessary authorization, and claim success
+only after `verify` returns `COMPLIANT`. For repository development requests, edit sources and
+tests but do not run a real apply unless explicitly requested.
+
 Agent configuration:
 
 ```bash
@@ -37,6 +53,7 @@ Run the focused checks for the files changed:
 
 ```bash
 bash test/setup-test.sh
+bash test/mac-setup-cli-test.sh
 bash test/agents-test.sh
 bun test ./test/reme-memory-test.ts
 bun test ./test/reme-bridge-test.ts

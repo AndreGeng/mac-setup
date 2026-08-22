@@ -3,9 +3,9 @@
 # Workmux 模块：安装 workmux（git worktree + tmux 并行开发管理器）
 #
 
-SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WORKMUX_MODULE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-source "$SCRIPT_ROOT/../lib/utils.sh"
+source "$WORKMUX_MODULE_DIR/../lib/utils.sh"
 
 if command -v workmux &>/dev/null; then
   log "workmux is already installed" "$GREEN"

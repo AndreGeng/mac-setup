@@ -899,11 +899,14 @@ apply_reme_runtime() {
 apply_shared() {
   local skill
 
+  install_managed_link \
+    "$REPO_ROOT/bin/mac-setup" \
+    "$HOME/.local/bin/mac-setup"
   install_agent_template \
     "$REPO_ROOT/config/agents/env.example" \
     "$HOME/.config/agent-env.example" 600
 
-  for skill in dispatch dispatch-team; do
+  for skill in dispatch dispatch-team mac-setup; do
     install_managed_link \
       "$REPO_ROOT/config/agents/skills/$skill" \
       "$HOME/.agents/skills/$skill"
@@ -1325,13 +1328,21 @@ audit_reme_runtime() {
 audit_shared() {
   local skill
 
+  audit_managed_link \
+    "$REPO_ROOT/bin/mac-setup" \
+    "$HOME/.local/bin/mac-setup"
+  if [[ -x "$HOME/.local/bin/mac-setup" ]]; then
+    audit_ok executable "$HOME/.local/bin/mac-setup"
+  else
+    audit_fail executable "$HOME/.local/bin/mac-setup"
+  fi
   audit_template \
     "$REPO_ROOT/config/agents/env.example" \
     "$HOME/.config/agent-env.example"
   audit_mode "$HOME/.config/agent-env.example"
   audit_sensitive "$HOME/.config/agent-env.example"
   audit_sensitive_backups "$HOME/.config/agent-env.example"
-  for skill in dispatch dispatch-team; do
+  for skill in dispatch dispatch-team mac-setup; do
     audit_managed_link \
       "$REPO_ROOT/config/agents/skills/$skill" \
       "$HOME/.agents/skills/$skill"
@@ -1435,7 +1446,7 @@ audit_pi() {
 
 if [[ "$MODE" == "remove-reme" ]]; then
   remove_reme
-  exit 0
+  return 0 2>/dev/null || exit 0
 fi
 
 if [[ "$MODE" == "apply" ]]; then
@@ -1450,7 +1461,7 @@ if [[ "$MODE" == "apply" ]]; then
   selected codex && apply_codex
   selected pi && apply_pi
   log "Agent 配置应用完成；运行 --audit 检查本机状态" "$GREEN"
-  exit 0
+  return 0 2>/dev/null || exit 0
 fi
 
 selected shared && audit_shared

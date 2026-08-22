@@ -48,6 +48,9 @@ jobs:
       - name: Test setup regressions
         run: bash ./test/setup-test.sh
 
+      - name: Test Agent-facing setup CLI
+        run: bash ./test/mac-setup-cli-test.sh
+
       - name: Scan repository and history
         run: ./scripts/security-scan.sh
 

@@ -91,6 +91,14 @@ for module in "${MODULES[@]}"; do
   esac
 done
 
+# sync 是完整安装中的配置发布者，避免 vim 先复制再由 sync 备份并改成链接。
+for module in "${MODULES[@]}"; do
+  if [[ "$module" == "sync" ]]; then
+    export MAC_SETUP_SKIP_NVIM_CONFIG=1
+    break
+  fi
+done
+
 if [[ "$NO_ROOT" == "true" ]]; then
   export MAC_SETUP_NO_ROOT=1
 else
