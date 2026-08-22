@@ -228,7 +228,8 @@ test_zsh_apply_and_verify_complete_agent_workflow() {
   local plan="$TEMP_ROOT/zsh-plan.json"
   local apply="$TEMP_ROOT/zsh-apply.json"
   local verify="$TEMP_ROOT/zsh-verify.json"
-  mkdir -p "$home/.local/share/zinit/.git" "$fake_bin"
+  mkdir -p "$home/.local/share/zinit/zinit.git/.git" "$fake_bin"
+  : >"$home/.local/share/zinit/zinit.git/zinit.zsh"
   write_fake_command "$fake_bin/zsh"
 
   cli_env "$home" "$state" "$fake_bin" plan zsh --format json >"$plan" || return 1
@@ -244,6 +245,55 @@ test_zsh_apply_and_verify_complete_agent_workflow() {
 
   cli_env "$home" "$state" "$fake_bin" verify zsh --format json >"$verify" || return 1
   json_assert "$verify" 'value["status"] == "COMPLIANT"'
+}
+
+test_zsh_module_installs_canonical_zinit_layout() {
+  local home="$TEMP_ROOT/zsh-module-home"
+  local fake_bin="$TEMP_ROOT/zsh-module-bin"
+  mkdir -p "$home" "$fake_bin"
+  write_fake_command "$fake_bin/zsh"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'target="${!#}"' \
+    'mkdir -p "$target/.git"' \
+    ': >"$target/zinit.zsh"' >"$fake_bin/git"
+  chmod +x "$fake_bin/git"
+
+  HOME="$home" PATH="$fake_bin:/usr/bin:/bin:/usr/sbin:/sbin" ROOT_DIR="$ROOT_DIR" \
+    bash -c '
+      log() { :; }
+      fix_zsh_permissions() { :; }
+      pkg_install() { :; }
+      is_macos() { return 1; }
+      source "$ROOT_DIR/modules/zsh.sh"
+    ' || return 1
+
+  [[ -d "$home/.local/share/zinit/zinit.git/.git" ]] || return 1
+  [[ -f "$home/.local/share/zinit/zinit.git/zinit.zsh" ]] || return 1
+  [[ ! -d "$home/.local/share/zinit/.git" ]]
+}
+
+test_zsh_canonical_zinit_layout_is_compliant() {
+  local home="$TEMP_ROOT/zsh-layout-home"
+  local state="$TEMP_ROOT/zsh-layout-state"
+  local fake_bin="$TEMP_ROOT/zsh-layout-bin"
+  local plan="$TEMP_ROOT/zsh-layout-plan.json"
+  local verify="$TEMP_ROOT/zsh-layout-verify.json"
+  mkdir -p "$home/.local/share/zinit/zinit.git/.git" "$home/.config" "$fake_bin"
+  : >"$home/.local/share/zinit/zinit.git/zinit.zsh"
+  ln -s "$ROOT_DIR/config/.zshrc" "$home/.zshrc"
+  ln -s "$ROOT_DIR/config/.p10k.zsh" "$home/.p10k.zsh"
+  ln -s "$ROOT_DIR/config/.zsh-utils" "$home/.config/.zsh-utils"
+  write_fake_command "$fake_bin/zsh"
+
+  cli_env "$home" "$state" "$fake_bin" plan zsh --format json >"$plan" || return 1
+  json_assert "$plan" 'value["status"] == "COMPLIANT"' || return 1
+  json_assert "$plan" 'value["changes"] == []' || return 1
+  json_assert "$plan" 'value["requiredApprovals"] == []' || return 1
+
+  cli_env "$home" "$state" "$fake_bin" verify zsh --format json >"$verify" || return 1
+  json_assert "$verify" 'value["status"] == "COMPLIANT"' || return 1
+  json_assert "$verify" \
+    'any(item["id"] == "zinit-repository" and item["status"] == "PASS" and item["details"].endswith("/.local/share/zinit/zinit.git") for item in value["checks"])'
 }
 
 test_tmux_plan_is_read_only_and_declares_approvals() {
@@ -483,7 +533,8 @@ test_terminal_profile_apply_and_verify_complete_agent_workflow() {
   local plan="$TEMP_ROOT/profile-plan-apply.json"
   local apply="$TEMP_ROOT/profile-apply.json"
   local verify="$TEMP_ROOT/profile-verify.json"
-  mkdir -p "$home/.local/share/zinit/.git" "$fake_bin"
+  mkdir -p "$home/.local/share/zinit/zinit.git/.git" "$fake_bin"
+  : >"$home/.local/share/zinit/zinit.git/zinit.zsh"
   write_fake_command "$fake_bin/zsh"
   write_fake_command "$fake_bin/nvim"
   write_fake_command "$fake_bin/rg"
@@ -513,7 +564,9 @@ test_apply_uses_an_exclusive_lock() {
   local fake_bin="$TEMP_ROOT/lock-bin"
   local plan="$TEMP_ROOT/lock-plan.json"
   local output="$TEMP_ROOT/lock-apply.json"
-  mkdir -p "$home/.local/share/zinit/.git" "$fake_bin" "$state/mac-setup/apply.lock"
+  mkdir -p "$home/.local/share/zinit/zinit.git/.git" "$fake_bin" \
+    "$state/mac-setup/apply.lock"
+  : >"$home/.local/share/zinit/zinit.git/zinit.zsh"
   write_fake_command "$fake_bin/zsh"
 
   cli_env "$home" "$state" "$fake_bin" plan zsh --format json >"$plan" || return 1
@@ -585,6 +638,10 @@ run_test vim-apply-and-verify-complete-agent-workflow \
   test_vim_apply_and_verify_complete_agent_workflow
 run_test zsh-apply-and-verify-complete-agent-workflow \
   test_zsh_apply_and_verify_complete_agent_workflow
+run_test zsh-module-installs-canonical-zinit-layout \
+  test_zsh_module_installs_canonical_zinit_layout
+run_test zsh-canonical-zinit-layout-is-compliant \
+  test_zsh_canonical_zinit_layout_is_compliant
 run_test tmux-plan-is-read-only-and-declares-approvals \
   test_tmux_plan_is_read_only_and_declares_approvals
 run_test tmux-apply-and-verify-complete-agent-workflow \
