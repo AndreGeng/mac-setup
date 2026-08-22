@@ -81,8 +81,10 @@ capability 或 terminal profile 的 plan、apply、verify 中一致地增加
 `--with python-provider`。`plan` 不访问网络、不请求 sudo、不写用户目录；JSON 模式只在
 stdout 输出协议数据，进度日志写入 stderr。
 
-`runtime.node` 从 `config/runtime/node.tsv` 读取唯一 desired state。Node、Bun 和全局 npm
-工具都使用精确版本；安装、plan 和 verify 共享这份 manifest，避免清单漂移。可以使用：
+`runtime.node` 从 `config/runtime/node.tsv` 读取 Node、Bun 和全局 npm 工具的唯一 desired
+state，并从 `config/bootstrap/mise.tsv` 读取 mise 引导版本及 macOS/Linux、arm64/x64
+资产的 SHA-256。安装、plan 和 verify 共享这两份 manifest；下载内容必须通过摘要校验后
+才会解压，并通过同目录原子重命名发布。可以使用：
 
 ```bash
 ./bin/mac-setup plan node --format json
@@ -164,7 +166,9 @@ OpenCode、Claude Code 和 Pi 复用。可以直接对 Agent 说：“用 mac-se
 - macOS: Homebrew
 - Linux: apt (Ubuntu/Debian)
 
-`nodejs` 模块通过 mise 安装并固定 Bun 1.3.7；Agent ReMe 记忆桥接依赖这个运行时。
+`nodejs` 模块通过固定版本的 mise 安装 Node.js 和 Bun；Agent ReMe 记忆桥接依赖这个
+运行时。升级 mise 时，需要同时更新 `config/bootstrap/mise.tsv` 中四个平台的文件名和
+官方 SHA-256，不能改回 `latest` 查询或未经校验的远程安装脚本。
 
 ## 测试
 

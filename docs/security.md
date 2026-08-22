@@ -39,6 +39,19 @@ For fast feedback before a commit, run the dependency-free staged privacy scan:
 
 Scanner output reports only a rule name and file path. It never prints the matched value.
 
+## Bootstrap supply chain
+
+The mise bootstrap does not query a floating GitHub `latest` release and does not pipe remote
+content into a shell. `config/bootstrap/mise.tsv` pins one release plus the official SHA-256 for
+each supported macOS/Linux and arm64/x64 archive. The installer validates the complete manifest,
+requires a local SHA-256 implementation, verifies the archive before extraction, and publishes
+the binary with an atomic rename in the destination directory.
+
+To upgrade mise, copy all four tar.gz checksums from the release's official `SHASUMS256.txt`,
+update the manifest as one change, and run the setup, Agent CLI, Ubuntu, privacy, and security
+tests. A missing platform, malformed digest, download failure, or checksum mismatch must fail
+closed without replacing the existing executable.
+
 ## Historical findings
 
 `.gitleaksignore` contains exact fingerprints for credentials that were rotated before being

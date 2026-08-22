@@ -41,7 +41,9 @@ only after `verify` returns `COMPLIANT`. For repository development requests, ed
 tests but do not run a real apply unless explicitly requested.
 
 Use `runtime.node` (`node`, `nodejs`) for Node.js, Bun, and repository-declared global npm
-tools. Its desired state is `config/runtime/node.tsv`; do not substitute floating versions.
+tools. Its desired state is `config/runtime/node.tsv`; mise bootstrap assets and checksums are
+declared in `config/bootstrap/mise.tsv`. Do not substitute floating versions or bypass checksum
+verification.
 
 Agent configuration:
 

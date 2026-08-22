@@ -306,7 +306,11 @@ test_mise_checksum_mismatch_fails_closed() {
   local curl_trace="$TEMP_ROOT/mise-checksum.curl"
   local tar_trace="$TEMP_ROOT/mise-checksum.tar"
   local output="$TEMP_ROOT/mise-checksum.out"
-  mkdir -p "$home"
+  mkdir -p "$home/.local/bin"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    '[[ "${1:-}" == "--version" ]] && printf "%s\n" "2024.1.0 test"' \
+    'exit 0' >"$home/.local/bin/mise"
+  chmod +x "$home/.local/bin/mise"
 
   ROOT_DIR="$ROOT_DIR" HOME="$home" CURL_TRACE="$curl_trace" TAR_TRACE="$tar_trace" \
     bash -c '
@@ -345,8 +349,57 @@ test_mise_checksum_mismatch_fails_closed() {
     'https://github.com/jdx/mise/releases/download/v2025.10.6/mise-v2025.10.6-macos-arm64.tar.gz' \
     "$curl_trace" || return 1
   [[ ! -e "$tar_trace" ]] || return 1
-  [[ ! -e "$home/.local/bin/mise" ]] || return 1
+  [[ "$("$home/.local/bin/mise" --version)" == "2024.1.0 test" ]] || return 1
   grep -q 'SHA-256' "$output"
+}
+
+test_mise_verified_archive_replaces_atomically() {
+  local home="$TEMP_ROOT/mise-valid.home"
+  local fixture_root="$TEMP_ROOT/mise-valid.fixture"
+  local fixture="$TEMP_ROOT/mise-valid.tar.gz"
+  local expected_sha256
+  mkdir -p "$home/.local/bin" "$fixture_root"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    '[[ "${1:-}" == "--version" ]] && printf "%s\n" "2024.1.0 test"' \
+    'exit 0' >"$home/.local/bin/mise"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    '[[ "${1:-}" == "--version" ]] && printf "%s\n" "2025.10.6 test"' \
+    'exit 0' >"$fixture_root/mise"
+  chmod +x "$home/.local/bin/mise" "$fixture_root/mise"
+  tar -czf "$fixture" -C "$fixture_root" mise || return 1
+  expected_sha256="$(ROOT_DIR="$ROOT_DIR" FIXTURE="$fixture" bash -c '
+    source "$ROOT_DIR/lib/utils.sh"
+    file_sha256 "$FIXTURE"
+  ')" || return 1
+
+  ROOT_DIR="$ROOT_DIR" HOME="$home" FIXTURE="$fixture" EXPECTED_SHA256="$expected_sha256" \
+    bash -c '
+    source "$ROOT_DIR/lib/utils.sh"
+    uname() {
+      [[ "${1:-}" == "-m" ]] && printf "%s\n" arm64 || printf "%s\n" Darwin
+    }
+    mise_bootstrap_record() {
+      printf "%s|%s|%s\n" 2025.10.6 mise-v2025.10.6-macos-arm64.tar.gz \
+        "$EXPECTED_SHA256"
+    }
+    curl() {
+      local argument output_path="" take_next=false
+      for argument in "$@"; do
+        if [[ "$take_next" == true ]]; then
+          output_path="$argument"
+          take_next=false
+          continue
+        fi
+        [[ "$argument" == "-o" ]] && take_next=true
+      done
+      [[ -n "$output_path" ]] || return 1
+      cp "$FIXTURE" "$output_path"
+    }
+    install_mise
+  ' >/dev/null 2>&1 || return 1
+
+  [[ "$("$home/.local/bin/mise" --version)" == "2025.10.6 test" ]] || return 1
+  ! compgen -G "$home/.local/bin/.mise.new.*" >/dev/null
 }
 
 test_binary_downloads_use_private_temporary_directories() {
@@ -395,6 +448,8 @@ run_test mise-manifest-validator-rejects-invalid-entries \
   test_mise_manifest_validator_rejects_invalid_entries
 run_test mise-checksum-mismatch-fails-closed \
   test_mise_checksum_mismatch_fails_closed
+run_test mise-verified-archive-replaces-atomically \
+  test_mise_verified_archive_replaces_atomically
 run_test binary-downloads-use-private-temporary-directories \
   test_binary_downloads_use_private_temporary_directories
 run_test platform-script-directories-include-linux-base \

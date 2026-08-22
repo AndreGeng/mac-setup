@@ -1,0 +1,6 @@
+# version	os	arch	filename	sha256
+# Checksums: https://github.com/jdx/mise/releases/download/v2025.10.6/SHASUMS256.txt
+2025.10.6	macos	arm64	mise-v2025.10.6-macos-arm64.tar.gz	4d6ffc66cb392ac527e27bdc0ffd42268839b7caa10aab84ff222435ab28865d
+2025.10.6	macos	x64	mise-v2025.10.6-macos-x64.tar.gz	9750847121fb2af54aa2f100e260ab95c5ac1778466f17b94ff92ea91e9c60e7
+2025.10.6	linux	arm64	mise-v2025.10.6-linux-arm64.tar.gz	bd816ebaaec2d98a4ba6f4c44b5d1f9486b6cc507e467d7724a43e069a03004d
+2025.10.6	linux	x64	mise-v2025.10.6-linux-x64.tar.gz	b79ed91bbeae692101f8d838cb6a26698250bc340fe9b491565c9d04e8856ddf

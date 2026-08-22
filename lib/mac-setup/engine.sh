@@ -9,6 +9,7 @@ source "$MAC_SETUP_LIB_DIR/utils.sh"
 source "$MAC_SETUP_LIB_DIR/mac-setup/json.sh"
 source "$MAC_SETUP_LIB_DIR/mac-setup/capabilities.sh"
 source "$MAC_SETUP_LIB_DIR/runtime-manifest.sh"
+source "$MAC_SETUP_LIB_DIR/bootstrap-manifest.sh"
 
 PLAN_CHANGE_TYPES=()
 PLAN_CHANGE_RESOURCES=()
@@ -123,6 +124,13 @@ node_mise_executable() {
   resolve_mise_executable 2>/dev/null
 }
 
+node_mise_matches_bootstrap() {
+  local expected_version mise_bin
+  expected_version="$(mise_bootstrap_version "$MAC_SETUP_REPO_ROOT")" || return 1
+  mise_bin="$(node_mise_executable)" || return 1
+  mise_executable_matches "$mise_bin" "$expected_version"
+}
+
 node_runtime_root() {
   local name="$1"
   local version="$2"
@@ -185,8 +193,11 @@ plan_member_changes() {
     fi
     ;;
   runtime.node)
-    if ! node_mise_executable >/dev/null; then
-      add_plan_change INSTALL_TOOL mise 'Install the mise runtime manager.'
+    local mise_version
+    mise_version="$(mise_bootstrap_version "$MAC_SETUP_REPO_ROOT")" || return 1
+    if ! node_mise_matches_bootstrap; then
+      add_plan_change CONFIGURE_BOOTSTRAP "mise@${mise_version}" \
+        'Install the exact mise bootstrap version declared by the repository.'
       add_plan_approval network 'mise and the declared runtimes must be downloaded.'
     fi
     local runtime_name runtime_version
@@ -440,7 +451,8 @@ first_missing_approval() {
 
 change_requires_module() {
   case "$1" in
-  INSTALL_TOOL | INSTALL_GIT_REPOSITORY | CONFIGURE_FEATURE | CONFIGURE_RUNTIME | INSTALL_NPM_PACKAGE)
+  INSTALL_TOOL | INSTALL_GIT_REPOSITORY | CONFIGURE_BOOTSTRAP | CONFIGURE_FEATURE | \
+    CONFIGURE_RUNTIME | INSTALL_NPM_PACKAGE)
     return 0
     ;;
   *) return 1 ;;
@@ -618,12 +630,14 @@ build_verify_member() {
     [[ -z "$tmux_log" ]] || rm -f "$tmux_log"
     ;;
   runtime.node)
-    local mise_path=""
+    local mise_path="" mise_version=""
+    mise_version="$(mise_bootstrap_version "$MAC_SETUP_REPO_ROOT")" || true
     mise_path="$(node_mise_executable)" || true
-    if [[ -n "$mise_path" ]]; then
-      add_verify_check mise-executable PASS "$mise_path"
+    if [[ -n "$mise_path" && -n "$mise_version" ]] &&
+      mise_executable_matches "$mise_path" "$mise_version"; then
+      add_verify_check mise-version PASS "mise@${mise_version} ($mise_path)"
     else
-      add_verify_check mise-executable FAIL 'mise is unavailable.'
+      add_verify_check mise-version FAIL "mise@${mise_version} is unavailable."
     fi
     local runtime_name runtime_version
     while IFS='|' read -r runtime_name runtime_version; do

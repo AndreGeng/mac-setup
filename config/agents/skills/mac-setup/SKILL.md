@@ -41,8 +41,9 @@ Canonical capability mappings:
 - Tmux environment: `terminal.tmux` (alias: `tmux`)
 - Node.js, Bun, or global npm development tools: `runtime.node` (aliases: `node`, `nodejs`)
 
-For `runtime.node`, treat `config/runtime/node.tsv` as the desired-state source. Never replace
-its pinned versions with `latest` or `lts` during an operator run.
+For `runtime.node`, treat `config/runtime/node.tsv` and `config/bootstrap/mise.tsv` as the
+desired-state sources. Never replace pinned versions with `latest` or `lts`, and never bypass
+the declared SHA-256 verification during an operator run.
 
 Canonical profile mappings:
 

@@ -3,6 +3,9 @@
 # 被 setup 与各模块 source 的通用工具：日志、软链、mise 安装与路径解析等。
 #
 
+UTILS_REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$UTILS_REPO_ROOT/lib/bootstrap-manifest.sh"
+
 # 终端 ANSI 颜色（NC = no color，用于 log 结尾重置样式）
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -102,6 +105,48 @@ resolve_mise_executable() {
   return 1
 }
 
+mise_executable_version() {
+  local executable="$1"
+  local output
+  [[ -f "$executable" && -x "$executable" ]] || return 1
+  output="$("$executable" --version 2>/dev/null)" || return 1
+  output="${output%% *}"
+  [[ "$output" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || return 1
+  printf '%s\n' "$output"
+}
+
+mise_executable_matches() {
+  local executable="$1"
+  local expected_version="$2"
+  local actual_version
+  actual_version="$(mise_executable_version "$executable")" || return 1
+  [[ "$actual_version" == "$expected_version" ]]
+}
+
+file_sha256() {
+  local path="$1"
+  local output
+  if command -v sha256sum >/dev/null 2>&1; then
+    output="$(sha256sum "$path")" || return 1
+  elif command -v shasum >/dev/null 2>&1; then
+    output="$(shasum -a 256 "$path")" || return 1
+  else
+    return 1
+  fi
+  output="${output%% *}"
+  [[ "$output" =~ ^[0-9a-fA-F]{64}$ ]] || return 1
+  printf '%s\n' "$output" | tr '[:upper:]' '[:lower:]'
+}
+
+verify_file_sha256() {
+  local path="$1"
+  local expected="$2"
+  local actual
+  [[ "$expected" =~ ^[0-9a-f]{64}$ ]] || return 1
+  actual="$(file_sha256 "$path")" || return 1
+  [[ "$actual" == "$expected" ]]
+}
+
 # 若 ~/.local/bin/mise 误为目录，移除以便安装真实二进制
 cleanup_mise_path_if_directory() {
   local home_dir="${HOME:-/root}"
@@ -116,18 +161,8 @@ cleanup_mise_path_if_directory() {
 install_mise() {
   local home_dir="${HOME:-/root}"
   local local_bin="$home_dir/.local/bin"
+  local repo_root="$UTILS_REPO_ROOT"
   export PATH="$local_bin:$home_dir/bin:$PATH"
-
-  # 清理可能的错误目录
-  cleanup_mise_path_if_directory
-
-  if resolve_mise_executable &>/dev/null; then
-    log "mise 已安装，跳过" "$YELLOW"
-    return 0
-  fi
-
-  log "安装 mise..." "$GREEN"
-  cleanup_mise_path_if_directory
 
   # 检测系统和架构
   local arch
@@ -153,32 +188,66 @@ install_mise() {
     ;;
   esac
 
-  # 获取最新版本
-  local version
-  version=$(curl -sSL "https://api.github.com/repos/jdx/mise/releases/latest" 2>/dev/null | grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/' || echo "")
-
-  if [[ -z "$version" ]]; then
-    log "无法获取 mise 版本；拒绝执行未固定的远程安装脚本" "$RED"
+  local record version filename expected_sha256
+  if ! record="$(mise_bootstrap_record "$repo_root" "$os" "$arch")"; then
+    log "mise bootstrap manifest 无效或不支持当前平台" "$RED"
     return 1
   fi
+  IFS='|' read -r version filename expected_sha256 <<<"$record"
 
-  local filename="mise-v${version}-${os}-${arch}.tar.gz"
+  local current_mise=""
+  current_mise="$(resolve_mise_executable 2>/dev/null)" || true
+  if [[ -n "$current_mise" ]] && mise_executable_matches "$current_mise" "$version"; then
+    log "mise v${version} 已安装，跳过" "$YELLOW"
+    return 0
+  fi
+
+  if [[ -n "$current_mise" ]]; then
+    log "mise 版本偏离，更新到 v${version}..." "$GREEN"
+  else
+    log "安装 mise v${version}..." "$GREEN"
+  fi
+  cleanup_mise_path_if_directory
+
   local url="https://github.com/jdx/mise/releases/download/v${version}/${filename}"
-  local tmp_dir
+  local tmp_dir archive extract_dir install_tmp
   tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/mise-install.XXXXXX")"
+  archive="$tmp_dir/$filename"
+  extract_dir="$tmp_dir/extract"
 
   log "下载 mise v${version}..." "$GREEN"
-  if curl -fLo "$tmp_dir/mise.tar.gz" "$url"; then
-    tar -xzf "$tmp_dir/mise.tar.gz" -C "$tmp_dir"
-    mkdir -p "$local_bin"
-    mv "$tmp_dir/mise" "$local_bin/mise"
-    chmod +x "$local_bin/mise"
+  if ! curl --proto '=https' --tlsv1.2 -fL -o "$archive" "$url"; then
     rm -rf "$tmp_dir"
-    log "mise 安装成功" "$GREEN"
-    return 0
-  else
-    rm -rf "$tmp_dir"
-    log "mise 下载失败；未执行远程安装脚本" "$RED"
+    log "mise 下载失败；未修改现有安装" "$RED"
     return 1
   fi
+  if ! verify_file_sha256 "$archive" "$expected_sha256"; then
+    rm -rf "$tmp_dir"
+    log "mise 下载文件 SHA-256 校验失败；未解压或修改现有安装" "$RED"
+    return 1
+  fi
+
+  mkdir -p "$extract_dir"
+  if ! tar -xzf "$archive" -C "$extract_dir" || [[ ! -f "$extract_dir/mise" ]]; then
+    rm -rf "$tmp_dir"
+    log "mise 归档解压失败；未修改现有安装" "$RED"
+    return 1
+  fi
+
+  mkdir -p "$local_bin"
+  install_tmp="$(mktemp "$local_bin/.mise.new.XXXXXX")" || {
+    rm -rf "$tmp_dir"
+    return 1
+  }
+  if ! cp "$extract_dir/mise" "$install_tmp" || ! chmod 0755 "$install_tmp" ||
+    ! mv -f "$install_tmp" "$local_bin/mise"; then
+    rm -f "$install_tmp"
+    rm -rf "$tmp_dir"
+    log "mise 安装失败；现有安装未被完整替换" "$RED"
+    return 1
+  fi
+
+  rm -rf "$tmp_dir"
+  log "mise v${version} 安装成功" "$GREEN"
+  return 0
 }
