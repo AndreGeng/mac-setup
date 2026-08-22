@@ -260,6 +260,7 @@ test_zsh_module_installs_canonical_zinit_layout() {
 
   HOME="$home" PATH="$fake_bin:/usr/bin:/bin:/usr/sbin:/sbin" ROOT_DIR="$ROOT_DIR" \
     bash -c '
+      source "$ROOT_DIR/lib/utils.sh"
       log() { :; }
       fix_zsh_permissions() { :; }
       pkg_install() { :; }
@@ -293,7 +294,7 @@ test_zsh_canonical_zinit_layout_is_compliant() {
   cli_env "$home" "$state" "$fake_bin" verify zsh --format json >"$verify" || return 1
   json_assert "$verify" 'value["status"] == "COMPLIANT"' || return 1
   json_assert "$verify" \
-    'any(item["id"] == "zinit-repository" and item["status"] == "PASS" and item["details"].endswith("/.local/share/zinit/zinit.git") for item in value["checks"])'
+    'len([item for item in value["checks"] if item["id"] == "zinit-repository" and item["status"] == "PASS" and item["details"].endswith("/.local/share/zinit/zinit.git")]) == 1'
 }
 
 test_tmux_plan_is_read_only_and_declares_approvals() {

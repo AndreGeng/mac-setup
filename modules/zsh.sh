@@ -18,17 +18,24 @@ install_zsh() {
   fi
 
   # 安装 zinit（用户级安装）
-  local zinit_dir="$HOME/.local/share/zinit"
-  if [[ ! -d "$zinit_dir" ]]; then
+  local zinit_dir
+  zinit_dir="$(zinit_install_dir)"
+  if zinit_install_is_valid; then
+    log "zinit 已安装，跳过" "$YELLOW"
+  elif [[ -e "$zinit_dir" ]]; then
+    log "zinit 安装不完整，请先处理: $zinit_dir" "$RED"
+    return 1
+  else
     log "安装 zinit 到用户目录..." "$GREEN"
     mkdir -p "$(dirname "$zinit_dir")"
-    if [[ ! -d "$zinit_dir/.git" ]]; then
-      git clone https://github.com/zdharma-continuum/zinit.git "$zinit_dir" 2>/dev/null || {
-        log "zinit clone 失败，跳过" "$YELLOW"
-      }
+    git clone https://github.com/zdharma-continuum/zinit.git "$zinit_dir" 2>/dev/null || {
+      log "zinit clone 失败" "$RED"
+      return 1
+    }
+    if ! zinit_install_is_valid; then
+      log "zinit 安装结果不完整: $zinit_dir" "$RED"
+      return 1
     fi
-  else
-    log "zinit 已安装，跳过" "$YELLOW"
   fi
 
   # macOS 专属：zsh-completions（可选）

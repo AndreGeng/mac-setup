@@ -84,6 +84,17 @@ fix_zsh_permissions() {
   done
 }
 
+# Zinit's canonical user-level installation, shared by install/plan/verify.
+zinit_install_dir() {
+  printf '%s\n' "${HOME:-/root}/.local/share/zinit/zinit.git"
+}
+
+zinit_install_is_valid() {
+  local zinit_dir
+  zinit_dir="$(zinit_install_dir)"
+  [[ -d "$zinit_dir/.git" && -f "$zinit_dir/zinit.zsh" ]]
+}
+
 # 解析可用的 mise 可执行文件路径（必须是常规文件）。
 # 注意：目录 ~/.local/bin/mise 在 Unix 上也可能带 +x，用 -x 会误判为「已安装」。
 resolve_mise_executable() {

@@ -178,7 +178,7 @@ plan_member_changes() {
     fi
     ;;
   shell.zsh)
-    if [[ ! -d "$HOME/.local/share/zinit/.git" ]]; then
+    if ! zinit_install_is_valid; then
       add_plan_change INSTALL_GIT_REPOSITORY zinit 'Install the Zsh plugin manager.'
       add_plan_approval network 'Zinit must be downloaded from its upstream repository.'
     fi
@@ -589,9 +589,11 @@ build_verify_member() {
     fi
     ;;
   shell.zsh)
+    local zinit_dir
+    zinit_dir="$(zinit_install_dir)"
     verify_command zsh-executable zsh
-    if [[ -d "$HOME/.local/share/zinit/.git" ]]; then
-      add_verify_check zinit-repository PASS "$HOME/.local/share/zinit"
+    if zinit_install_is_valid; then
+      add_verify_check zinit-repository PASS "$zinit_dir"
     else
       add_verify_check zinit-repository FAIL 'Zinit repository is missing.'
     fi
