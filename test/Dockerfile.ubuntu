@@ -16,6 +16,6 @@ RUN useradd -m -s /bin/bash testuser && \
 USER testuser
 WORKDIR /home/testuser
 
-COPY . /home/testuser/mac-setup
+COPY --chown=testuser:testuser . /home/testuser/mac-setup
 
 CMD ["./mac-setup/setup.sh"]

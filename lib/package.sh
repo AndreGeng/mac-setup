@@ -4,6 +4,8 @@
 # pkg_map_name 把「逻辑包名」映射到各发行版实际包名（如 fd vs fd-find）。
 #
 
+_MAC_SETUP_APT_METADATA_READY=false
+
 # 将 brew.git / core / cask 与 bottle 域名切到国内镜像，加速下载（仅 macOS + 已安装 brew 时生效）
 fix_brew_mirror() {
   if ! is_macos || ! command -v brew &>/dev/null; then
@@ -131,8 +133,16 @@ _pkg_install_linux() {
     sudo_cmd=(sudo)
   fi
 
-  if command -v apt &>/dev/null; then
-    "${sudo_cmd[@]}" apt install -y "$pkg"
+  if command -v apt-get &>/dev/null; then
+    if [[ "$_MAC_SETUP_APT_METADATA_READY" != true ]]; then
+      log "更新 apt 软件包索引..." "$GREEN"
+      if ! "${sudo_cmd[@]}" apt-get update; then
+        log "apt 软件包索引更新失败" "$RED"
+        return 1
+      fi
+      _MAC_SETUP_APT_METADATA_READY=true
+    fi
+    "${sudo_cmd[@]}" apt-get install -y "$pkg"
   elif command -v dnf &>/dev/null; then
     "${sudo_cmd[@]}" dnf install -y "$pkg"
   elif command -v pacman &>/dev/null; then

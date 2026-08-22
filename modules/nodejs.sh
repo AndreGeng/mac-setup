@@ -26,8 +26,6 @@ install_nodejs() {
     log "未找到 mise 可执行文件，无法安装 Node.js" "$RED"
     return 1
   fi
-  # mise 往当前 shell 注入 shims PATH；eval 执行其打印出的 export 语句
-  eval "$("$_mise_bin" activate bash 2>/dev/null || true)"
 
   local runtime_name runtime_version
   while IFS='|' read -r runtime_name runtime_version; do
@@ -35,12 +33,25 @@ install_nodejs() {
     "$_mise_bin" use -g "${runtime_name}@${runtime_version}" || return 1
   done < <(node_manifest_records "$NODEJS_MODULE_ROOT" runtime)
 
+  local node_version node_root npm_bin
+  node_version="$(node_manifest_version "$NODEJS_MODULE_ROOT" runtime node)" || return 1
+  if ! node_root="$("$_mise_bin" where "node@${node_version}" 2>/dev/null)"; then
+    log "无法定位 node@${node_version}，不能安装全局 npm 包" "$RED"
+    return 1
+  fi
+  npm_bin="$node_root/bin/npm"
+  if [[ ! -f "$npm_bin" || ! -x "$npm_bin" ]]; then
+    log "node@${node_version} 的 npm 可执行文件不可用" "$RED"
+    return 1
+  fi
+
   local package_name package_version package_spec
   while IFS='|' read -r package_name package_version; do
     package_spec="${package_name}@${package_version}"
-    if ! npm list -g --depth=0 "$package_spec" &>/dev/null 2>&1; then
+    if ! PATH="$node_root/bin:$PATH" "$npm_bin" list -g --depth=0 \
+      "$package_spec" &>/dev/null 2>&1; then
       log "安装 npm 包: $package_spec" "$GREEN"
-      npm install -g "$package_spec" || return 1
+      PATH="$node_root/bin:$PATH" "$npm_bin" install -g "$package_spec" || return 1
     else
       log "npm 包 $package_spec 已安装，跳过" "$YELLOW"
     fi

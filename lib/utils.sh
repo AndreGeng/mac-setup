@@ -210,10 +210,11 @@ install_mise() {
   cleanup_mise_path_if_directory
 
   local url="https://github.com/jdx/mise/releases/download/v${version}/${filename}"
-  local tmp_dir archive extract_dir install_tmp
+  local tmp_dir archive extract_dir extracted_mise install_tmp
   tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/mise-install.XXXXXX")"
   archive="$tmp_dir/$filename"
   extract_dir="$tmp_dir/extract"
+  extracted_mise="$extract_dir/mise/bin/mise"
 
   log "下载 mise v${version}..." "$GREEN"
   if ! curl --proto '=https' --tlsv1.2 -fL -o "$archive" "$url"; then
@@ -228,7 +229,7 @@ install_mise() {
   fi
 
   mkdir -p "$extract_dir"
-  if ! tar -xzf "$archive" -C "$extract_dir" || [[ ! -f "$extract_dir/mise" ]]; then
+  if ! tar -xzf "$archive" -C "$extract_dir" || [[ ! -f "$extracted_mise" ]]; then
     rm -rf "$tmp_dir"
     log "mise 归档解压失败；未修改现有安装" "$RED"
     return 1
@@ -239,7 +240,7 @@ install_mise() {
     rm -rf "$tmp_dir"
     return 1
   }
-  if ! cp "$extract_dir/mise" "$install_tmp" || ! chmod 0755 "$install_tmp" ||
+  if ! cp "$extracted_mise" "$install_tmp" || ! chmod 0755 "$install_tmp" ||
     ! mv -f "$install_tmp" "$local_bin/mise"; then
     rm -f "$install_tmp"
     rm -rf "$tmp_dir"
