@@ -102,6 +102,7 @@ test_linux_package_install_uses_sudo_for_non_root() {
 
   ROOT_DIR="$ROOT_DIR" bash -c '
     source "$ROOT_DIR/lib/package.sh"
+    log() { :; }
     sudo() {
       if [[ "${1:-}" == "-n" ]]; then
         return 0
@@ -127,6 +128,7 @@ test_linux_package_install_stops_when_apt_update_fails() {
 
   ROOT_DIR="$ROOT_DIR" bash -c '
     source "$ROOT_DIR/lib/package.sh"
+    log() { :; }
     sudo() {
       printf "sudo-call:%s\n" "$*"
       [[ "$*" != "apt-get update" ]]
@@ -379,14 +381,14 @@ test_mise_verified_archive_replaces_atomically() {
   local fixture_root="$TEMP_ROOT/mise-valid.fixture"
   local fixture="$TEMP_ROOT/mise-valid.tar.gz"
   local expected_sha256
-  mkdir -p "$home/.local/bin" "$fixture_root"
+  mkdir -p "$home/.local/bin" "$fixture_root/mise/bin"
   printf '%s\n' '#!/usr/bin/env bash' \
     '[[ "${1:-}" == "--version" ]] && printf "%s\n" "2024.1.0 test"' \
     'exit 0' >"$home/.local/bin/mise"
   printf '%s\n' '#!/usr/bin/env bash' \
     '[[ "${1:-}" == "--version" ]] && printf "%s\n" "2025.10.6 test"' \
-    'exit 0' >"$fixture_root/mise"
-  chmod +x "$home/.local/bin/mise" "$fixture_root/mise"
+    'exit 0' >"$fixture_root/mise/bin/mise"
+  chmod +x "$home/.local/bin/mise" "$fixture_root/mise/bin/mise"
   tar -czf "$fixture" -C "$fixture_root" mise || return 1
   expected_sha256="$(ROOT_DIR="$ROOT_DIR" FIXTURE="$fixture" bash -c '
     source "$ROOT_DIR/lib/utils.sh"
