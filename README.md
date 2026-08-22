@@ -64,16 +64,25 @@ sudo 和配置接管需求，获得授权后执行同一个 plan，最后独立�
 ./bin/mac-setup apply vim --plan-id <plan-id> --allow network --allow sudo \
   --allow replace-config --non-interactive --format json
 ./bin/mac-setup verify vim --format json
+
+# 一次配置 Zsh + Neovim 终端环境
+./bin/mac-setup plan terminal --format json
+./bin/mac-setup apply terminal --plan-id <plan-id> --allow network --allow sudo \
+  --allow replace-config --non-interactive --format json
+./bin/mac-setup verify terminal --format json
 ```
 
 当前提供 `editor.nvim`（别名 `vim`、`nvim`、`neovim`）和 `shell.zsh`（别名 `zsh`、
-`shell`）两个完整 capability。Neovim Python provider 可在 plan、apply、verify 中一致地
-增加 `--with python-provider`。`plan` 不访问网络、不请求 sudo、不写用户目录；JSON 模式
-只在 stdout 输出协议数据，进度日志写入 stderr。
+`shell`）两个完整 capability，以及按固定顺序组合二者的 `profile.terminal`（别名
+`terminal`）。Profile 会生成一份合并计划，对重复的 network、sudo、replace-config 审批
+去重，并在 change 和 verify check 中标明所属 member。Neovim Python provider 可在单独
+capability 或 terminal profile 的 plan、apply、verify 中一致地增加
+`--with python-provider`。`plan` 不访问网络、不请求 sudo、不写用户目录；JSON 模式只在
+stdout 输出协议数据，进度日志写入 stderr。
 
 仓库自带的 `mac-setup` shared skill 会发布到 `~/.agents/skills/mac-setup`，供 Codex、
-OpenCode、Claude Code 和 Pi 复用。可以直接对 Agent 说：“用 mac-setup 帮我配置好 Vim，
-先给我看计划，确认后执行并验证。”
+OpenCode、Claude Code 和 Pi 复用。可以直接对 Agent 说：“用 mac-setup 帮我配置好终端
+开发环境，先给我看计划，确认后执行并验证。”
 
 ## 平台支持
 

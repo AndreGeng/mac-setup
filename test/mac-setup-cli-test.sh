@@ -106,6 +106,14 @@ test_describes_terminal_profile_with_ordered_members() {
     'value["profile"]["members"] == ["shell.zsh", "editor.nvim"]'
 }
 
+test_human_list_includes_terminal_profile() {
+  local output="$TEMP_ROOT/list.txt"
+  "$CLI" list >"$output" || return 1
+  grep -qx 'editor.nvim' "$output" || return 1
+  grep -qx 'shell.zsh' "$output" || return 1
+  grep -qx 'profile.terminal' "$output"
+}
+
 test_describes_alias_with_stable_canonical_id() {
   local output="$TEMP_ROOT/describe.json"
   "$CLI" describe vim --format json >"$output" || return 1
@@ -236,7 +244,7 @@ test_terminal_profile_plan_aggregates_changes_and_approvals() {
   json_assert "$output" \
     'value["members"] == ["shell.zsh", "editor.nvim"]' || return 1
   json_assert "$output" \
-    'set(item["resource"] for item in value["changes"]) >= {"zsh", "nvim"}' || return 1
+    'set(item["resource"] for item in value["changes"]) >= {"zinit", "nvim"}' || return 1
   json_assert "$output" \
     'len([item for item in value["changes"] if item["resource"].endswith("/.zshrc")]) == 1' ||
     return 1
@@ -333,12 +341,14 @@ test_shared_agent_skill_documents_safe_operator_flow() {
   grep -q 'mac-setup plan' "$skill" || return 1
   grep -q 'mac-setup apply' "$skill" || return 1
   grep -q 'mac-setup verify' "$skill" || return 1
+  grep -q 'profile.terminal' "$skill" || return 1
   grep -q 'Operator mode' "$skill"
 }
 
 run_test lists-agent-discoverable-capabilities test_lists_agent_discoverable_capabilities
 run_test describes-terminal-profile-with-ordered-members \
   test_describes_terminal_profile_with_ordered_members
+run_test human-list-includes-terminal-profile test_human_list_includes_terminal_profile
 run_test describes-alias-with-stable-canonical-id \
   test_describes_alias_with_stable_canonical_id
 run_test unknown-capability-has-structured-error \

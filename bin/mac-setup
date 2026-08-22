@@ -30,15 +30,15 @@ ALLOW_VALUES=()
 
 usage() {
   cat <<'EOF'
-Usage: mac-setup <command> [capability] [options]
+Usage: mac-setup <command> [target] [options]
 
 Commands:
-  list                       List Agent-operable capabilities.
-  describe <capability>      Describe one capability and its optional features.
+  list                       List Agent-operable capabilities and profiles.
+  describe <target>          Describe one capability or profile.
   doctor                     Diagnose the local bootstrap prerequisites.
-  plan <capability>          Produce a read-only convergence plan.
-  apply <capability>         Apply a previously reviewed plan.
-  verify <capability>        Verify the desired state without modifying it.
+  plan <target>              Produce a read-only convergence plan.
+  apply <target>             Apply a previously reviewed plan.
+  verify <target>            Verify the desired state without modifying it.
 
 Options:
   --format human|json
@@ -177,7 +177,7 @@ if [[ "$COMMAND" == list ]]; then
   if [[ "$FORMAT" == json ]]; then
     emit_list_json
   else
-    capability_ids
+    target_ids
   fi
   exit 0
 fi
@@ -196,13 +196,13 @@ fi
   exit 2
 }
 
-CAPABILITY="$(canonical_capability "$TARGET" 2>/dev/null || true)"
+CAPABILITY="$(canonical_target "$TARGET" 2>/dev/null || true)"
 [[ -n "$CAPABILITY" ]] || {
   emit_cli_error "$COMMAND" FAILED UNKNOWN_CAPABILITY "Unknown capability: $TARGET"
   exit 2
 }
 
-if [[ "$FEATURE_PYTHON" == true && "$CAPABILITY" != editor.nvim ]]; then
+if [[ "$FEATURE_PYTHON" == true ]] && ! target_has_member "$CAPABILITY" editor.nvim; then
   emit_cli_error "$COMMAND" FAILED UNKNOWN_FEATURE \
     'python-provider is only available for editor.nvim.'
   exit 2
@@ -210,9 +210,17 @@ fi
 
 if [[ "$COMMAND" == describe ]]; then
   if [[ "$FORMAT" == json ]]; then
-    emit_describe_json "$CAPABILITY"
+    if [[ "$(target_kind "$CAPABILITY")" == profile ]]; then
+      emit_describe_profile_json "$CAPABILITY"
+    else
+      emit_describe_json "$CAPABILITY"
+    fi
   else
-    printf '%s\n%s\n' "$CAPABILITY" "$(capability_description "$CAPABILITY")"
+    if [[ "$(target_kind "$CAPABILITY")" == profile ]]; then
+      printf '%s\n%s\n' "$CAPABILITY" "$(profile_description "$CAPABILITY")"
+    else
+      printf '%s\n%s\n' "$CAPABILITY" "$(capability_description "$CAPABILITY")"
+    fi
   fi
   exit 0
 fi
@@ -282,23 +290,23 @@ trap release_lock EXIT INT TERM
 
 if plan_needs_install_module; then
   if [[ "$FORMAT" == json ]]; then
-    if ! run_capability_module "$CAPABILITY" "$FEATURE_PYTHON" >&2; then
+    if ! run_target_modules "$CAPABILITY" "$FEATURE_PYTHON" >&2; then
       emit_cli_error apply FAILED APPLY_FAILED "The $CAPABILITY install module failed."
       exit 40
     fi
-  elif ! run_capability_module "$CAPABILITY" "$FEATURE_PYTHON"; then
+  elif ! run_target_modules "$CAPABILITY" "$FEATURE_PYTHON"; then
     emit_cli_error apply FAILED APPLY_FAILED "The $CAPABILITY install module failed."
     exit 40
   fi
 fi
 
 if [[ "$FORMAT" == json ]]; then
-  if ! publish_capability_configs "$CAPABILITY" >&2; then
+  if ! publish_target_configs "$CAPABILITY" >&2; then
     emit_cli_error apply FAILED APPLY_FAILED \
       "Failed to publish the $CAPABILITY managed configuration."
     exit 40
   fi
-elif ! publish_capability_configs "$CAPABILITY"; then
+elif ! publish_target_configs "$CAPABILITY"; then
   emit_cli_error apply FAILED APPLY_FAILED \
     "Failed to publish the $CAPABILITY managed configuration."
   exit 40

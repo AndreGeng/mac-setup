@@ -4,6 +4,15 @@ capability_ids() {
   printf '%s\n' editor.nvim shell.zsh
 }
 
+profile_ids() {
+  printf '%s\n' profile.terminal
+}
+
+target_ids() {
+  capability_ids
+  profile_ids
+}
+
 canonical_capability() {
   case "$1" in
   vim | nvim | neovim | editor.nvim)
@@ -18,6 +27,45 @@ canonical_capability() {
   esac
 }
 
+canonical_profile() {
+  case "$1" in
+  terminal | profile.terminal)
+    printf '%s\n' profile.terminal
+    ;;
+  *)
+    return 1
+    ;;
+  esac
+}
+
+canonical_target() {
+  canonical_capability "$1" 2>/dev/null || canonical_profile "$1"
+}
+
+target_kind() {
+  case "$1" in
+  profile.*) printf '%s\n' profile ;;
+  *) printf '%s\n' capability ;;
+  esac
+}
+
+target_members() {
+  case "$1" in
+  profile.terminal) printf '%s\n' shell.zsh editor.nvim ;;
+  *) printf '%s\n' "$1" ;;
+  esac
+}
+
+target_has_member() {
+  local target="$1"
+  local requested="$2"
+  local member
+  while IFS= read -r member; do
+    [[ "$member" == "$requested" ]] && return 0
+  done < <(target_members "$target")
+  return 1
+}
+
 capability_aliases() {
   case "$1" in
   editor.nvim) printf '%s\n' vim nvim neovim ;;
@@ -25,10 +73,24 @@ capability_aliases() {
   esac
 }
 
+profile_aliases() {
+  case "$1" in
+  profile.terminal) printf '%s\n' terminal ;;
+  esac
+}
+
 capability_description() {
   case "$1" in
   editor.nvim) printf '%s\n' 'Install and configure the Neovim development environment.' ;;
   shell.zsh) printf '%s\n' 'Install Zsh, Zinit, and the repository-owned shell configuration.' ;;
+  esac
+}
+
+profile_description() {
+  case "$1" in
+  profile.terminal)
+    printf '%s\n' 'Configure the complete Zsh and Neovim terminal development environment.'
+    ;;
   esac
 }
 

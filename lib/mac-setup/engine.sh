@@ -12,32 +12,40 @@ source "$MAC_SETUP_LIB_DIR/mac-setup/capabilities.sh"
 PLAN_CHANGE_TYPES=()
 PLAN_CHANGE_RESOURCES=()
 PLAN_CHANGE_DESCRIPTIONS=()
+PLAN_CHANGE_MEMBERS=()
 PLAN_APPROVAL_TYPES=()
 PLAN_APPROVAL_REASONS=()
 PLAN_APPROVAL_TARGETS=()
 VERIFY_IDS=()
 VERIFY_STATUSES=()
 VERIFY_DETAILS=()
+VERIFY_MEMBERS=()
 PLAN_ID=""
 PLAN_STATUS="COMPLIANT"
 PLAN_CAPABILITY=""
 PLAN_FEATURE_PYTHON=false
+PLAN_CURRENT_MEMBER=""
+VERIFY_CURRENT_MEMBER=""
+PLAN_MEMBERS=()
 
 reset_plan() {
   PLAN_CHANGE_TYPES=()
   PLAN_CHANGE_RESOURCES=()
   PLAN_CHANGE_DESCRIPTIONS=()
+  PLAN_CHANGE_MEMBERS=()
   PLAN_APPROVAL_TYPES=()
   PLAN_APPROVAL_REASONS=()
   PLAN_APPROVAL_TARGETS=()
   PLAN_ID=""
   PLAN_STATUS="COMPLIANT"
+  PLAN_MEMBERS=()
 }
 
 add_plan_change() {
   PLAN_CHANGE_TYPES+=("$1")
   PLAN_CHANGE_RESOURCES+=("$2")
   PLAN_CHANGE_DESCRIPTIONS+=("$3")
+  PLAN_CHANGE_MEMBERS+=("$PLAN_CURRENT_MEMBER")
   PLAN_STATUS="CHANGES_REQUIRED"
 }
 
@@ -110,14 +118,11 @@ zsh_permissions_need_sudo() {
   return 1
 }
 
-plan_capability() {
+plan_member_changes() {
   local capability="$1"
   local feature_python="${2:-false}"
-  local platform repo_revision plan_material index
 
-  reset_plan
-  PLAN_CAPABILITY="$capability"
-  PLAN_FEATURE_PYTHON="$feature_python"
+  PLAN_CURRENT_MEMBER="$capability"
   plan_tools "$capability"
 
   case "$capability" in
@@ -134,23 +139,44 @@ plan_capability() {
       add_plan_change INSTALL_GIT_REPOSITORY zinit 'Install the Zsh plugin manager.'
       add_plan_approval network 'Zinit must be downloaded from its upstream repository.'
     fi
-    if plan_needs_install_module && zsh_permissions_need_sudo; then
+    if plan_member_needs_install_module "$capability" && zsh_permissions_need_sudo; then
       add_plan_approval sudo 'Unwritable Zsh completion directories require permission repair.'
     fi
     ;;
   esac
 
   plan_configs "$capability"
+}
+
+plan_target() {
+  local target="$1"
+  local feature_python="${2:-false}"
+  local platform repo_revision plan_material index member
+
+  reset_plan
+  PLAN_CAPABILITY="$target"
+  PLAN_FEATURE_PYTHON="$feature_python"
+  while IFS= read -r member; do
+    [[ -n "$member" ]] || continue
+    PLAN_MEMBERS+=("$member")
+    plan_member_changes "$member" "$feature_python"
+  done < <(target_members "$target")
+
   platform="$(detect_platform)"
   repo_revision="$(git -C "$MAC_SETUP_REPO_ROOT" rev-parse HEAD 2>/dev/null || printf unknown)"
-  plan_material="$capability|$feature_python|$platform|$repo_revision|$PLAN_STATUS"
+  plan_material="$target|$feature_python|$platform|$repo_revision|$PLAN_STATUS"
   for ((index = 0; index < ${#PLAN_CHANGE_TYPES[@]}; index++)); do
-    plan_material="$plan_material|${PLAN_CHANGE_TYPES[$index]}|${PLAN_CHANGE_RESOURCES[$index]}"
+    plan_material="$plan_material|${PLAN_CHANGE_MEMBERS[$index]}|${PLAN_CHANGE_TYPES[$index]}"
+    plan_material="$plan_material|${PLAN_CHANGE_RESOURCES[$index]}"
   done
   for ((index = 0; index < ${#PLAN_APPROVAL_TYPES[@]}; index++)); do
     plan_material="$plan_material|approval:${PLAN_APPROVAL_TYPES[$index]}"
   done
   PLAN_ID="plan-$(printf '%s' "$plan_material" | cksum | awk '{print $1}')"
+}
+
+plan_capability() {
+  plan_target "$@"
 }
 
 emit_capability_aliases_json() {
@@ -166,6 +192,16 @@ emit_capability_aliases_json() {
   printf ']'
 }
 
+emit_profile_aliases_json() {
+  local profile="$1"
+  profile_aliases "$profile" | emit_string_lines_json
+}
+
+emit_target_members_json() {
+  local target="$1"
+  target_members "$target" | emit_string_lines_json
+}
+
 emit_string_lines_json() {
   local first=true value
   printf '['
@@ -179,7 +215,7 @@ emit_string_lines_json() {
 }
 
 emit_list_json() {
-  local capability first=true
+  local capability profile first=true
   printf '{"schemaVersion":"1","operation":"list","status":"SUCCESS","capabilities":['
   while IFS= read -r capability; do
     [[ "$first" == "true" ]] || printf ','
@@ -192,6 +228,21 @@ emit_list_json() {
     printf '}'
     first=false
   done < <(capability_ids)
+  printf '],"profiles":['
+  first=true
+  while IFS= read -r profile; do
+    [[ "$first" == "true" ]] || printf ','
+    printf '{"id":'
+    json_string "$profile"
+    printf ',"aliases":'
+    emit_profile_aliases_json "$profile"
+    printf ',"description":'
+    json_string "$(profile_description "$profile")"
+    printf ',"members":'
+    emit_target_members_json "$profile"
+    printf '}'
+    first=false
+  done < <(profile_ids)
   printf ']}\n'
 }
 
@@ -208,6 +259,23 @@ emit_describe_json() {
   printf ',"configPolicy":"replace"}}\n'
 }
 
+emit_describe_profile_json() {
+  local profile="$1"
+  printf '{"schemaVersion":"1","operation":"describe","status":"SUCCESS","profile":{"id":'
+  json_string "$profile"
+  printf ',"aliases":'
+  emit_profile_aliases_json "$profile"
+  printf ',"description":'
+  json_string "$(profile_description "$profile")"
+  printf ',"members":'
+  emit_target_members_json "$profile"
+  printf ',"optionalFeatures":'
+  target_members "$profile" | while IFS= read -r member; do
+    capability_optional_features "$member"
+  done | awk 'NF && !seen[$0]++' | emit_string_lines_json
+  printf ',"configPolicy":"replace"}}\n'
+}
+
 emit_plan_changes_json() {
   local index
   printf '['
@@ -219,6 +287,8 @@ emit_plan_changes_json() {
     json_string "${PLAN_CHANGE_RESOURCES[$index]}"
     printf ',"description":'
     json_string "${PLAN_CHANGE_DESCRIPTIONS[$index]}"
+    printf ',"member":'
+    json_string "${PLAN_CHANGE_MEMBERS[$index]}"
     printf '}'
   done
   printf ']'
@@ -249,6 +319,8 @@ emit_plan_json() {
   json_string "$PLAN_CAPABILITY"
   printf ',"planId":'
   json_string "$PLAN_ID"
+  printf ',"members":'
+  emit_target_members_json "$PLAN_CAPABILITY"
   printf ',"changes":'
   emit_plan_changes_json
   printf ',"requiredApprovals":'
@@ -311,6 +383,18 @@ plan_needs_install_module() {
   return 1
 }
 
+plan_member_needs_install_module() {
+  local member="$1"
+  local index
+  for ((index = 0; index < ${#PLAN_CHANGE_TYPES[@]}; index++)); do
+    [[ "${PLAN_CHANGE_MEMBERS[$index]}" == "$member" ]] || continue
+    case "${PLAN_CHANGE_TYPES[$index]}" in
+    INSTALL_TOOL | INSTALL_GIT_REPOSITORY | CONFIGURE_FEATURE) return 0 ;;
+    esac
+  done
+  return 1
+}
+
 run_capability_module() {
   local capability="$1"
   local feature_python="$2"
@@ -328,6 +412,17 @@ run_capability_module() {
   )
 }
 
+run_target_modules() {
+  local target="$1"
+  local feature_python="$2"
+  local member
+  while IFS= read -r member; do
+    [[ -n "$member" ]] || continue
+    plan_member_needs_install_module "$member" || continue
+    run_capability_module "$member" "$feature_python" || return 1
+  done < <(target_members "$target")
+}
+
 publish_capability_configs() {
   local capability="$1"
   local source_path target_path
@@ -338,16 +433,27 @@ publish_capability_configs() {
   done < <(capability_config_records "$capability" "$MAC_SETUP_REPO_ROOT" "$HOME")
 }
 
+publish_target_configs() {
+  local target="$1"
+  local member
+  while IFS= read -r member; do
+    [[ -n "$member" ]] || continue
+    publish_capability_configs "$member" || return 1
+  done < <(target_members "$target")
+}
+
 reset_verify() {
   VERIFY_IDS=()
   VERIFY_STATUSES=()
   VERIFY_DETAILS=()
+  VERIFY_MEMBERS=()
 }
 
 add_verify_check() {
   VERIFY_IDS+=("$1")
   VERIFY_STATUSES+=("$2")
   VERIFY_DETAILS+=("$3")
+  VERIFY_MEMBERS+=("$VERIFY_CURRENT_MEMBER")
 }
 
 verify_command() {
@@ -376,11 +482,11 @@ verify_configs() {
   done < <(capability_config_records "$capability" "$MAC_SETUP_REPO_ROOT" "$HOME")
 }
 
-build_verify() {
+build_verify_member() {
   local capability="$1"
   local feature_python="${2:-false}"
-  reset_verify
 
+  VERIFY_CURRENT_MEMBER="$capability"
   case "$capability" in
   editor.nvim)
     verify_command nvim-executable nvim
@@ -417,6 +523,17 @@ build_verify() {
   esac
 }
 
+build_verify() {
+  local target="$1"
+  local feature_python="${2:-false}"
+  local member
+  reset_verify
+  while IFS= read -r member; do
+    [[ -n "$member" ]] || continue
+    build_verify_member "$member" "$feature_python"
+  done < <(target_members "$target")
+}
+
 verify_status() {
   local status
   for status in "${VERIFY_STATUSES[@]:-}"; do
@@ -439,6 +556,8 @@ emit_verify_checks_json() {
     json_string "${VERIFY_STATUSES[$index]}"
     printf ',"details":'
     json_string "${VERIFY_DETAILS[$index]}"
+    printf ',"member":'
+    json_string "${VERIFY_MEMBERS[$index]}"
     printf '}'
   done
   printf ']'
@@ -452,6 +571,8 @@ emit_verify_json() {
   json_string "$capability"
   printf ',"status":'
   json_string "$status"
+  printf ',"members":'
+  emit_target_members_json "$capability"
   printf ',"checks":'
   emit_verify_checks_json
   printf '}\n'
@@ -470,6 +591,8 @@ emit_apply_json() {
   json_string "$run_id"
   printf ',"status":'
   json_string "$status"
+  printf ',"members":'
+  emit_target_members_json "$capability"
   printf ',"checks":'
   emit_verify_checks_json
   printf '}\n'

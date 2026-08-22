@@ -24,9 +24,16 @@ Agent-facing computer configuration:
 ./bin/mac-setup apply vim --plan-id <id> --allow network --allow sudo \
   --allow replace-config --non-interactive --format json
 ./bin/mac-setup verify vim --format json
+
+./bin/mac-setup plan terminal --format json
+./bin/mac-setup apply terminal --plan-id <id> --allow network --allow sudo \
+  --allow replace-config --non-interactive --format json
+./bin/mac-setup verify terminal --format json
 ```
 
-For operator requests such as “configure Vim” or “configure Zsh”, use the CLI's
+For operator requests such as “configure Vim” or “configure Zsh”, use the corresponding
+capability. For a complete terminal development environment, use the `profile.terminal`
+(`terminal`) profile, which composes `shell.zsh` and `editor.nvim`. Always use the CLI's
 plan/apply/verify flow instead of editing installed HOME files or invoking package managers
 directly. Explain `requiredApprovals`, obtain the necessary authorization, and claim success
 only after `verify` returns `COMPLIANT`. For repository development requests, edit sources and
