@@ -28,6 +28,10 @@
           {
             "type": "command",
             "command": "command -v workmux >/dev/null 2>&1 && workmux set-window-status done || true"
+          },
+          {
+            "type": "command",
+            "command": "REME_HOOK_HOST=claude REME_HOOK_EVENT=Stop bun \"$HOME/.config/agents/reme-memory-bridge.ts\""
           }
         ]
       }
@@ -38,6 +42,10 @@
           {
             "type": "command",
             "command": "command -v workmux >/dev/null 2>&1 && workmux set-window-status working || true"
+          },
+          {
+            "type": "command",
+            "command": "REME_HOOK_HOST=claude REME_HOOK_EVENT=UserPromptSubmit bun \"$HOME/.config/agents/reme-memory-bridge.ts\""
           }
         ]
       }

@@ -28,6 +28,7 @@ REME_GLOBAL_CONFIG="$HOME/.config/reme/opencode-global.yaml"
 REME_GLOBAL_WORKSPACE="$REME_ROOT/global"
 REME_SERVICE_LAUNCHER="$HOME/.config/reme/start-global-service.sh"
 REME_PROJECT_RUNNER="$HOME/.config/reme/run-project-capture.py"
+REME_HOOK_STATE_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/mac-setup/reme-hooks"
 
 usage() {
   cat <<'EOF'
@@ -36,7 +37,7 @@ Usage: agents.sh [--apply | --audit | --remove-reme] [--only TARGET] [options]
 Modes:
   --apply          Install missing templates and repair repository-managed links.
   --audit          Check installation, links, permissions, and sensitive config.
-  --remove-reme    Remove managed ReMe files; requires --only opencode.
+  --remove-reme    Remove repository-managed ReMe runtime files and links.
 
 Options:
   --only TARGET    Limit work to shared, opencode, claude, codex, or pi.
@@ -118,11 +119,6 @@ if [[ "$MODE" != "apply" && "$REPAIR_LINKS" == "true" ]]; then
   printf '%s\n' '--repair-links is only valid with --apply.' >&2
   exit 2
 fi
-if [[ "$MODE" == "remove-reme" && "$TARGET" != "opencode" ]]; then
-  printf '%s\n' '--remove-reme requires --only opencode.' >&2
-  exit 2
-fi
-
 selected() {
   [[ "$TARGET" == "all" || "$TARGET" == "$1" ]]
 }
@@ -839,44 +835,29 @@ PY
 }
 
 remove_reme() {
-  local plugin="$HOME/.config/opencode/plugins/reme-memory.ts"
-  local source="$REPO_ROOT/config/opencode/plugins/reme-memory.ts"
-  local launcher_source="$REPO_ROOT/config/reme/start-global-service.sh"
-  local runner_source="$REPO_ROOT/config/reme/run-project-capture.py"
-  local launcher_target=""
-  local runner_target=""
+  local managed_link
+  local source
   local target=""
+  local managed_links=(
+    "$HOME/.config/opencode/plugins/reme-memory.ts|$REPO_ROOT/config/opencode/plugins/reme-memory.ts"
+    "$HOME/.config/agents/reme-memory-bridge.ts|$REPO_ROOT/config/agents/reme-memory-bridge.ts"
+    "$HOME/.pi/agent/extensions/reme-memory.ts|$REPO_ROOT/config/pi/extensions/reme-memory.ts"
+    "$REME_SERVICE_LAUNCHER|$REPO_ROOT/config/reme/start-global-service.sh"
+    "$REME_PROJECT_RUNNER|$REPO_ROOT/config/reme/run-project-capture.py"
+  )
 
-  if [[ -L "$plugin" ]]; then
-    target="$(readlink "$plugin")"
-    if [[ "$target" != "$source" ]]; then
-      log "ERROR managed-link-conflict $plugin" "$RED"
-      return 1
+  for managed_link in "${managed_links[@]}"; do
+    source="${managed_link#*|}"
+    managed_link="${managed_link%%|*}"
+    if [[ -L "$managed_link" ]]; then
+      target="$(readlink "$managed_link")"
+      [[ "$target" == "$source" ]] && continue
+    elif [[ ! -e "$managed_link" ]]; then
+      continue
     fi
-  elif [[ -e "$plugin" ]]; then
-    log "ERROR managed-link-conflict $plugin" "$RED"
+    log "ERROR managed-link-conflict $managed_link" "$RED"
     return 1
-  fi
-  if [[ -L "$REME_SERVICE_LAUNCHER" ]]; then
-    launcher_target="$(readlink "$REME_SERVICE_LAUNCHER")"
-    if [[ "$launcher_target" != "$launcher_source" ]]; then
-      log "ERROR managed-link-conflict $REME_SERVICE_LAUNCHER" "$RED"
-      return 1
-    fi
-  elif [[ -e "$REME_SERVICE_LAUNCHER" ]]; then
-    log "ERROR managed-link-conflict $REME_SERVICE_LAUNCHER" "$RED"
-    return 1
-  fi
-  if [[ -L "$REME_PROJECT_RUNNER" ]]; then
-    runner_target="$(readlink "$REME_PROJECT_RUNNER")"
-    if [[ "$runner_target" != "$runner_source" ]]; then
-      log "ERROR managed-link-conflict $REME_PROJECT_RUNNER" "$RED"
-      return 1
-    fi
-  elif [[ -e "$REME_PROJECT_RUNNER" ]]; then
-    log "ERROR managed-link-conflict $REME_PROJECT_RUNNER" "$RED"
-    return 1
-  fi
+  done
   case "$REME_ROOT" in
   */mac-setup/reme) ;;
   *)
@@ -884,12 +865,35 @@ remove_reme() {
     return 1
     ;;
   esac
+  case "$REME_HOOK_STATE_ROOT" in
+  */mac-setup/reme-hooks) ;;
+  *)
+    log "ERROR unsafe ReMe hook state path: $REME_HOOK_STATE_ROOT" "$RED"
+    return 1
+    ;;
+  esac
 
   stop_reme_global_service
-  rm -f "$plugin" "$REME_CONFIG" "$REME_GLOBAL_CONFIG" "$REME_SERVICE_LAUNCHER" \
-    "$REME_PROJECT_RUNNER"
+  for managed_link in "${managed_links[@]}"; do
+    rm -f "${managed_link%%|*}"
+  done
+  rm -f "$REME_CONFIG" "$REME_GLOBAL_CONFIG"
   rm -rf "$REME_VENV" "$REME_VERSIONED_VENV"
-  log "已移除 OpenCode ReMe 集成；项目和全局记忆数据未修改" "$GREEN"
+  rm -rf "$REME_HOOK_STATE_ROOT"
+  log "已移除托管的 ReMe 集成；项目和全局记忆数据未修改" "$GREEN"
+}
+
+apply_reme_runtime() {
+  install_reme
+  install_managed_link \
+    "$REPO_ROOT/config/agents/reme-memory-bridge.ts" \
+    "$HOME/.config/agents/reme-memory-bridge.ts"
+  install_managed_link \
+    "$REPO_ROOT/config/reme/start-global-service.sh" \
+    "$REME_SERVICE_LAUNCHER"
+  install_managed_link \
+    "$REPO_ROOT/config/reme/run-project-capture.py" \
+    "$REME_PROJECT_RUNNER"
 }
 
 apply_shared() {
@@ -907,7 +911,6 @@ apply_shared() {
 }
 
 apply_opencode() {
-  install_reme
   install_agent_template \
     "$REPO_ROOT/config/opencode/opencode.json" \
     "$HOME/.config/opencode/opencode.json" 600
@@ -929,12 +932,6 @@ apply_opencode() {
   install_managed_link \
     "$REPO_ROOT/config/opencode/plugins/reme-memory.ts" \
     "$HOME/.config/opencode/plugins/reme-memory.ts"
-  install_managed_link \
-    "$REPO_ROOT/config/reme/start-global-service.sh" \
-    "$REME_SERVICE_LAUNCHER"
-  install_managed_link \
-    "$REPO_ROOT/config/reme/run-project-capture.py" \
-    "$REME_PROJECT_RUNNER"
 }
 
 apply_claude() {
@@ -963,6 +960,9 @@ apply_pi() {
   install_managed_link \
     "$REPO_ROOT/config/pi/extensions/workmux-status.ts" \
     "$HOME/.pi/agent/extensions/workmux-status.ts"
+  install_managed_link \
+    "$REPO_ROOT/config/pi/extensions/reme-memory.ts" \
+    "$HOME/.pi/agent/extensions/reme-memory.ts"
 }
 
 audit_ok() {
@@ -1132,6 +1132,7 @@ allowed_jobs = {
     "read",
     "write",
 }
+
 allowed_components = {
     "agent_wrapper": {"default"},
     "as_llm": {"default"},
@@ -1257,6 +1258,60 @@ PY
   else
     audit_mode "$REME_GLOBAL_WORKSPACE"
   fi
+  if [[ ! -f "$REME_HOOK_STATE_ROOT/status.json" ]]; then
+    audit_ok reme-integration-health no-hook-activity
+  elif python3 - "$REME_HOOK_STATE_ROOT/status.json" <<'PY' >/dev/null 2>&1; then
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as source:
+    status = json.load(source)
+valid = (
+    isinstance(status, dict)
+    and set(status) == {"stage", "success", "errorCode", "timestamp"}
+    and status["stage"] in {"retrieve", "capture"}
+    and isinstance(status["success"], bool)
+    and status["errorCode"] in {None, "invalid-input", "state-error", "operation-error"}
+    and isinstance(status["timestamp"], str)
+    and len(json.dumps(status)) < 512
+)
+raise SystemExit(0 if valid else 1)
+PY
+    status="$(
+      python3 - "$REME_HOOK_STATE_ROOT/status.json" <<'PY'
+import json
+import sys
+with open(sys.argv[1], encoding="utf-8") as source:
+    value = json.load(source)
+result = "ok" if value["success"] else value["errorCode"]
+print(f'{value["stage"]}:{result}')
+PY
+    )"
+    audit_ok reme-integration-health "$status"
+    audit_mode "$REME_HOOK_STATE_ROOT"
+    audit_mode "$REME_HOOK_STATE_ROOT/status.json"
+  else
+    audit_warn reme-integration-health invalid-status
+  fi
+}
+
+audit_reme_runtime() {
+  audit_reme
+  audit_managed_link \
+    "$REPO_ROOT/config/agents/reme-memory-bridge.ts" \
+    "$HOME/.config/agents/reme-memory-bridge.ts"
+  audit_managed_link \
+    "$REPO_ROOT/config/reme/start-global-service.sh" \
+    "$REME_SERVICE_LAUNCHER"
+  audit_managed_link \
+    "$REPO_ROOT/config/reme/run-project-capture.py" \
+    "$REME_PROJECT_RUNNER"
+  if [[ -x "$REME_SERVICE_LAUNCHER" ]]; then
+    audit_ok executable "$REME_SERVICE_LAUNCHER"
+  else
+    audit_fail executable "$REME_SERVICE_LAUNCHER"
+  fi
+  return 0
 }
 
 audit_shared() {
@@ -1280,7 +1335,6 @@ audit_shared() {
 }
 
 audit_opencode() {
-  audit_reme
   audit_template \
     "$REPO_ROOT/config/opencode/opencode.json" \
     "$HOME/.config/opencode/opencode.json"
@@ -1316,17 +1370,6 @@ audit_opencode() {
   audit_managed_link \
     "$REPO_ROOT/config/opencode/plugins/reme-memory.ts" \
     "$HOME/.config/opencode/plugins/reme-memory.ts"
-  audit_managed_link \
-    "$REPO_ROOT/config/reme/start-global-service.sh" \
-    "$REME_SERVICE_LAUNCHER"
-  audit_managed_link \
-    "$REPO_ROOT/config/reme/run-project-capture.py" \
-    "$REME_PROJECT_RUNNER"
-  if [[ -x "$REME_SERVICE_LAUNCHER" ]]; then
-    audit_ok executable "$REME_SERVICE_LAUNCHER"
-  else
-    audit_fail executable "$REME_SERVICE_LAUNCHER"
-  fi
 }
 
 audit_claude() {
@@ -1377,6 +1420,9 @@ audit_pi() {
   audit_managed_link \
     "$REPO_ROOT/config/pi/extensions/workmux-status.ts" \
     "$HOME/.pi/agent/extensions/workmux-status.ts"
+  audit_managed_link \
+    "$REPO_ROOT/config/pi/extensions/reme-memory.ts" \
+    "$HOME/.pi/agent/extensions/reme-memory.ts"
 }
 
 if [[ "$MODE" == "remove-reme" ]]; then
@@ -1387,6 +1433,10 @@ fi
 if [[ "$MODE" == "apply" ]]; then
   preflight_force
   selected shared && apply_shared
+  if [[ "$TARGET" == "all" || "$TARGET" == "opencode" || "$TARGET" == "claude" ||
+    "$TARGET" == "codex" || "$TARGET" == "pi" ]]; then
+    apply_reme_runtime
+  fi
   selected opencode && apply_opencode
   selected claude && apply_claude
   selected codex && apply_codex
@@ -1396,6 +1446,10 @@ if [[ "$MODE" == "apply" ]]; then
 fi
 
 selected shared && audit_shared
+if [[ "$TARGET" == "all" || "$TARGET" == "opencode" || "$TARGET" == "claude" ||
+  "$TARGET" == "codex" || "$TARGET" == "pi" ]]; then
+  audit_reme_runtime
+fi
 selected opencode && audit_opencode
 selected claude && audit_claude
 selected codex && audit_codex

@@ -14,6 +14,7 @@ import {
   captureCancellationSessionID,
   containsSensitiveText,
   ensureProjectWorkspace,
+  createGlobalServiceLifecycle,
   formatMemoryContext,
   globalMemorySessionID,
   globalServiceStatus,
@@ -24,11 +25,34 @@ import {
   parseGlobalSearchResponse,
   rankProjectMemories,
   readBoundedJSON,
-  ReMeMemoryPlugin,
   resolveLlmEnvironment,
   serializeProjectCapture,
   waitForSubprocess,
-} from '../config/opencode/plugins/reme-memory';
+} from '../config/opencode/lib/reme-memory-core';
+import { ReMeMemoryPlugin } from '../config/opencode/plugins/reme-memory';
+
+describe('OpenCode auto-loaded plugin contract', () => {
+  test('exposes only callable plugin entries under legacy loader semantics', async () => {
+    const previousEnabled = process.env.REME_OPENCODE_ENABLED;
+    process.env.REME_OPENCODE_ENABLED = '0';
+
+    try {
+      const pluginModule = await import('../config/opencode/plugins/reme-memory.ts');
+      expect(Object.keys(pluginModule)).toEqual(['ReMeMemoryPlugin']);
+
+      for (const plugin of Object.values(pluginModule)) {
+        expect(typeof plugin).toBe('function');
+        await plugin({
+          client: { session: { messages: async () => ({ data: [] }) } },
+          directory: '/tmp/project',
+        } as any);
+      }
+    } finally {
+      if (previousEnabled === undefined) delete process.env.REME_OPENCODE_ENABLED;
+      else process.env.REME_OPENCODE_ENABLED = previousEnabled;
+    }
+  });
+});
 
 describe('buildMemoryMessages', () => {
   test('retains ordinary user and assistant text with timestamps', () => {
@@ -185,6 +209,59 @@ describe('project capture process bounds', () => {
 
     expect(await waitForSubprocess(child, 10, 10)).toBeNull();
     expect(typeof (await child.exited)).toBe('number');
+  });
+});
+
+describe('shared global ReMe service lifecycle', () => {
+  test('coalesces concurrent starts, validates identity and version, and throttles retries', async () => {
+    let probes = 0;
+    let starts = 0;
+    let now = 1_000;
+    const lifecycle = createGlobalServiceLifecycle({
+      now: () => now,
+      sleep: async () => {},
+      pathsExist: async () => true,
+      probe: async () => (++probes < 3 ? 'unavailable' : 'ready'),
+      start: () => {
+        starts += 1;
+      },
+      retryDelayMs: 60_000,
+      pollAttempts: 3,
+    });
+
+    expect(await Promise.all([lifecycle.ensure(), lifecycle.ensure()])).toEqual([true, true]);
+    expect(starts).toBe(1);
+
+    const unavailable = createGlobalServiceLifecycle({
+      now: () => now,
+      sleep: async () => {},
+      pathsExist: async () => true,
+      probe: async () => 'unavailable',
+      start: () => {
+        starts += 1;
+      },
+      retryDelayMs: 60_000,
+      pollAttempts: 1,
+    });
+    expect(await unavailable.ensure()).toBe(false);
+    expect(await unavailable.ensure()).toBe(false);
+    expect(starts).toBe(2);
+    now += 60_000;
+    expect(await unavailable.ensure()).toBe(false);
+    expect(starts).toBe(3);
+  });
+
+  test('never starts over a foreign loopback service', async () => {
+    let starts = 0;
+    const lifecycle = createGlobalServiceLifecycle({
+      probe: async () => 'foreign',
+      pathsExist: async () => true,
+      start: () => {
+        starts += 1;
+      },
+    });
+    expect(await lifecycle.ensure()).toBe(false);
+    expect(starts).toBe(0);
   });
 });
 

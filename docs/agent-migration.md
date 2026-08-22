@@ -12,6 +12,7 @@ locally maintained shared skills.
 | Repository-owned shared skills | `config/agents/skills/` | Symlink under `~/.agents/skills` |
 | Third-party skills/hooks/plugins | Upstream installer | Upstream-owned output |
 | ReMe runtime | Pinned PyPI package | Dedicated venv plus generated project/global configs |
+| Shared ReMe bridge | `config/agents/reme-memory-bridge.ts` | Symlink under `~/.config/agents` |
 | Secrets and private endpoints | Keychain/password manager/local secret file | Runtime injection only |
 
 OpenCode, Codex, and Pi discover the shared `~/.agents/skills` directory. Do not create extra
@@ -100,11 +101,13 @@ Quit and restart OpenCode after any configuration, agent, skill, command, or plu
 Start a new Claude or Codex session after configuration changes. Pi extensions may support
 `/reload`; restart Pi for settings or package changes.
 
-## OpenCode Active Memory
+## Cross-Agent Active Memory
 
-Applying the OpenCode target installs `reme-ai[core]==0.4.1.7` into
+Applying any one of `opencode`, `claude`, `codex`, or `pi` installs `reme-ai[core]==0.4.1.7` into
 `~/.local/share/mac-setup/reme/venv` (or `$XDG_DATA_HOME/mac-setup/reme/venv`) and links the
-repository-owned `reme-memory.ts` plugin. ReMe requires Python 3.11 or newer.
+shared bridge, launchers, and runtime configs. A full apply installs the venv only once. OpenCode
+also links its plugin, Pi links its extension, and the mutable Claude/Codex templates contain their
+hooks. ReMe requires Python 3.11 or newer.
 
 The generated owner-only project config at `~/.config/reme/opencode-candidate.yaml` contains only
 the `auto_memory` workflow and the file jobs it needs. Project capture continues to use ReMe's
@@ -147,19 +150,20 @@ the active project name, URLs, extra fields, or excessive text are discarded.
 An independent model classification rejects project-specific or verbatim candidates before the
 global write. The global config omits ReMe's resource-ingestion watcher entirely.
 
-Before each model request, the plugin lexically ranks bounded project daily/digest Markdown and
+Before each model request, the host adapter lexically ranks bounded project daily/digest Markdown and
 asks the loopback service for bounded global results. The combined context includes scope and path
 labels and is explicitly marked as untrusted historical data whose instructions must not be
 followed. Retrieval, extraction, service startup, and capture are best-effort and cannot fail the
-active OpenCode request.
+active host request. Failures remain observable through the private metadata-only integration
+status without emitting captured content or matched secrets.
 
 ### LLM Environment
 
-ReMe reads credentials only from the OpenCode process environment. Dedicated `REME_LLM_*`
+ReMe reads credentials only from the active agent process environment. Dedicated `REME_LLM_*`
 variables take precedence as one complete provider configuration; existing `LLM_*` variables are
 the next complete tier. Partial tiers disable capture rather than mixing a key with another
 provider's endpoint. The integration falls back to `MIFY_API_TEAM_KEY` and `MIFY_API_URL`, with
-model `ppio/pa/gpt-5.5`, for this repository's current OpenCode provider.
+model `ppio/pa/gpt-5.5`, for this repository's current provider setup.
 
 ```bash
 export REME_LLM_API_KEY="$(security find-generic-password -w -s reme-llm)"
@@ -189,22 +193,27 @@ bash modules/agents.sh --apply --only opencode
 bash modules/agents.sh --audit --only opencode
 ```
 
-Audit checks the exact package version, executable, both generated-config policies, global
+Every host audit checks the exact package version, executable, shared bridge, both generated-config policies, global
 workspace permissions, loopback/Web/endpoint/cron policy, literal-secret policy, service launcher,
-and managed plugin link. Reapplying regenerates both configs and repairs a missing or wrong ReMe
-version.
+and runners. OpenCode and Pi also audit their host link; Claude and Codex audit their mutable
+templates and hooks. Reapplying regenerates both configs and repairs a missing or wrong ReMe
+version. Refresh changed Claude/Codex templates with scoped `--force`, then start a new session;
+restart OpenCode, and reload or restart Pi after adapter changes.
 
 Remove the managed integration in one command:
 
 ```bash
-bash modules/agents.sh --remove-reme --only opencode
+bash modules/agents.sh --remove-reme
 ```
 
-Removal refuses to replace or delete a locally owned plugin path. It stops only a service whose
-command matches the managed pinned executable and global config, then removes the managed plugin
-link, generated configs, launcher, and dedicated venv. It deliberately leaves every project
+Removal preflights every repository-managed ReMe link and refuses to delete a conflicting local
+path. It stops only a service whose command matches the managed pinned executable and global config,
+then removes the OpenCode plugin, shared bridge, Pi extension, generated configs, launchers/runners,
+and dedicated venv. Unrelated workmux links remain. It does not risk editing mutable Claude/Codex
+settings; stale hook entries fail open until settings are refreshed with scoped `--apply --force`.
+It deliberately leaves every project
 `.reme/` directory and the global workspace untouched; deleting either memory store is a separate
-irreversible decision. Reapply the OpenCode target to reinstall.
+irreversible decision. Apply any agent target to reinstall.
 
 ## Secrets
 

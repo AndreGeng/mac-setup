@@ -226,6 +226,7 @@ test -f "$home/.config/opencode/opencode.json"
 test -f "$home/.config/opencode/AGENTS.md"
 test -L "$home/.config/opencode/plugins/workmux-status.ts"
 test -L "$home/.config/opencode/plugins/reme-memory.ts"
+test -L "$home/.config/agents/reme-memory-bridge.ts"
 test -L "$home/.local/share/mac-setup/reme/venv"
 test "$(readlink "$home/.local/share/mac-setup/reme/venv")" = \
   "$home/.local/share/mac-setup/reme/venv-0.4.1.7"
@@ -255,6 +256,7 @@ test -f "$home/.codex/config.toml"
 test -f "$home/.codex/hooks.json"
 test -f "$home/.pi/agent/settings.json"
 test -L "$home/.pi/agent/extensions/workmux-status.ts"
+test -L "$home/.pi/agent/extensions/reme-memory.ts"
 test ! -e "$home/.pi/agent/models.json"
 test -L "$home/.agents/skills/dispatch"
 test -L "$home/.agents/skills/dispatch-team"
@@ -377,26 +379,49 @@ test "$(jq -r '.providers.openai // empty' \
 home="$(new_home only)"
 run_module_quiet "$home" --apply --only codex
 test -f "$home/.codex/config.toml"
+test -L "$home/.local/share/mac-setup/reme/venv"
+test -f "$home/.config/reme/opencode-candidate.yaml"
+test -f "$home/.config/reme/opencode-global.yaml"
+test -L "$home/.config/reme/start-global-service.sh"
+test -L "$home/.config/reme/run-project-capture.py"
+test -L "$home/.config/agents/reme-memory-bridge.ts"
 test ! -e "$home/.config/opencode/opencode.json"
 test ! -e "$home/.claude/settings.json"
 test ! -e "$home/.pi/agent/settings.json"
 run_module_quiet "$home" --audit --only codex
 
+rm "$home/.config/agents/reme-memory-bridge.ts"
+printf '%s\n' 'locally owned bridge' >"$home/.config/agents/reme-memory-bridge.ts"
+expect_fail "$TEMP_ROOT/audit-codex-bridge.out" run_module "$home" --audit --only codex
+grep -q 'managed-link' "$TEMP_ROOT/audit-codex-bridge.out"
+expect_fail "$TEMP_ROOT/apply-codex-bridge.out" run_module "$home" --apply --only codex
+grep -q 'managed-link-conflict' "$TEMP_ROOT/apply-codex-bridge.out"
+
 home="$(new_home remove-reme)"
 run_module_quiet "$home" --apply --only opencode
+run_module_quiet "$home" --apply --only pi
 mkdir -p "$home/project/.reme/daily"
 printf '%s\n' 'keep candidate memory' >"$home/project/.reme/daily/keep.md"
 mkdir -p "$home/.local/share/mac-setup/reme/global/daily"
 printf '%s\n' 'keep global memory' \
   >"$home/.local/share/mac-setup/reme/global/daily/keep.md"
-run_module_quiet "$home" --remove-reme --only opencode
+mkdir -p "$home/.local/state/mac-setup/reme-hooks" "$home/.local/state/other-owner"
+printf '%s\n' '{"stage":"capture","success":true}' \
+  >"$home/.local/state/mac-setup/reme-hooks/status.json"
+printf '%s\n' 'preserve unrelated state' >"$home/.local/state/other-owner/keep"
+run_module_quiet "$home" --remove-reme
 test ! -e "$home/.config/opencode/plugins/reme-memory.ts"
+test ! -e "$home/.config/agents/reme-memory-bridge.ts"
+test ! -e "$home/.pi/agent/extensions/reme-memory.ts"
 test ! -e "$home/.config/reme/opencode-candidate.yaml"
 test ! -e "$home/.config/reme/opencode-global.yaml"
 test ! -e "$home/.config/reme/start-global-service.sh"
 test ! -e "$home/.config/reme/run-project-capture.py"
 test ! -e "$home/.local/share/mac-setup/reme/venv"
+test ! -e "$home/.local/state/mac-setup/reme-hooks"
+test -f "$home/.local/state/other-owner/keep"
 test -L "$home/.config/opencode/plugins/workmux-status.ts"
+test -L "$home/.pi/agent/extensions/workmux-status.ts"
 test -f "$home/project/.reme/daily/keep.md"
 test -f "$home/.local/share/mac-setup/reme/global/daily/keep.md"
 

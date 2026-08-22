@@ -1,4 +1,4 @@
-# Implementation Plan: OpenCode Active ReMe Memory
+# Implementation Plan: Cross-Agent Active ReMe Memory
 
 ## Architecture Decisions
 
@@ -7,9 +7,11 @@
 - Use one loopback global ReMe service for indexing, cron promotion, and cross-project search.
 - Extract global reusable memory before storage so global ReMe never receives the original project
   transcript.
-- Start the service from OpenCode so credentials remain environment-only; validate the service
+- Start the service from each host adapter so credentials remain environment-only; validate the service
   identity before using or stopping it.
-- Inject retrieval through `experimental.chat.system.transform` as bounded, untrusted context.
+- Inject retrieval through each host's supported pre-model hook as bounded, untrusted context.
+- Put shared policy and ReMe I/O behind one stdin-only bridge; keep host adapters thin.
+- Use synchronous pre-prompt hooks for Claude Code and Codex, and ephemeral Pi context mutation.
 
 ## Tasks
 
@@ -43,7 +45,18 @@
 - Existing project capture remains green.
 - Global policy tests pass without network or real-home mutation.
 
-### Task 3: Specify Extraction And Retrieval Policy
+### Task 3: Fix And Guard OpenCode Plugin Loading
+
+**Acceptance criteria:**
+
+- The auto-loaded plugin entry exports only plugin functions.
+- A loader-equivalent regression test initializes every export successfully.
+
+**Verification:** `bun test ./test/reme-memory-test.ts`
+
+**Files:** OpenCode plugin entry, shared core, Bun tests
+
+### Task 4: Specify Extraction And Retrieval Policy
 
 **Acceptance criteria:**
 
@@ -57,7 +70,7 @@
 
 **Files:** `test/reme-memory-test.ts`
 
-### Task 4: Implement Service, Extraction, And Capture
+### Task 5: Implement Shared Service, Extraction, Capture, And Retrieval
 
 **Acceptance criteria:**
 
@@ -69,7 +82,26 @@
 
 **Files:** `config/opencode/plugins/reme-memory.ts`, `test/reme-memory-test.ts`
 
-### Task 5: Implement Automatic Retrieval
+### Task 6: Integrate Claude Code And Codex Hooks
+
+**Acceptance criteria:**
+
+- `UserPromptSubmit` returns bounded `additionalContext` from ReMe.
+- `Stop` captures the completed user/assistant turn without blocking the host.
+- Commands receive host payloads only on stdin.
+
+**Verification:** fixture tests plus `bash test/agents-test.sh`
+
+### Task 7: Integrate Pi Extension
+
+**Acceptance criteria:**
+
+- Pi retrieves once per run and injects memory ephemerally before model calls.
+- Finalized ordinary messages are captured without mutating conversation messages.
+
+**Verification:** extension fixture tests plus installer tests
+
+### Task 8: Implement Automatic Retrieval
 
 **Acceptance criteria:**
 
@@ -87,13 +119,16 @@
 - Plugin transpiles.
 - Independent security/correctness review has no blocking findings.
 
-### Task 6: Document, Apply, And Runtime Verify
+### Task 9: Install, Audit, Remove, Document, And Runtime Verify
 
 **Acceptance criteria:**
 
 - Documentation explains storage, schedules, cost, trust boundaries, disable/restart/removal, and
   data deletion as separate explicit operations.
-- Local apply starts active memory after OpenCode restart.
+- Applying any host independently installs the shared pinned runtime and bridge; OpenCode/Pi link
+  their adapters and Claude/Codex templates retain their hooks.
+- Audit covers shared policy plus host-specific integration, and safe removal preserves memory and
+  unrelated links while leaving mutable Claude/Codex settings untouched.
 - Synthetic smoke verifies service identity, global capture, search, digest boundary, and absence
   of original project transcript in global storage.
 
