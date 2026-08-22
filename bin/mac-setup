@@ -18,6 +18,7 @@ while [[ -L "$SOURCE_PATH" ]]; do
 done
 BIN_DIR="$(cd "$(dirname "$SOURCE_PATH")" && pwd)"
 REPO_ROOT="$(cd "$BIN_DIR/.." && pwd)"
+export PATH="${HOME:-/root}/.local/bin:$PATH"
 source "$REPO_ROOT/lib/mac-setup/engine.sh"
 
 FORMAT=human

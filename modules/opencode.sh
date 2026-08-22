@@ -8,6 +8,12 @@ OPENCODE_MODULE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # 只加载零副作用函数库；禁止通配 source 旧 utils（其中包含安装和 sudo 顶层代码）。
 source "$OPENCODE_MODULE_DIR/../lib/utils.sh"
 
+# A standalone opencode module must discover the repository-pinned npm runtime even when
+# the caller's non-interactive shell has not evaluated `mise activate`.
+if ! command -v npm &>/dev/null; then
+  activate_pinned_node_path "$OPENCODE_MODULE_DIR/.." >/dev/null 2>&1 || true
+fi
+
 if command -v opencode &>/dev/null; then
   log "OpenCode is already installed" "$GREEN"
   log "Current version: $(opencode --version 2>/dev/null || echo 'unknown')" "$CYAN"

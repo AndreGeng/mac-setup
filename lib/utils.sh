@@ -5,6 +5,7 @@
 
 UTILS_REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$UTILS_REPO_ROOT/lib/bootstrap-manifest.sh"
+source "$UTILS_REPO_ROOT/lib/runtime-manifest.sh"
 
 # 终端 ANSI 颜色（NC = no color，用于 log 结尾重置样式）
 RED='\033[0;31m'
@@ -114,6 +115,24 @@ resolve_mise_executable() {
     fi
   done
   return 1
+}
+
+resolve_pinned_node_root() {
+  local repo_root="${1:-$UTILS_REPO_ROOT}"
+  local node_version mise_bin node_root
+  node_version="$(node_manifest_version "$repo_root" runtime node)" || return 1
+  mise_bin="$(resolve_mise_executable)" || return 1
+  node_root="$("$mise_bin" where "node@${node_version}" 2>/dev/null)" || return 1
+  [[ -d "$node_root/bin" ]] || return 1
+  printf '%s\n' "$node_root"
+}
+
+activate_pinned_node_path() {
+  local repo_root="${1:-$UTILS_REPO_ROOT}"
+  local node_root
+  node_root="$(resolve_pinned_node_root "$repo_root")" || return 1
+  [[ -x "$node_root/bin/npm" ]] || return 1
+  export PATH="$node_root/bin:$PATH"
 }
 
 mise_executable_version() {

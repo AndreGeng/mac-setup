@@ -56,13 +56,41 @@ install_neovim() {
 }
 
 install_fd_safe() {
+  local local_bin="${HOME:-/root}/.local/bin"
+  local fd_path fdfind_path
+  export PATH="$local_bin:$PATH"
+
   if command -v fd &>/dev/null; then
     log "fd 已安装，跳过" "$YELLOW"
     return 0
   fi
 
   log "安装 fd..." "$GREEN"
-  pkg_install fd || log "fd 安装失败，跳过" "$YELLOW"
+  pkg_install fd || {
+    log "fd 安装失败" "$RED"
+    return 1
+  }
+
+  if command -v fd &>/dev/null; then
+    return 0
+  fi
+
+  fdfind_path="$(command -v fdfind 2>/dev/null || true)"
+  if [[ -z "$fdfind_path" ]]; then
+    log "fd 安装完成但没有可用的 fd/fdfind 命令" "$RED"
+    return 1
+  fi
+
+  fd_path="$local_bin/fd"
+  mkdir -p "$local_bin"
+  if [[ -e "$fd_path" || -L "$fd_path" ]]; then
+    if [[ -L "$fd_path" && "$(readlink "$fd_path")" == "$fdfind_path" ]]; then
+      return 0
+    fi
+    log "无法发布 fd 兼容命令，目标路径已存在: $fd_path" "$RED"
+    return 1
+  fi
+  ln -s "$fdfind_path" "$fd_path"
 }
 
 setup_python_env() {

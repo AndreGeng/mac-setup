@@ -44,6 +44,7 @@ install_nodejs() {
     log "node@${node_version} 的 npm 可执行文件不可用" "$RED"
     return 1
   fi
+  export PATH="$node_root/bin:$PATH"
 
   local package_name package_version package_spec
   while IFS='|' read -r package_name package_version; do
