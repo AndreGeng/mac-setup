@@ -1,14 +1,14 @@
 ---
 name: mac-setup
-description: Configure or verify this computer's Vim, Neovim, Zsh, Tmux, Node.js, Bun, or terminal development environment through mac-setup's safe plan/apply/verify interface.
+description: Configure or verify this computer's Vim, Neovim, Zsh, Tmux, Node.js, Bun, OpenCode, Codex, or terminal development environment through mac-setup's safe interfaces.
 ---
 
 # mac-setup operator
 
 Use this skill when the user asks to configure, install, repair, inspect, or verify a local
 development environment managed by mac-setup. Common triggers include Vim, Neovim, Nvim,
-Zsh, Tmux, Node.js, Bun, npm development tools, shell configuration, terminal multiplexing,
-or setting up a new computer.
+Zsh, Tmux, Node.js, Bun, OpenCode, Codex, npm development tools, shell configuration,
+terminal multiplexing, or setting up a new computer.
 
 ## Operator mode
 
@@ -40,10 +40,14 @@ Canonical capability mappings:
 - Zsh or shell environment: `shell.zsh` (aliases: `zsh`, `shell`)
 - Tmux environment: `terminal.tmux` (alias: `tmux`)
 - Node.js, Bun, or global npm development tools: `runtime.node` (aliases: `node`, `nodejs`)
+- OpenCode or Codex CLI: use `runtime.node`; their exact packages and stable command links are
+  declared in `config/runtime/node.tsv`. Apply Agent templates with
+  `bash modules/agents.sh --apply`, then validate them with `bash modules/agents.sh --audit`.
 
 For `runtime.node`, treat `config/runtime/node.tsv` and `config/bootstrap/mise.tsv` as the
 desired-state sources. Never replace pinned versions with `latest` or `lts`, and never bypass
-the declared SHA-256 verification during an operator run.
+the declared SHA-256 verification during an operator run. Verify that Node, Bun, OpenCode, and
+Codex are published through `~/.local/bin`; do not depend on a parent Bash process reloading mise.
 
 For `editor.nvim`, treat `config/bootstrap/neovim.tsv`,
 `config/bootstrap/tree-sitter.tsv`, and `config/runtime/editor.tsv` as the desired-state

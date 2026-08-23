@@ -10,42 +10,28 @@ source "$OPENCODE_MODULE_DIR/../lib/utils.sh"
 
 # A standalone opencode module must discover the repository-pinned npm runtime even when
 # the caller's non-interactive shell has not evaluated `mise activate`.
-if ! command -v npm &>/dev/null; then
-  activate_pinned_node_path "$OPENCODE_MODULE_DIR/.." >/dev/null 2>&1 || true
-fi
+activate_pinned_node_path "$OPENCODE_MODULE_DIR/.." >/dev/null 2>&1 || {
+  log "Pinned Node.js is unavailable; run the nodejs module before OpenCode." "$RED"
+  exit 1
+}
 
-if command -v opencode &>/dev/null; then
-  log "OpenCode is already installed" "$GREEN"
-  log "Current version: $(opencode --version 2>/dev/null || echo 'unknown')" "$CYAN"
+OPENCODE_VERSION="$(node_manifest_version "$OPENCODE_MODULE_DIR/.." npm opencode-ai)" || {
+  log "OpenCode is missing from config/runtime/node.tsv" "$RED"
+  exit 1
+}
+NPM_BIN="$(command -v npm 2>/dev/null || true)"
+if [[ -z "$NPM_BIN" ]]; then
+  log "Pinned npm is unavailable." "$RED"
+  exit 1
+fi
+if ! "$NPM_BIN" list -g --depth=0 "opencode-ai@${OPENCODE_VERSION}" >/dev/null 2>&1; then
+  log "Installing OpenCode ${OPENCODE_VERSION} via pinned npm..." "$YELLOW"
+  "$NPM_BIN" install -g "opencode-ai@${OPENCODE_VERSION}" || exit 1
 else
-  log "Installing OpenCode..." "$YELLOW"
-
-  if command -v brew &>/dev/null; then
-    log "Installing OpenCode via Homebrew..." "$YELLOW"
-    brew install anomalyco/tap/opencode || {
-      log "Homebrew installation failed, trying npm..." "$YELLOW"
-      if command -v npm &>/dev/null; then
-        npm install -g opencode-ai
-      else
-        log "Neither Homebrew nor npm found." "$RED"
-        exit 1
-      fi
-    }
-  elif command -v npm &>/dev/null; then
-    log "Installing OpenCode via npm..." "$YELLOW"
-    npm install -g opencode-ai
-  else
-    log "Neither Homebrew nor npm found." "$RED"
-    exit 1
-  fi
-
-  if command -v opencode &>/dev/null; then
-    log "OpenCode installed successfully!" "$GREEN"
-  else
-    log "OpenCode installation failed" "$RED"
-    exit 1
-  fi
+  log "OpenCode ${OPENCODE_VERSION} is already installed" "$GREEN"
 fi
+publish_node_manifest_command "$OPENCODE_MODULE_DIR/.." opencode || exit 1
+log "Current version: $(opencode --version 2>/dev/null || echo 'unknown')" "$CYAN"
 
 OPENCODE_CONFIG_DIR="$HOME/.config/opencode"
 mkdir -p "$OPENCODE_CONFIG_DIR"

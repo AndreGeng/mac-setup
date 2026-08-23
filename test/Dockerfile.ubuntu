@@ -18,4 +18,4 @@ WORKDIR /home/testuser
 
 COPY --chown=testuser:testuser . /home/testuser/mac-setup
 
-CMD ["./mac-setup/setup.sh"]
+CMD ["./mac-setup/test/e2e/linux-full.sh", "ubuntu"]

@@ -10,3 +10,5 @@ orca	optional	Let Orca install and manage its own agent hooks and Pi extensions.
 ego-browser	upstream	Use the upstream installer; record its shared skill and browser integration as one owner.
 understand-anything	upstream	Use the upstream installer; do not copy generated skills between tools.
 reme	0.4.1.7	https://github.com/agentscope-ai/ReMe; use the dedicated mac-setup venv, local project memory, and synthetic-only global memory.
+opencode-cli	1.18.20	Install opencode-ai from the pinned Node manifest and publish ~/.local/bin/opencode.
+codex-cli	0.149.0	Install @openai/codex from the pinned Node manifest and publish ~/.local/bin/codex.

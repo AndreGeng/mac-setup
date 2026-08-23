@@ -62,6 +62,20 @@ write_fake_command() {
   chmod +x "$path"
 }
 
+write_fake_login_shell() {
+  local path="$1"
+  local shell_path="$2"
+  local bin_dir
+  shell_path="$(realpath "$shell_path")"
+  bin_dir="$(dirname "$path")"
+  mkdir -p "$bin_dir"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    "printf '%s\\n' 'UserShell: $shell_path'" >"$path"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    "printf '%s\\n' 'test:x:1000:1000::/tmp:$shell_path'" >"$bin_dir/getent"
+  chmod +x "$path" "$bin_dir/getent"
+}
+
 write_fake_nvim() {
   local path="$1"
   mkdir -p "$(dirname "$path")"
@@ -299,6 +313,7 @@ test_zsh_apply_and_verify_complete_agent_workflow() {
   mkdir -p "$home/.local/share/zinit/zinit.git/.git" "$fake_bin"
   : >"$home/.local/share/zinit/zinit.git/zinit.zsh"
   write_fake_command "$fake_bin/zsh"
+  write_fake_login_shell "$fake_bin/dscl" "$fake_bin/zsh"
 
   cli_env "$home" "$state" "$fake_bin" plan zsh --format json >"$plan" || return 1
   local plan_id
@@ -333,6 +348,7 @@ test_zsh_module_installs_canonical_zinit_layout() {
       fix_zsh_permissions() { :; }
       pkg_install() { :; }
       is_macos() { return 1; }
+      ensure_zsh_default_shell() { :; }
       source "$ROOT_DIR/modules/zsh.sh"
     ' || return 1
 
@@ -353,6 +369,7 @@ test_zsh_canonical_zinit_layout_is_compliant() {
   ln -s "$ROOT_DIR/config/.p10k.zsh" "$home/.p10k.zsh"
   ln -s "$ROOT_DIR/config/.zsh-utils" "$home/.config/.zsh-utils"
   write_fake_command "$fake_bin/zsh"
+  write_fake_login_shell "$fake_bin/dscl" "$fake_bin/zsh"
 
   cli_env "$home" "$state" "$fake_bin" plan zsh --format json >"$plan" || return 1
   json_assert "$plan" 'value["status"] == "COMPLIANT"' || return 1
@@ -474,7 +491,7 @@ for line in pathlib.Path(sys.argv[1]).read_text(encoding="utf-8").splitlines():
     if not line or line.startswith("#"):
         continue
     fields = line.split("\t")
-    if len(fields) != 3 or fields[0] not in {"runtime", "npm"}:
+    if len(fields) not in {3, 4} or fields[0] not in {"runtime", "npm"}:
         raise SystemExit(1)
     if fields[2] in {"latest", "lts", "*"}:
         raise SystemExit(1)
@@ -484,7 +501,11 @@ if ("runtime", "node", "22.23.2") not in records:
     raise SystemExit(1)
 if ("runtime", "bun", "1.3.7") not in records:
     raise SystemExit(1)
-if len([record for record in records if record[0] == "npm"]) != 8:
+if ("npm", "opencode-ai", "1.18.20", "opencode") not in records:
+    raise SystemExit(1)
+if ("npm", "@openai/codex", "0.149.0", "codex") not in records:
+    raise SystemExit(1)
+if len([record for record in records if record[0] == "npm"]) != 10:
     raise SystemExit(1)
 PY
 }
@@ -532,30 +553,39 @@ test_node_apply_and_verify_complete_agent_workflow() {
   local bun_root="$TEMP_ROOT/bun-runtime"
   mkdir -p "$home" "$fake_bin" "$node_root/bin" "$bun_root/bin"
   printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\n" v22.23.2' >"$node_root/bin/node"
-  printf '%s\n' '#!/usr/bin/env bash' 'exit 0' >"$node_root/bin/npm"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'command -v node >/dev/null || exit 1' \
+    'exit 0' >"$node_root/bin/npm"
   printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\n" 1.3.7' >"$bun_root/bin/bun"
+  write_fake_command "$node_root/bin/opencode"
+  write_fake_command "$node_root/bin/codex"
   chmod +x "$node_root/bin/node" "$node_root/bin/npm" "$bun_root/bin/bun"
   printf '%s\n' '#!/usr/bin/env bash' \
     'case "$*" in' \
     '  "--version") printf "%s\n" "2025.10.6 test" ;;' \
     "  \"where node@22.23.2\") printf '%s\\n' '$node_root' ;;" \
     "  \"where bun@1.3.7\") printf '%s\\n' '$bun_root' ;;" \
+    '  "use -g node@22.23.2"|"use -g bun@1.3.7") exit 0 ;;' \
     '  *) exit 1 ;;' \
     'esac' >"$fake_bin/mise"
   chmod +x "$fake_bin/mise"
 
   cli_env "$home" "$state" "$fake_bin" plan node --format json >"$plan" || return 1
-  json_assert "$plan" 'value["status"] == "COMPLIANT"' || return 1
+  json_assert "$plan" 'value["status"] == "CHANGES_REQUIRED"' || return 1
   local plan_id
   plan_id="$(json_value "$plan" planId)" || return 1
   cli_env "$home" "$state" "$fake_bin" apply node \
     --plan-id "$plan_id" --non-interactive --format json >"$apply" || return 1
   json_assert "$apply" 'value["status"] == "SUCCESS"' || return 1
+  [[ -L "$home/.local/bin/node" ]] || return 1
+  [[ -L "$home/.local/bin/bun" ]] || return 1
+  [[ -L "$home/.local/bin/opencode" ]] || return 1
+  [[ -L "$home/.local/bin/codex" ]] || return 1
 
   cli_env "$home" "$state" "$fake_bin" verify node --format json >"$verify" || return 1
   json_assert "$verify" 'value["status"] == "COMPLIANT"' || return 1
   json_assert "$verify" \
-    'len([item for item in value["checks"] if item["member"] == "runtime.node" and item["status"] == "PASS"]) == 11'
+    'len([item for item in value["checks"] if item["member"] == "runtime.node" and item["status"] == "PASS"]) == 17'
 }
 
 test_node_runtime_drift_schedules_member_module() {
@@ -605,6 +635,7 @@ test_terminal_profile_apply_and_verify_complete_agent_workflow() {
   mkdir -p "$home/.local/share/zinit/zinit.git/.git" "$fake_bin"
   : >"$home/.local/share/zinit/zinit.git/zinit.zsh"
   write_fake_command "$fake_bin/zsh"
+  write_fake_login_shell "$fake_bin/dscl" "$fake_bin/zsh"
   write_fake_editor_tools "$fake_bin" "$home"
 
   cli_env "$home" "$state" "$fake_bin" plan terminal --format json >"$plan" || return 1
@@ -635,6 +666,7 @@ test_apply_uses_an_exclusive_lock() {
     "$state/mac-setup/apply.lock"
   : >"$home/.local/share/zinit/zinit.git/zinit.zsh"
   write_fake_command "$fake_bin/zsh"
+  write_fake_login_shell "$fake_bin/dscl" "$fake_bin/zsh"
 
   cli_env "$home" "$state" "$fake_bin" plan zsh --format json >"$plan" || return 1
   local plan_id

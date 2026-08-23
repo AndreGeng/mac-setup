@@ -1,0 +1,24 @@
+FROM archlinux:base-devel
+
+# pacman's syscall download sandbox cannot initialize under Docker's amd64
+# emulation on an arm64 macOS host. Keep its filesystem sandbox enabled and
+# disable only the incompatible seccomp layer for this test image.
+RUN sed -i '/^\[options\]/a DisableSandboxSyscalls' /etc/pacman.conf \
+    && pacman -Syu --noconfirm \
+      curl \
+      git \
+      jq \
+      python \
+      sudo \
+      unzip \
+      which \
+    && useradd -m -s /bin/bash testuser \
+    && printf '%s\n' 'testuser ALL=(ALL) NOPASSWD:ALL' >/etc/sudoers.d/testuser \
+    && chmod 0440 /etc/sudoers.d/testuser
+
+USER testuser
+WORKDIR /home/testuser
+
+COPY --chown=testuser:testuser . /home/testuser/mac-setup
+
+CMD ["./mac-setup/test/e2e/linux-full.sh", "arch"]

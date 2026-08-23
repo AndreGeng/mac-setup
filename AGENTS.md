@@ -40,9 +40,11 @@ directly. Explain `requiredApprovals`, obtain the necessary authorization, and c
 only after `verify` returns `COMPLIANT`. For repository development requests, edit sources and
 tests but do not run a real apply unless explicitly requested.
 
-Use `runtime.node` (`node`, `nodejs`) for Node.js, Bun, and repository-declared global npm
-tools. Its desired state is `config/runtime/node.tsv`; mise bootstrap assets and checksums are
-declared in `config/bootstrap/mise.tsv`. Do not substitute floating versions or bypass checksum
+Use `runtime.node` (`node`, `nodejs`) for Node.js, Bun, repository-declared global npm tools,
+and the pinned OpenCode/Codex CLIs. Its desired state is `config/runtime/node.tsv`; mise
+bootstrap assets and checksums are declared in `config/bootstrap/mise.tsv`. OpenCode and Codex
+must be published with the pinned Node and Bun runtimes through `~/.local/bin` so commands and
+hooks work before shell activation. Do not substitute floating versions or bypass checksum
 verification.
 
 The `editor.nvim` desired state spans `config/bootstrap/neovim.tsv`,
@@ -76,7 +78,9 @@ bash test/agents-test.sh
 bun test ./test/reme-memory-test.ts
 bun test ./test/reme-bridge-test.ts
 bash test/security-scan-test.sh
+bash test/shell-agent-bootstrap-test.sh
 bash test/ubuntu-test.sh
+bash test/arch-test.sh
 bash scripts/privacy-scan.sh
 bash scripts/security-scan.sh
 bash -n modules/agents.sh

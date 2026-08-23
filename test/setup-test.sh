@@ -167,16 +167,21 @@ test_opencode_module_has_no_implicit_sudo() {
   local trace="$TEMP_ROOT/opencode.trace"
   local result="$TEMP_ROOT/opencode-root.out"
   local home="$TEMP_ROOT/opencode.home"
-  mkdir -p "$home"
+  local node_root="$TEMP_ROOT/opencode-node"
+  mkdir -p "$home/.local/bin" "$node_root/bin"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    '[[ "$*" == "where node@22.23.2" ]] && printf "%s\n" "$PINNED_NODE_ROOT"' \
+    >"$home/.local/bin/mise"
+  printf '%s\n' '#!/usr/bin/env bash' 'exit 0' >"$node_root/bin/npm"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    '[[ "${1:-}" == "--version" ]] && printf "%s\n" test-version' \
+    'exit 0' >"$node_root/bin/opencode"
+  chmod +x "$home/.local/bin/mise" "$node_root/bin/npm" "$node_root/bin/opencode"
 
-  TRACE_FILE="$trace" RESULT_FILE="$result" ROOT_DIR="$ROOT_DIR" HOME="$home" bash -c '
+  TRACE_FILE="$trace" RESULT_FILE="$result" ROOT_DIR="$ROOT_DIR" HOME="$home" \
+    PINNED_NODE_ROOT="$node_root" PATH="$home/.local/bin:/usr/bin:/bin" bash -c '
     MODULES=()
     SCRIPT_ROOT="$ROOT_DIR"
-    opencode() {
-      [[ "${1:-}" == "--version" ]] && printf "%s\n" test-version
-      return 0
-    }
-    brew() { return 0; }
     sudo() {
       printf "sudo %s\n" "$*" >>"$TRACE_FILE"
       return 0
@@ -204,7 +209,7 @@ test_opencode_resolves_pinned_npm_without_shell_activation() {
     'exit 1' >"$home/.local/bin/mise"
   chmod +x "$home/.local/bin/mise"
   printf '%s\n' '#!/usr/bin/env bash' \
-    'if [[ "$*" == "install -g opencode-ai" ]]; then' \
+    'if [[ "$*" == "install -g opencode-ai@1.18.20" ]]; then' \
     '  bin_dir="$(cd "$(dirname "$0")" && pwd)"' \
     '  printf "%s\n" "#!/usr/bin/env bash" "printf \"%s\\n\" test-opencode" >"$bin_dir/opencode"' \
     '  chmod +x "$bin_dir/opencode"' \
@@ -222,7 +227,9 @@ test_opencode_resolves_pinned_npm_without_shell_activation() {
     ' >"$output" 2>&1 || return 1
 
   grep -Fxq "$node_root/bin/npm" "$output" || return 1
-  grep -Fxq "$node_root/bin/opencode" "$output"
+  grep -Fxq "$home/.local/bin/opencode" "$output" || return 1
+  [[ -L "$home/.local/bin/opencode" ]] || return 1
+  [[ "$(readlink "$home/.local/bin/opencode")" == "$node_root/bin/opencode" ]]
 }
 
 test_vim_module_publishes_fd_compat_command_on_ubuntu() {
@@ -310,6 +317,16 @@ test_node_module_installs_pinned_bun_runtime() {
   printf '%s\n' '#!/usr/bin/env bash' \
     '[[ "${1:-}" == "list" ]] && exit 1' \
     'printf "%s\n" "$*" >>"$NPM_TRACE"' \
+    'bin_dir="$(cd "$(dirname "$0")" && pwd)"' \
+    'case "$*" in' \
+    '  "install -g opencode-ai@1.18.20") command_name=opencode ;;' \
+    '  "install -g @openai/codex@0.149.0") command_name=codex ;;' \
+    '  *) command_name="" ;;' \
+    'esac' \
+    'if [[ -n "$command_name" ]]; then' \
+    '  printf "%s\n" "#!/usr/bin/env bash" "exit 0" >"$bin_dir/$command_name"' \
+    '  chmod +x "$bin_dir/$command_name"' \
+    'fi' \
     'exit 0' >"$node_root/bin/npm"
   chmod +x "$node_root/bin/npm"
   printf '%s\n' '#!/usr/bin/env bash' \
@@ -334,8 +351,8 @@ test_node_module_installs_pinned_bun_runtime() {
   grep -q '^use -g node@22.23.2$' "$trace" || return 1
   grep -q '^use -g bun@1.3.7$' "$trace" || return 1
 
-  local kind name version
-  while IFS=$'\t' read -r kind name version; do
+  local kind name version command
+  while IFS=$'\t' read -r kind name version command; do
     [[ "$kind" == npm ]] || continue
     grep -Fqx "install -g ${name}@${version}" "$npm_trace" || return 1
   done <"$ROOT_DIR/config/runtime/node.tsv"

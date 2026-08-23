@@ -1,6 +1,6 @@
 # mac-setup
 
-跨平台开发环境快速搭建脚本，支持 macOS 和 Linux (Ubuntu/Debian)。
+跨平台开发环境快速搭建脚本，支持 macOS、Ubuntu/Debian 和 Arch Linux。
 
 ## 快速开始
 
@@ -12,7 +12,7 @@ cd mac-setup
 ./setup.sh
 ```
 
-### Linux (Ubuntu/Debian)
+### Linux (Ubuntu/Debian/Arch)
 
 ```bash
 git clone https://github.com/AndreGeng/mac-setup.git
@@ -42,11 +42,11 @@ cd mac-setup
 
 | 模块 | 说明 | 平台 |
 |------|------|------|
-| zsh | Zsh + zinit | macOS, Linux |
+| zsh | Zsh + zinit，并设置为默认登录 shell | macOS, Linux |
 | vim | Neovim、tree-sitter、Go/gopls + 可选 Python 环境 | macOS, Linux |
 | tmux | Tmux + TPM | macOS, Linux |
 | cli-tools | lazygit, fzf, ripgrep, delta 等 | macOS, Linux |
-| nodejs | Node.js LTS、Bun 1.3.7 + 全局 npm 包 | macOS, Linux |
+| nodejs | Node.js、Bun、OpenCode/Codex CLI + 全局 npm 包 | macOS, Linux |
 | herdr | Herdr agent multiplexer + 配置 | macOS, Linux |
 | sync | 配置文件符号链接 | macOS, Linux |
 | opencode | OpenCode CLI 与常用 LSP | macOS, Linux |
@@ -90,7 +90,9 @@ plan 和 verify 共享这些 desired state；Neovim 启动时优先使用发布�
 `runtime.node` 从 `config/runtime/node.tsv` 读取 Node、Bun 和全局 npm 工具的唯一 desired
 state，并从 `config/bootstrap/mise.tsv` 读取 mise 引导版本及 macOS/Linux、arm64/x64
 资产的 SHA-256。安装、plan 和 verify 共享这两份 manifest；下载内容必须通过摘要校验后
-才会解压，并通过同目录原子重命名发布。可以使用：
+才会解压，并通过同目录原子重命名发布。OpenCode 和 Codex CLI 也由 manifest 固定版本，
+并把 Node、Bun、OpenCode 和 Codex 发布到 `~/.local/bin`，不依赖当前 Bash 是否已经
+执行 `mise activate`。可以使用：
 
 ```bash
 ./bin/mac-setup plan node --format json
@@ -98,6 +100,10 @@ state，并从 `config/bootstrap/mise.tsv` 读取 mise 引导版本及 macOS/Lin
   --non-interactive --format json
 ./bin/mac-setup verify node --format json
 ```
+
+完整 `setup.sh` 和 `setup-lite.sh --with-zsh --with-agents` 都会同时安装 Agent CLI 与配置。
+Linux 上安装器会把 Zsh 设置为账户的默认登录 shell；安装器无法修改它的父进程，因此当前
+Bash 终端需要运行 `exec zsh -l`，或者关闭后重新打开终端。
 
 仓库自带的 `mac-setup` shared skill 会发布到 `~/.agents/skills/mac-setup`，供 Codex、
 OpenCode、Claude Code 和 Pi 复用。可以直接对 Agent 说：“用 mac-setup 帮我配置好终端
@@ -170,7 +176,7 @@ OpenCode、Claude Code 和 Pi 复用。可以直接对 Agent 说：“用 mac-se
 
 - curl, git (预装或手动安装)
 - macOS: Homebrew
-- Linux: apt (Ubuntu/Debian)
+- Linux: apt (Ubuntu/Debian) 或 pacman (Arch)
 
 `nodejs` 模块通过固定版本的 mise 安装 Node.js 和 Bun；Agent ReMe 记忆桥接依赖这个
 运行时。升级 mise 时，需要同时更新 `config/bootstrap/mise.tsv` 中四个平台的文件名和
@@ -189,6 +195,10 @@ bash scripts/privacy-scan.sh
 
 # Docker 中真实执行 Agent terminal 的 plan/apply/verify/replan 闭环
 bash test/ubuntu-terminal-test.sh
+
+# Docker 中执行 Ubuntu/Arch 全量安装并验收 Zsh、OpenCode、Codex 和 Agent 配置
+bash test/ubuntu-test.sh
+bash test/arch-test.sh
 ```
 
 ## 安全检查

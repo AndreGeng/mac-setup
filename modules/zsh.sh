@@ -42,6 +42,13 @@ install_zsh() {
   if is_macos; then
     pkg_install zsh-completions || log "zsh-completions 安装失败，跳过" "$YELLOW"
   fi
+
+  local zsh_path
+  zsh_path="$(resolve_zsh_executable)" || {
+    log "zsh 安装后仍找不到可执行文件" "$RED"
+    return 1
+  }
+  ensure_zsh_default_shell "$zsh_path"
 }
 
 install_zsh

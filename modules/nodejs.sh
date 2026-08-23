@@ -57,6 +57,8 @@ install_nodejs() {
       log "npm 包 $package_spec 已安装，跳过" "$YELLOW"
     fi
   done < <(node_manifest_records "$NODEJS_MODULE_ROOT" npm)
+
+  publish_node_manifest_commands "$NODEJS_MODULE_ROOT" || return 1
 }
 
 install_nodejs

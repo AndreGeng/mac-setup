@@ -96,6 +96,168 @@ zinit_install_is_valid() {
   [[ -d "$zinit_dir/.git" && -f "$zinit_dir/zinit.zsh" ]]
 }
 
+resolve_zsh_executable() {
+  local executable canonical_path canonical_dir
+  executable="$(command -v zsh 2>/dev/null || true)"
+  [[ -n "$executable" && -f "$executable" && -x "$executable" ]] || return 1
+  if command -v realpath >/dev/null 2>&1; then
+    canonical_path="$(realpath "$executable" 2>/dev/null || true)"
+    if [[ -n "$canonical_path" && -f "$canonical_path" && -x "$canonical_path" ]]; then
+      printf '%s\n' "$canonical_path"
+      return 0
+    fi
+  fi
+  # `cd -P` is portable across macOS and Linux and at least canonicalizes a
+  # symlinked directory such as Arch's /usr/sbin -> /usr/bin.
+  canonical_dir="$(cd -P "$(dirname "$executable")" 2>/dev/null && pwd)" || return 1
+  printf '%s/%s\n' "$canonical_dir" "$(basename "$executable")"
+}
+
+current_login_shell() {
+  local account="${1:-$(id -un)}"
+  local entry shell_path
+
+  if command -v getent >/dev/null 2>&1; then
+    entry="$(getent passwd "$account" 2>/dev/null || true)"
+    shell_path="${entry##*:}"
+    if [[ -n "$entry" && -n "$shell_path" ]]; then
+      printf '%s\n' "$shell_path"
+      return 0
+    fi
+  fi
+  if command -v dscl >/dev/null 2>&1; then
+    shell_path="$(dscl . -read "/Users/$account" UserShell 2>/dev/null | awk '{print $2}')"
+    if [[ -n "$shell_path" ]]; then
+      printf '%s\n' "$shell_path"
+      return 0
+    fi
+  fi
+  [[ -n "${SHELL:-}" ]] || return 1
+  printf '%s\n' "$SHELL"
+}
+
+zsh_is_default_shell() {
+  local zsh_path="${1:-}"
+  local login_shell
+  [[ -n "$zsh_path" ]] || zsh_path="$(resolve_zsh_executable)" || return 1
+  login_shell="$(current_login_shell)" || return 1
+  [[ "$login_shell" == "$zsh_path" ]]
+}
+
+ensure_zsh_default_shell() {
+  local zsh_path="${1:-}"
+  local account
+  [[ -n "$zsh_path" ]] || zsh_path="$(resolve_zsh_executable)" || {
+    log "找不到 zsh，无法设置默认 shell" "$RED"
+    return 1
+  }
+  zsh_is_default_shell "$zsh_path" && {
+    log "默认登录 shell 已是 $zsh_path" "$YELLOW"
+    return 0
+  }
+  if [[ "${MAC_SETUP_NO_ROOT:-0}" == "1" ]]; then
+    log "未切换默认 shell（--no-root）；安装后请运行: chsh -s $zsh_path" "$YELLOW"
+    return 0
+  fi
+
+  account="$(id -un)"
+  log "将 $account 的默认登录 shell 设置为 $zsh_path..." "$GREEN"
+  if [[ $EUID -eq 0 ]]; then
+    chsh -s "$zsh_path" "$account" || return 1
+  elif { declare -F can_sudo >/dev/null 2>&1 && can_sudo; } || sudo -n true 2>/dev/null; then
+    sudo -n chsh -s "$zsh_path" "$account" || return 1
+  else
+    log "切换默认 shell 需要已授权的 sudo；请运行: chsh -s $zsh_path" "$RED"
+    return 1
+  fi
+
+  if ! zsh_is_default_shell "$zsh_path"; then
+    log "默认 shell 切换后验证失败" "$RED"
+    return 1
+  fi
+  log "默认登录 shell 已切换；当前终端请运行: exec $zsh_path -l" "$GREEN"
+}
+
+node_runtime_command_matches() {
+  local repo_root="$1"
+  local command_name="$2"
+  runtime_manifest_command_matches "$repo_root" node "$command_name"
+}
+
+runtime_manifest_command_matches() {
+  local repo_root="$1"
+  local runtime_name="$2"
+  local command_name="$3"
+  local runtime_root source_path target_path
+  runtime_root="$(resolve_pinned_runtime_root "$repo_root" "$runtime_name")" || return 1
+  source_path="$runtime_root/bin/$command_name"
+  target_path="${HOME:-/root}/.local/bin/$command_name"
+  [[ -x "$source_path" && -L "$target_path" ]] || return 1
+  [[ "$(readlink "$target_path" 2>/dev/null || true)" == "$source_path" ]]
+}
+
+node_manifest_command_matches() {
+  node_runtime_command_matches "$1" "$2"
+}
+
+publish_pinned_node_command() {
+  publish_pinned_runtime_command "$1" node "$2"
+}
+
+publish_pinned_runtime_command() {
+  local repo_root="$1"
+  local runtime_name="$2"
+  local command_name="$3"
+  local runtime_root source_path target_path
+  runtime_root="$(resolve_pinned_runtime_root "$repo_root" "$runtime_name")" || return 1
+  source_path="$runtime_root/bin/$command_name"
+  target_path="${HOME:-/root}/.local/bin/$command_name"
+  if [[ ! -f "$source_path" || ! -x "$source_path" ]]; then
+    log "固定 Node 运行时未提供命令: $source_path" "$RED"
+    return 1
+  fi
+  runtime_manifest_command_matches "$repo_root" "$runtime_name" "$command_name" && return 0
+  symlink_config "$source_path" "$target_path" || return 1
+  export PATH="${HOME:-/root}/.local/bin:$PATH"
+}
+
+publish_node_manifest_command() {
+  local repo_root="$1"
+  local requested_command="$2"
+  local node_root package_name package_version command_name source_path target_path
+  node_root="$(resolve_pinned_node_root "$repo_root")" || return 1
+
+  while IFS='|' read -r package_name package_version command_name; do
+    [[ "$command_name" == "$requested_command" ]] || continue
+    source_path="$node_root/bin/$command_name"
+    target_path="${HOME:-/root}/.local/bin/$command_name"
+    if [[ ! -f "$source_path" || ! -x "$source_path" ]]; then
+      log "npm 包 ${package_name}@${package_version} 未提供命令: $source_path" "$RED"
+      return 1
+    fi
+    node_manifest_command_matches "$repo_root" "$command_name" && return 0
+    symlink_config "$source_path" "$target_path" || return 1
+    export PATH="${HOME:-/root}/.local/bin:$PATH"
+    return 0
+  done < <(node_manifest_command_records "$repo_root")
+  log "Node manifest 未声明命令: $requested_command" "$RED"
+  return 1
+}
+
+publish_node_manifest_commands() {
+  local repo_root="${1:-$UTILS_REPO_ROOT}"
+  local package_name package_version command_name
+  # npm command shims commonly use `#!/usr/bin/env node`. Publish the exact
+  # managed runtime too, so they work in Bash and non-interactive agents before
+  # mise's shell activation has run.
+  publish_pinned_node_command "$repo_root" node || return 1
+  publish_pinned_runtime_command "$repo_root" bun bun || return 1
+  while IFS='|' read -r package_name package_version command_name; do
+    publish_node_manifest_command "$repo_root" "$command_name" || return 1
+  done < <(node_manifest_command_records "$repo_root")
+  export PATH="${HOME:-/root}/.local/bin:$PATH"
+}
+
 # 解析可用的 mise 可执行文件路径（必须是常规文件）。
 # 注意：目录 ~/.local/bin/mise 在 Unix 上也可能带 +x，用 -x 会误判为「已安装」。
 resolve_mise_executable() {
@@ -117,14 +279,19 @@ resolve_mise_executable() {
   return 1
 }
 
-resolve_pinned_node_root() {
+resolve_pinned_runtime_root() {
   local repo_root="${1:-$UTILS_REPO_ROOT}"
-  local node_version mise_bin node_root
-  node_version="$(node_manifest_version "$repo_root" runtime node)" || return 1
+  local runtime_name="$2"
+  local runtime_version mise_bin runtime_root
+  runtime_version="$(node_manifest_version "$repo_root" runtime "$runtime_name")" || return 1
   mise_bin="$(resolve_mise_executable)" || return 1
-  node_root="$("$mise_bin" where "node@${node_version}" 2>/dev/null)" || return 1
-  [[ -d "$node_root/bin" ]] || return 1
-  printf '%s\n' "$node_root"
+  runtime_root="$("$mise_bin" where "${runtime_name}@${runtime_version}" 2>/dev/null)" || return 1
+  [[ -d "$runtime_root/bin" ]] || return 1
+  printf '%s\n' "$runtime_root"
+}
+
+resolve_pinned_node_root() {
+  resolve_pinned_runtime_root "${1:-$UTILS_REPO_ROOT}" node
 }
 
 activate_pinned_node_path() {

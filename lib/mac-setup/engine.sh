@@ -158,7 +158,8 @@ node_npm_package_matches() {
   node_root="$(node_runtime_root node "$node_version")" || return 1
   npm_bin="$node_root/bin/npm"
   [[ -f "$npm_bin" && -x "$npm_bin" ]] || return 1
-  "$npm_bin" list -g --depth=0 "${package_name}@${package_version}" >/dev/null 2>&1
+  PATH="$node_root/bin:$PATH" \
+    "$npm_bin" list -g --depth=0 "${package_name}@${package_version}" >/dev/null 2>&1
 }
 
 plan_member_changes() {
@@ -203,12 +204,19 @@ plan_member_changes() {
     fi
     ;;
   shell.zsh)
+    local zsh_path=""
+    zsh_path="$(resolve_zsh_executable 2>/dev/null)" || true
     if ! zinit_install_is_valid; then
       add_plan_change INSTALL_GIT_REPOSITORY zinit 'Install the Zsh plugin manager.'
       add_plan_approval network 'Zinit must be downloaded from its upstream repository.'
     fi
     if plan_member_needs_install_module "$capability" && zsh_permissions_need_sudo; then
       add_plan_approval sudo 'Unwritable Zsh completion directories require permission repair.'
+    fi
+    if [[ -z "$zsh_path" ]] || ! zsh_is_default_shell "$zsh_path"; then
+      add_plan_change SET_LOGIN_SHELL "${zsh_path:-zsh}" \
+        'Set Zsh as the account login shell for new terminal sessions.'
+      add_plan_approval sudo 'Changing the account login shell requires administrator approval.'
     fi
     ;;
   terminal.tmux)
@@ -241,6 +249,33 @@ plan_member_changes() {
         add_plan_approval network 'Declared npm packages must be downloaded.'
       fi
     done < <(node_manifest_records "$MAC_SETUP_REPO_ROOT" npm)
+    if ! node_runtime_command_matches "$MAC_SETUP_REPO_ROOT" node; then
+      add_plan_change PUBLISH_COMMAND "$HOME/.local/bin/node" \
+        'Publish the pinned Node runtime for npm command shebangs and non-interactive agents.'
+      [[ ! -e "$HOME/.local/bin/node" ]] ||
+        add_plan_approval replace-config \
+          'A conflicting user command must be backed up before publishing the managed command.' \
+          "$HOME/.local/bin/node"
+    fi
+    if ! runtime_manifest_command_matches "$MAC_SETUP_REPO_ROOT" bun bun; then
+      add_plan_change PUBLISH_COMMAND "$HOME/.local/bin/bun" \
+        'Publish the pinned Bun runtime for ReMe hooks and non-interactive agents.'
+      [[ ! -e "$HOME/.local/bin/bun" ]] ||
+        add_plan_approval replace-config \
+          'A conflicting user command must be backed up before publishing the managed command.' \
+          "$HOME/.local/bin/bun"
+    fi
+    local command_name
+    while IFS='|' read -r package_name package_version command_name; do
+      if ! node_manifest_command_matches "$MAC_SETUP_REPO_ROOT" "$command_name"; then
+        add_plan_change PUBLISH_COMMAND "$HOME/.local/bin/$command_name" \
+          "Publish ${package_name}@${package_version} for shells that have not activated mise."
+        [[ ! -e "$HOME/.local/bin/$command_name" ]] ||
+          add_plan_approval replace-config \
+            'A conflicting user command must be backed up before publishing the managed command.' \
+            "$HOME/.local/bin/$command_name"
+      fi
+    done < <(node_manifest_command_records "$MAC_SETUP_REPO_ROOT")
     ;;
   esac
 
@@ -477,7 +512,7 @@ first_missing_approval() {
 change_requires_module() {
   case "$1" in
   INSTALL_TOOL | INSTALL_GIT_REPOSITORY | CONFIGURE_BOOTSTRAP | CONFIGURE_FEATURE | \
-    CONFIGURE_RUNTIME | INSTALL_NPM_PACKAGE)
+    CONFIGURE_RUNTIME | INSTALL_NPM_PACKAGE | PUBLISH_COMMAND | SET_LOGIN_SHELL)
     return 0
     ;;
   *) return 1 ;;
@@ -654,9 +689,15 @@ build_verify_member() {
     fi
     ;;
   shell.zsh)
-    local zinit_dir
+    local zinit_dir zsh_path=""
     zinit_dir="$(zinit_install_dir)"
+    zsh_path="$(resolve_zsh_executable 2>/dev/null)" || true
     verify_command zsh-executable zsh
+    if [[ -n "$zsh_path" ]] && zsh_is_default_shell "$zsh_path"; then
+      add_verify_check default-shell PASS "$zsh_path"
+    else
+      add_verify_check default-shell FAIL 'Zsh is not the account login shell.'
+    fi
     if zinit_install_is_valid; then
       add_verify_check zinit-repository PASS "$zinit_dir"
     else
@@ -724,6 +765,28 @@ build_verify_member() {
         add_verify_check "$check_id" FAIL "${package_name}@${package_version} is unavailable."
       fi
     done < <(node_manifest_records "$MAC_SETUP_REPO_ROOT" npm)
+    if node_runtime_command_matches "$MAC_SETUP_REPO_ROOT" node; then
+      add_verify_check runtime-command-node PASS "$HOME/.local/bin/node"
+    else
+      add_verify_check runtime-command-node FAIL \
+        "$HOME/.local/bin/node is not the managed pinned Node runtime."
+    fi
+    if runtime_manifest_command_matches "$MAC_SETUP_REPO_ROOT" bun bun; then
+      add_verify_check runtime-command-bun PASS "$HOME/.local/bin/bun"
+    else
+      add_verify_check runtime-command-bun FAIL \
+        "$HOME/.local/bin/bun is not the managed pinned Bun runtime."
+    fi
+    local command_name
+    while IFS='|' read -r package_name package_version command_name; do
+      check_id="agent-command-$command_name"
+      if node_manifest_command_matches "$MAC_SETUP_REPO_ROOT" "$command_name"; then
+        add_verify_check "$check_id" PASS "$HOME/.local/bin/$command_name"
+      else
+        add_verify_check "$check_id" FAIL \
+          "$HOME/.local/bin/$command_name is not the managed ${package_name} command."
+      fi
+    done < <(node_manifest_command_records "$MAC_SETUP_REPO_ROOT")
     ;;
   esac
 }

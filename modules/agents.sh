@@ -158,10 +158,32 @@ text_has_literal_secret_assignment() {
   return 1
 }
 
+toml_parser_python() {
+  local candidate
+  for candidate in python3 "$REME_VENV/bin/python" "$REME_PYTHON"; do
+    if [[ "$candidate" == */* ]]; then
+      [[ -x "$candidate" ]] || continue
+    else
+      command -v "$candidate" >/dev/null 2>&1 || continue
+    fi
+    if "$candidate" -c \
+      'try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli' >/dev/null 2>&1; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
 validate_toml() {
   local path="$1"
+  local parser
+  parser="$(toml_parser_python)" || return 1
 
-  python3 - "$path" >/dev/null 2>&1 <<'PY'
+  "$parser" - "$path" >/dev/null 2>&1 <<'PY'
 import sys
 try:
     import tomllib
@@ -174,18 +196,15 @@ PY
 }
 
 toml_parser_available() {
-  python3 >/dev/null 2>&1 <<'PY'
-try:
-    import tomllib
-except ModuleNotFoundError:
-    import tomli
-PY
+  toml_parser_python >/dev/null 2>&1
 }
 
 toml_has_sensitive_value() {
   local path="$1"
+  local parser
+  parser="$(toml_parser_python)" || return 2
 
-  python3 - "$path" >/dev/null 2>&1 <<'PY'
+  "$parser" - "$path" >/dev/null 2>&1 <<'PY'
 import re
 import sys
 try:
@@ -278,7 +297,6 @@ scan_config_safely() {
     command -v jq >/dev/null 2>&1 || return 2
     jq -e . "$path" >/dev/null 2>&1 || return 3
   elif is_toml_path "$path"; then
-    command -v python3 >/dev/null 2>&1 || return 2
     toml_parser_available || return 2
     validate_toml "$path" || return 3
   fi

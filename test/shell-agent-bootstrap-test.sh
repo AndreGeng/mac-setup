@@ -46,18 +46,38 @@ test_zsh_module_ensures_login_shell() {
     source "$ROOT_DIR/modules/zsh.sh"
   ' >"$output" || return 1
 
-  [[ "$(<"$output")" == "$fake_bin/zsh" ]]
+  [[ "$(<"$output")" == "$(realpath "$fake_bin/zsh")" ]]
+}
+
+test_zsh_executable_uses_canonical_path() {
+  local root="$TEMP_ROOT/zsh-canonical"
+  mkdir -p "$root/usr/bin"
+  write_command "$root/usr/bin/zsh"
+  ln -s "$root/usr/bin" "$root/usr/sbin"
+
+  local resolved
+  resolved="$(PATH="$root/usr/sbin:/usr/bin:/bin" ROOT_DIR="$ROOT_DIR" bash -c '
+    source "$ROOT_DIR/lib/utils.sh"
+    resolve_zsh_executable
+  ')" || return 1
+  [[ "$resolved" == "$(realpath "$root/usr/bin/zsh")" ]]
 }
 
 test_node_manifest_declares_agent_commands() {
-  local output
+  local output package_output
   output="$(ROOT_DIR="$ROOT_DIR" bash -c '
     source "$ROOT_DIR/lib/runtime-manifest.sh"
     node_manifest_command_records "$ROOT_DIR"
   ')" || return 1
+  package_output="$(ROOT_DIR="$ROOT_DIR" bash -c '
+    source "$ROOT_DIR/lib/runtime-manifest.sh"
+    node_manifest_records "$ROOT_DIR" npm
+  ')" || return 1
 
   grep -Fxq 'opencode-ai|1.18.20|opencode' <<<"$output" || return 1
-  grep -Fxq '@openai/codex|0.149.0|codex' <<<"$output"
+  grep -Fxq '@openai/codex|0.149.0|codex' <<<"$output" || return 1
+  grep -Fxq 'opencode-ai|1.18.20' <<<"$package_output" || return 1
+  grep -Fxq '@openai/codex|0.149.0' <<<"$package_output"
 }
 
 test_node_module_publishes_agent_commands() {
@@ -66,6 +86,7 @@ test_node_module_publishes_agent_commands() {
   local bun_root="$TEMP_ROOT/bun.runtime"
   local fake_mise="$TEMP_ROOT/mise"
   mkdir -p "$home" "$node_root/bin" "$bun_root/bin"
+  write_command "$node_root/bin/node"
   write_command "$node_root/bin/npm"
   write_command "$node_root/bin/opencode"
   write_command "$node_root/bin/codex"
@@ -88,6 +109,10 @@ test_node_module_publishes_agent_commands() {
       source "$ROOT_DIR/modules/nodejs.sh"
     ' >/dev/null 2>&1 || return 1
 
+  [[ -L "$home/.local/bin/node" ]] || return 1
+  [[ "$(readlink "$home/.local/bin/node")" == "$node_root/bin/node" ]] || return 1
+  [[ -L "$home/.local/bin/bun" ]] || return 1
+  [[ "$(readlink "$home/.local/bin/bun")" == "$bun_root/bin/bun" ]] || return 1
   [[ -L "$home/.local/bin/opencode" ]] || return 1
   [[ "$(readlink "$home/.local/bin/opencode")" == "$node_root/bin/opencode" ]] || return 1
   [[ -L "$home/.local/bin/codex" ]] || return 1
@@ -111,6 +136,7 @@ test_shell_plan_requires_default_shell_change() {
 }
 
 run_test zsh-module-ensures-login-shell test_zsh_module_ensures_login_shell
+run_test zsh-executable-uses-canonical-path test_zsh_executable_uses_canonical_path
 run_test node-manifest-declares-agent-commands test_node_manifest_declares_agent_commands
 run_test node-module-publishes-agent-commands test_node_module_publishes_agent_commands
 run_test shell-plan-requires-default-shell-change \
