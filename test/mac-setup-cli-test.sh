@@ -82,10 +82,30 @@ write_fake_tree_sitter() {
   chmod +x "$path"
 }
 
+write_fake_go() {
+  local path="$1"
+  mkdir -p "$(dirname "$path")"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'printf "%s\n" "go version go1.26.3 linux/amd64"' >"$path"
+  chmod +x "$path"
+}
+
+write_fake_gopls() {
+  local path="$1"
+  mkdir -p "$(dirname "$path")"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'printf "%s\n" "golang.org/x/tools/gopls v0.23.0"' >"$path"
+  chmod +x "$path"
+}
+
 write_fake_editor_tools() {
   local fake_bin="$1"
+  local home="$2"
   write_fake_nvim "$fake_bin/nvim"
   write_fake_tree_sitter "$fake_bin/tree-sitter"
+  write_fake_go "$home/.local/bin/go"
+  write_fake_gopls "$home/.local/bin/gopls"
+  write_fake_command "$home/.local/bin/gofmt"
   write_fake_command "$fake_bin/rg"
   write_fake_command "$fake_bin/fd"
   write_fake_command "$fake_bin/cc"
@@ -229,7 +249,7 @@ test_vim_apply_and_verify_complete_agent_workflow() {
   local verify="$TEMP_ROOT/vim-verify.json"
   mkdir -p "$home/.config/nvim" "$fake_bin"
   printf '%s\n' existing >"$home/.config/nvim/local.lua"
-  write_fake_editor_tools "$fake_bin"
+  write_fake_editor_tools "$fake_bin" "$home"
 
   cli_env "$home" "$state" "$fake_bin" plan vim --format json >"$plan" || return 1
   local plan_id
@@ -257,6 +277,8 @@ test_vim_verify_discovers_user_local_fd_compat_command() {
   ln -s "$ROOT_DIR/config/nvim" "$home/.config/nvim"
   write_fake_nvim "$fake_bin/nvim"
   write_fake_tree_sitter "$fake_bin/tree-sitter"
+  write_fake_go "$home/.local/bin/go"
+  write_fake_gopls "$home/.local/bin/gopls"
   write_fake_command "$fake_bin/rg"
   write_fake_command "$fake_bin/cc"
   write_fake_command "$home/.local/bin/fd"
@@ -559,7 +581,7 @@ test_terminal_profile_plan_aggregates_changes_and_approvals() {
   json_assert "$output" \
     'value["members"] == ["shell.zsh", "editor.nvim"]' || return 1
   json_assert "$output" \
-    'set(item["resource"] for item in value["changes"]) >= {"zinit", "neovim@0.12.4", "tree-sitter@0.26.11"}' || return 1
+    'set(item["resource"] for item in value["changes"]) >= {"zinit", "neovim@0.12.4", "tree-sitter@0.26.11", "go@1.26.3", "gopls@0.23.0"}' || return 1
   json_assert "$output" \
     'len([item for item in value["changes"] if item["resource"].endswith("/.zshrc")]) == 1' ||
     return 1
@@ -583,7 +605,7 @@ test_terminal_profile_apply_and_verify_complete_agent_workflow() {
   mkdir -p "$home/.local/share/zinit/zinit.git/.git" "$fake_bin"
   : >"$home/.local/share/zinit/zinit.git/zinit.zsh"
   write_fake_command "$fake_bin/zsh"
-  write_fake_editor_tools "$fake_bin"
+  write_fake_editor_tools "$fake_bin" "$home"
 
   cli_env "$home" "$state" "$fake_bin" plan terminal --format json >"$plan" || return 1
   local plan_id

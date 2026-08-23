@@ -116,7 +116,7 @@ capability_module() {
 capability_tools() {
   case "$1" in
   editor.nvim)
-    printf '%s\n' 'rg|ripgrep' 'fd|fd' 'curl|curl' 'tar|tar' 'unzip|unzip'
+    printf '%s\n' 'rg|ripgrep' 'fd|fd' 'curl|curl' 'git|git' 'tar|tar' 'unzip|unzip'
     if is_linux; then
       printf '%s\n' 'cc|c-compiler'
     fi

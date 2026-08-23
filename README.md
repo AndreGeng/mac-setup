@@ -43,7 +43,7 @@ cd mac-setup
 | 模块 | 说明 | 平台 |
 |------|------|------|
 | zsh | Zsh + zinit | macOS, Linux |
-| vim | Neovim + Python 环境 | macOS, Linux |
+| vim | Neovim、tree-sitter、Go/gopls + 可选 Python 环境 | macOS, Linux |
 | tmux | Tmux + TPM | macOS, Linux |
 | cli-tools | lazygit, fzf, ripgrep, delta 等 | macOS, Linux |
 | nodejs | Node.js LTS、Bun 1.3.7 + 全局 npm 包 | macOS, Linux |
@@ -80,6 +80,12 @@ sudo 和配置接管需求，获得授权后执行同一个 plan，最后独立�
 capability 或 terminal profile 的 plan、apply、verify 中一致地增加
 `--with python-provider`。`plan` 不访问网络、不请求 sudo、不写用户目录；JSON 模式只在
 stdout 输出协议数据，进度日志写入 stderr。
+
+`editor.nvim` 从 `config/bootstrap/neovim.tsv`、`config/bootstrap/tree-sitter.tsv` 和
+`config/runtime/editor.tsv` 读取 Neovim、tree-sitter、Go 与 gopls 的精确版本。安装、
+plan 和 verify 共享这些 desired state；Neovim 启动时优先使用发布到 `~/.local/bin` 的
+受管工具，因此不依赖启动它的旧终端是否已经重新加载 PATH。gopls 不再由 Mason 在编辑器
+启动时隐式安装，Mason 只管理仓库未接管的插件工具。
 
 `runtime.node` 从 `config/runtime/node.tsv` 读取 Node、Bun 和全局 npm 工具的唯一 desired
 state，并从 `config/bootstrap/mise.tsv` 读取 mise 引导版本及 macOS/Linux、arm64/x64

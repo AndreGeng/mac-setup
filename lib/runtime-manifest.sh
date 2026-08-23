@@ -91,3 +91,79 @@ node_manifest_version() {
   done < <(node_manifest_records "$repo_root" "$requested_kind")
   return 1
 }
+
+editor_manifest_path() {
+  printf '%s\n' "$1/config/runtime/editor.tsv"
+}
+
+validate_editor_manifest() {
+  local repo_root="$1"
+  local manifest line kind name version extra key seen='|'
+  local go_count=0 gopls_count=0
+  manifest="$(editor_manifest_path "$repo_root")"
+
+  [[ -f "$manifest" ]] || {
+    printf 'Editor runtime manifest is missing: %s\n' "$manifest" >&2
+    return 1
+  }
+
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ -n "$line" && "$line" != \#* ]] || continue
+    IFS=$'\t' read -r kind name version extra <<<"$line"
+    if [[ -z "$kind" || -z "$name" || -z "$version" || -n "$extra" ]]; then
+      printf 'Invalid editor runtime manifest record.\n' >&2
+      return 1
+    fi
+    [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+      printf 'Editor runtime manifest requires exact versions.\n' >&2
+      return 1
+    }
+    case "$kind:$name" in
+    runtime:go) go_count=$((go_count + 1)) ;;
+    go:gopls) gopls_count=$((gopls_count + 1)) ;;
+    *)
+      printf 'Unknown dependency in editor runtime manifest.\n' >&2
+      return 1
+      ;;
+    esac
+    key="$kind:$name"
+    [[ "$seen" != *"|$key|"* ]] || {
+      printf 'Duplicate dependency in editor runtime manifest.\n' >&2
+      return 1
+    }
+    seen="${seen}${key}|"
+  done <"$manifest"
+
+  [[ $go_count -eq 1 && $gopls_count -eq 1 ]] || {
+    printf 'Editor runtime manifest is incomplete.\n' >&2
+    return 1
+  }
+}
+
+editor_manifest_records() {
+  local repo_root="$1"
+  local requested_kind="$2"
+  local line kind name version
+  local manifest
+  manifest="$(editor_manifest_path "$repo_root")"
+
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ -n "$line" && "$line" != \#* ]] || continue
+    IFS=$'\t' read -r kind name version <<<"$line"
+    [[ "$kind" == "$requested_kind" ]] || continue
+    printf '%s|%s\n' "$name" "$version"
+  done <"$manifest"
+}
+
+editor_manifest_version() {
+  local repo_root="$1"
+  local requested_kind="$2"
+  local requested_name="$3"
+  local name version
+  while IFS='|' read -r name version; do
+    [[ "$name" == "$requested_name" ]] || continue
+    printf '%s\n' "$version"
+    return 0
+  done < <(editor_manifest_records "$repo_root" "$requested_kind")
+  return 1
+}

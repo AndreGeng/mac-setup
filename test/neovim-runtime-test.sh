@@ -46,6 +46,17 @@ write_fake_nvim() {
   chmod +x "$path"
 }
 
+write_fake_go_toolchain() {
+  local home="$1"
+  mkdir -p "$home/.local/bin"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'printf "%s\n" "go version go1.26.3 linux/amd64"' >"$home/.local/bin/go"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'printf "%s\n" "golang.org/x/tools/gopls v0.23.0"' >"$home/.local/bin/gopls"
+  printf '%s\n' '#!/usr/bin/env bash' 'exit 0' >"$home/.local/bin/gofmt"
+  chmod +x "$home/.local/bin/go" "$home/.local/bin/gopls" "$home/.local/bin/gofmt"
+}
+
 json_assert() {
   local path="$1"
   local expression="$2"
@@ -338,12 +349,14 @@ test_vim_module_uses_pinned_runtime_installer() {
       install_mise() { :; }
       install_neovim_runtime() { printf "%s\n" neovim-runtime >>"$TRACE"; }
       install_tree_sitter_cli() { printf "%s\n" tree-sitter-runtime >>"$TRACE"; }
+      install_editor_toolchain() { printf "%s\n" editor-toolchain >>"$TRACE"; }
       pkg_install() { printf "package:%s\n" "$1" >>"$TRACE"; }
       source "$ROOT_DIR/modules/vim.sh"
     ' >/dev/null 2>&1 || return 1
 
   grep -Fxq neovim-runtime "$trace" || return 1
   grep -Fxq tree-sitter-runtime "$trace" || return 1
+  grep -Fxq editor-toolchain "$trace" || return 1
   ! grep -Fxq package:neovim "$trace"
 }
 
@@ -403,6 +416,7 @@ test_verify_requires_exact_version_and_loads_managed_config() {
   printf '%s\n' '#!/usr/bin/env bash' \
     'printf "%s\n" "tree-sitter 0.26.11"' >"$home/.local/bin/tree-sitter"
   chmod +x "$home/.local/bin/tree-sitter"
+  write_fake_go_toolchain "$home"
   write_fake_command "$fake_bin/rg"
   write_fake_command "$fake_bin/fd"
   write_fake_command "$fake_bin/cc"
@@ -416,6 +430,10 @@ test_verify_requires_exact_version_and_loads_managed_config() {
     'len([item for item in value["checks"] if item["id"] == "nvim-config-load" and item["status"] == "PASS"]) == 1' || return 1
   json_assert "$output" \
     'len([item for item in value["checks"] if item["id"] == "tree-sitter-version" and item["status"] == "PASS"]) == 1' || return 1
+  json_assert "$output" \
+    'len([item for item in value["checks"] if item["id"] == "go-version" and item["status"] == "PASS"]) == 1' || return 1
+  json_assert "$output" \
+    'len([item for item in value["checks"] if item["id"] == "gopls-version" and item["status"] == "PASS"]) == 1' || return 1
   grep -q -- '--headless' "$trace" || return 1
   ! grep -q -- '--clean' "$trace"
 }

@@ -240,6 +240,7 @@ test_vim_module_publishes_fd_compat_command_on_ubuntu() {
     install_mise() { :; }
     install_neovim_runtime() { :; }
     install_tree_sitter_cli() { :; }
+    install_editor_toolchain() { :; }
     pkg_install() { :; }
       source "$ROOT_DIR/modules/vim.sh"
       "$HOME/.local/bin/fd"
@@ -276,6 +277,7 @@ test_vim_module_activates_mise_python_for_downstream_modules() {
       install_mise() { :; }
       install_neovim_runtime() { :; }
       install_tree_sitter_cli() { :; }
+      install_editor_toolchain() { :; }
       pkg_install() { :; }
       resolve_mise_executable() { printf "%s\n" "$HOME/.local/bin/mise"; }
       source "$ROOT_DIR/modules/vim.sh"

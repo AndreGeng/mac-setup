@@ -45,6 +45,12 @@ For `runtime.node`, treat `config/runtime/node.tsv` and `config/bootstrap/mise.t
 desired-state sources. Never replace pinned versions with `latest` or `lts`, and never bypass
 the declared SHA-256 verification during an operator run.
 
+For `editor.nvim`, treat `config/bootstrap/neovim.tsv`,
+`config/bootstrap/tree-sitter.tsv`, and `config/runtime/editor.tsv` as the desired-state
+sources for Neovim, tree-sitter, Go, and gopls. Do not ask Mason to repair or reinstall the
+repository-managed gopls package; use the CLI plan/apply/verify flow so the managed command is
+published through `~/.local/bin` and independently verified.
+
 Canonical profile mappings:
 
 - Complete terminal development environment (Zsh + Neovim): `profile.terminal` (alias:

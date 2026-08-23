@@ -45,6 +45,11 @@ tools. Its desired state is `config/runtime/node.tsv`; mise bootstrap assets and
 declared in `config/bootstrap/mise.tsv`. Do not substitute floating versions or bypass checksum
 verification.
 
+The `editor.nvim` desired state spans `config/bootstrap/neovim.tsv`,
+`config/bootstrap/tree-sitter.tsv`, and `config/runtime/editor.tsv`. These manifests pin
+Neovim, tree-sitter, Go, and gopls. Keep gopls under the CLI-managed `~/.local/bin` contract;
+do not reintroduce it into Mason's startup-time `ensure_installed` list.
+
 Agent configuration:
 
 ```bash

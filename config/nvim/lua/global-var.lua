@@ -10,16 +10,9 @@ if vim then
   if vim.fn.isdirectory(vim.env.HOME .. "/.local/share/mise/shims") == 1 then
     vim.env.PATH = vim.env.HOME .. "/.local/share/mise/shims:" .. vim.env.PATH
   end
-  local mise = vim.fn.exepath("mise")
-  if mise ~= "" then
-    local go_root = vim.trim(vim.fn.system({ mise, "where", "go" }))
-    if vim.v.shell_error == 0 and go_root ~= "" then
-      local go_bin = go_root .. "/bin"
-      if vim.fn.isdirectory(go_bin) == 1 then
-        vim.env.PATH = go_bin .. ":" .. vim.env.PATH
-      end
-    end
-  end
+  -- mac-setup 把 tree-sitter、Go、gopls 等受管工具发布到这里。即使 Neovim
+  -- 从尚未重新加载 .zshrc 的旧终端启动，也应优先使用仓库声明的版本。
+  vim.env.PATH = vim.env.HOME .. "/.local/bin:" .. vim.env.PATH
 
   -- disable matchparen plugin
   vim.g.loaded_matchparen = 1

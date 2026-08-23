@@ -170,9 +170,11 @@ plan_member_changes() {
 
   case "$capability" in
   editor.nvim)
-    local neovim_version tree_sitter_version
+    local neovim_version tree_sitter_version go_version gopls_version
     neovim_version="$(neovim_bootstrap_version "$MAC_SETUP_REPO_ROOT")" || return 1
     tree_sitter_version="$(tree_sitter_bootstrap_version "$MAC_SETUP_REPO_ROOT")" || return 1
+    go_version="$(editor_manifest_version "$MAC_SETUP_REPO_ROOT" runtime go)" || return 1
+    gopls_version="$(editor_manifest_version "$MAC_SETUP_REPO_ROOT" go gopls)" || return 1
     if ! neovim_runtime_matches "$MAC_SETUP_REPO_ROOT"; then
       add_plan_change CONFIGURE_RUNTIME "neovim@${neovim_version}" \
         'Install the exact Neovim release declared by the repository.'
@@ -182,6 +184,16 @@ plan_member_changes() {
       add_plan_change CONFIGURE_RUNTIME "tree-sitter@${tree_sitter_version}" \
         'Install the exact tree-sitter CLI required by nvim-treesitter.'
       add_plan_approval network 'tree-sitter CLI must be downloaded from its official release.'
+    fi
+    if ! go_runtime_matches "$MAC_SETUP_REPO_ROOT"; then
+      add_plan_change CONFIGURE_RUNTIME "go@${go_version}" \
+        'Install the exact Go runtime required by the editor toolchain.'
+      add_plan_approval network 'The declared Go runtime must be downloaded.'
+    fi
+    if ! gopls_runtime_matches "$MAC_SETUP_REPO_ROOT"; then
+      add_plan_change CONFIGURE_RUNTIME "gopls@${gopls_version}" \
+        'Install the exact gopls language server declared by the repository.'
+      add_plan_approval network 'The declared gopls version must be downloaded.'
     fi
     if [[ "$feature_python" == "true" &&
       ! -x "$HOME/.local/share/neovim/neovim3/bin/python" ]]; then
@@ -584,13 +596,20 @@ build_verify_member() {
   VERIFY_CURRENT_MEMBER="$capability"
   case "$capability" in
   editor.nvim)
-    local neovim_version tree_sitter_version nvim_path tree_sitter_path
+    local neovim_version tree_sitter_version go_version gopls_version
+    local nvim_path tree_sitter_path go_path gopls_path
     neovim_version="$(neovim_bootstrap_version "$MAC_SETUP_REPO_ROOT")" || true
     tree_sitter_version="$(tree_sitter_bootstrap_version "$MAC_SETUP_REPO_ROOT")" || true
+    go_version="$(editor_manifest_version "$MAC_SETUP_REPO_ROOT" runtime go)" || true
+    gopls_version="$(editor_manifest_version "$MAC_SETUP_REPO_ROOT" go gopls)" || true
     nvim_path="$(resolve_neovim_executable 2>/dev/null)" || true
     tree_sitter_path="$(resolve_tree_sitter_executable 2>/dev/null)" || true
+    go_path="$(resolve_managed_go_executable 2>/dev/null)" || true
+    gopls_path="$(resolve_managed_gopls_executable 2>/dev/null)" || true
     verify_command nvim-executable nvim
     verify_command tree-sitter-executable tree-sitter
+    verify_command go-executable go
+    verify_command gopls-executable gopls
     verify_command ripgrep-executable rg
     verify_command fd-executable fd
     verify_configs "$capability"
@@ -607,6 +626,18 @@ build_verify_member() {
     else
       add_verify_check tree-sitter-version FAIL \
         "tree-sitter@${tree_sitter_version} is unavailable."
+    fi
+    if [[ -n "$go_path" && -n "$go_version" ]] &&
+      go_executable_matches "$go_path" "$go_version"; then
+      add_verify_check go-version PASS "go@${go_version} ($go_path)"
+    else
+      add_verify_check go-version FAIL "go@${go_version} is unavailable."
+    fi
+    if [[ -n "$gopls_path" && -n "$gopls_version" ]] &&
+      gopls_executable_matches "$gopls_path" "$gopls_version"; then
+      add_verify_check gopls-version PASS "gopls@${gopls_version} ($gopls_path)"
+    else
+      add_verify_check gopls-version FAIL "gopls@${gopls_version} is unavailable."
     fi
     if [[ -n "$nvim_path" ]] &&
       MAC_SETUP_NVIM_VERIFY=1 "$nvim_path" --headless +qa >/dev/null 2>&1; then

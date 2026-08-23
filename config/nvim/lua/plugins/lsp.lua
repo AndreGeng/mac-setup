@@ -1,7 +1,9 @@
 return {
   {
     'williamboman/mason.nvim',
-    opts = {},
+    opts = {
+      PATH = 'append',
+    },
     init = function()
       local on_attach = function(_, bufnr)
         vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
@@ -49,6 +51,7 @@ return {
 
       local ts_ls_cmd = nil
       local tailwindcss_cmd = nil
+      local gopls_cmd = { vim.fn.expand('~/.local/bin/gopls') }
       if node_root then
         ts_ls_cmd = {
           node_root .. '/bin/node',
@@ -68,7 +71,10 @@ return {
       for _, lsp in ipairs(servers) do
         vim.lsp.enable(lsp)
         vim.lsp.config(lsp, {
-          cmd = lsp == 'ts_ls' and ts_ls_cmd or lsp == 'tailwindcss' and tailwindcss_cmd or nil,
+          cmd = lsp == 'ts_ls' and ts_ls_cmd
+            or lsp == 'tailwindcss' and tailwindcss_cmd
+            or lsp == 'gopls' and gopls_cmd
+            or nil,
           on_attach = on_attach,
           capabilities = capabilities,
           settings = {
@@ -122,7 +128,8 @@ return {
   {
     'williamboman/mason-lspconfig.nvim',
     opts = {
-      ensure_installed = { 'gopls', 'pyright', 'ruff' },
+      -- gopls 由 mac-setup 的精确版本 manifest 管理，避免 Mason 启动时异步安装失败。
+      ensure_installed = { 'pyright', 'ruff' },
       automatic_enable = false,
     },
     dependencies = {

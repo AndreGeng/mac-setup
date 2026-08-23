@@ -53,6 +53,10 @@ json_has "$verify_json" '"id":"nvim-config-load","status":"PASS"' ||
   fail 'the managed Neovim configuration did not load successfully'
 json_has "$verify_json" '"id":"tree-sitter-version","status":"PASS"' ||
   fail 'the pinned tree-sitter CLI did not pass verification'
+json_has "$verify_json" '"id":"go-version","status":"PASS"' ||
+  fail 'the pinned Go runtime did not pass verification'
+json_has "$verify_json" '"id":"gopls-version","status":"PASS"' ||
+  fail 'the pinned gopls language server did not pass verification'
 
 # The test runs in a non-interactive Bash process, so it does not reload the managed
 # shell configuration after apply. Mirror the PATH that a new terminal receives.
@@ -63,15 +67,34 @@ expected_nvim_version="$({
   source "$ROOT_DIR/lib/bootstrap-manifest.sh"
   neovim_bootstrap_version "$ROOT_DIR"
 })"
+expected_go_version="$({
+  # shellcheck source=../../lib/runtime-manifest.sh
+  source "$ROOT_DIR/lib/runtime-manifest.sh"
+  editor_manifest_version "$ROOT_DIR" runtime go
+})"
+expected_gopls_version="$({
+  # shellcheck source=../../lib/runtime-manifest.sh
+  source "$ROOT_DIR/lib/runtime-manifest.sh"
+  editor_manifest_version "$ROOT_DIR" go gopls
+})"
 [[ "$(nvim --version | head -n 1)" == "NVIM v${expected_nvim_version}" ]] ||
   fail 'Neovim does not match the exact manifest version'
 MAC_SETUP_NVIM_VERIFY=1 nvim --headless +qa >/dev/null 2>&1 ||
   fail 'Neovim failed to start with the managed core configuration'
 command -v cc >/dev/null 2>&1 || fail 'a C compiler is unavailable for tree-sitter parsers'
+[[ "$(go version)" == "go version go${expected_go_version} "* ]] ||
+  fail 'Go does not match the exact editor manifest version'
+[[ "$(gopls version | head -n 1)" == "golang.org/x/tools/gopls v${expected_gopls_version}" ]] ||
+  fail 'gopls does not match the exact editor manifest version'
 
 printf '%s\n' 'E2E Neovim plugins and tree-sitter parsers'
 nvim --headless '+Lazy! restore' +qa >/dev/null 2>&1 ||
   fail 'Lazy failed to restore the locked Neovim plugins'
+MAC_SETUP_NVIM_BOOTSTRAP=1 nvim --headless \
+  "+lua assert(vim.fn.exepath('tree-sitter') == vim.fn.expand('~/.local/bin/tree-sitter'))" \
+  "+lua assert(vim.fn.exepath('gopls') == vim.fn.expand('~/.local/bin/gopls'))" \
+  +qa >/dev/null 2>&1 ||
+  fail 'Neovim does not resolve the managed tree-sitter and gopls commands'
 MAC_SETUP_NVIM_BOOTSTRAP=1 nvim --headless +qa >/dev/null 2>&1 ||
   fail 'nvim-treesitter failed to install the configured parsers'
 

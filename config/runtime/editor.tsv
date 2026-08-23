@@ -1,0 +1,6 @@
+# schemaVersion=1
+# kind<TAB>name<TAB>exact-version
+# Go releases: https://go.dev/dl/
+# gopls releases: https://github.com/golang/tools/releases
+runtime	go	1.26.3
+go	gopls	0.23.0

@@ -491,6 +491,135 @@ install_tree_sitter_cli() {
   log "tree-sitter CLI v${version} 安装成功" "$GREEN"
 }
 
+resolve_managed_go_executable() {
+  local executable="${HOME:-/root}/.local/bin/go"
+  [[ -f "$executable" && -x "$executable" ]] || return 1
+  printf '%s\n' "$executable"
+}
+
+go_executable_version() {
+  local executable="$1"
+  local output
+  [[ -f "$executable" && -x "$executable" ]] || return 1
+  output="$("$executable" version 2>/dev/null)" || return 1
+  [[ "$output" =~ ^go[[:space:]]version[[:space:]]go([0-9]+\.[0-9]+\.[0-9]+) ]] || return 1
+  printf '%s\n' "${BASH_REMATCH[1]}"
+}
+
+go_executable_matches() {
+  local executable="$1"
+  local expected_version="$2"
+  local actual_version
+  actual_version="$(go_executable_version "$executable")" || return 1
+  [[ "$actual_version" == "$expected_version" ]]
+}
+
+go_runtime_matches() {
+  local repo_root="${1:-$UTILS_REPO_ROOT}"
+  local expected_version executable
+  expected_version="$(editor_manifest_version "$repo_root" runtime go)" || return 1
+  executable="$(resolve_managed_go_executable)" || return 1
+  go_executable_matches "$executable" "$expected_version"
+}
+
+resolve_managed_gopls_executable() {
+  local executable="${HOME:-/root}/.local/bin/gopls"
+  [[ -f "$executable" && -x "$executable" ]] || return 1
+  printf '%s\n' "$executable"
+}
+
+gopls_executable_version() {
+  local executable="$1"
+  local output
+  [[ -f "$executable" && -x "$executable" ]] || return 1
+  output="$("$executable" version 2>/dev/null | head -n 1)" || return 1
+  [[ "$output" =~ ^golang.org/x/tools/gopls[[:space:]]v([0-9]+\.[0-9]+\.[0-9]+)$ ]] ||
+    return 1
+  printf '%s\n' "${BASH_REMATCH[1]}"
+}
+
+gopls_executable_matches() {
+  local executable="$1"
+  local expected_version="$2"
+  local actual_version
+  actual_version="$(gopls_executable_version "$executable")" || return 1
+  [[ "$actual_version" == "$expected_version" ]]
+}
+
+gopls_runtime_matches() {
+  local repo_root="${1:-$UTILS_REPO_ROOT}"
+  local expected_version executable
+  expected_version="$(editor_manifest_version "$repo_root" go gopls)" || return 1
+  executable="$(resolve_managed_gopls_executable)" || return 1
+  gopls_executable_matches "$executable" "$expected_version"
+}
+
+install_editor_toolchain() {
+  local home_dir="${HOME:-/root}"
+  local local_bin="$home_dir/.local/bin"
+  local repo_root="$UTILS_REPO_ROOT"
+  local go_version gopls_version
+
+  validate_editor_manifest "$repo_root" || return 1
+  go_version="$(editor_manifest_version "$repo_root" runtime go)" || return 1
+  gopls_version="$(editor_manifest_version "$repo_root" go gopls)" || return 1
+
+  if go_runtime_matches "$repo_root" && gopls_runtime_matches "$repo_root" &&
+    [[ -x "$local_bin/gofmt" ]]; then
+    export PATH="$local_bin:$PATH"
+    log "Go ${go_version} 与 gopls ${gopls_version} 已安装，跳过" "$YELLOW"
+    return 0
+  fi
+
+  install_mise || return 1
+  local mise_cmd go_root
+  mise_cmd="$(resolve_mise_executable)" || {
+    log "未找到 mise，无法安装 Go 编辑器工具链" "$RED"
+    return 1
+  }
+  "$mise_cmd" install "go@${go_version}" || return 1
+  go_root="$("$mise_cmd" where "go@${go_version}" 2>/dev/null)" || {
+    log "无法定位 go@${go_version} 的安装目录" "$RED"
+    return 1
+  }
+  if ! go_executable_matches "$go_root/bin/go" "$go_version" ||
+    [[ ! -x "$go_root/bin/gofmt" ]]; then
+    log "go@${go_version} 安装内容无效" "$RED"
+    return 1
+  fi
+
+  local runtime_parent="$home_dir/.local/share/gopls/versions"
+  local runtime_dir="$runtime_parent/$gopls_version"
+  local stage_dir=""
+  mkdir -p "$runtime_parent" "$local_bin"
+
+  if [[ ! -x "$runtime_dir/bin/gopls" ]] ||
+    ! gopls_executable_matches "$runtime_dir/bin/gopls" "$gopls_version"; then
+    stage_dir="$(mktemp -d "$runtime_parent/.${gopls_version}.new.XXXXXX")" || return 1
+    mkdir -p "$stage_dir/bin"
+    log "安装 gopls v${gopls_version}..." "$GREEN"
+    if ! GOBIN="$stage_dir/bin" "$mise_cmd" exec "go@${go_version}" -- \
+      go install "golang.org/x/tools/gopls@v${gopls_version}" ||
+      ! gopls_executable_matches "$stage_dir/bin/gopls" "$gopls_version"; then
+      rm -rf "$stage_dir"
+      log "gopls v${gopls_version} 安装失败；未修改现有安装" "$RED"
+      return 1
+    fi
+    rm -rf "$runtime_dir"
+    if ! mv "$stage_dir" "$runtime_dir"; then
+      rm -rf "$stage_dir"
+      log "gopls v${gopls_version} 发布失败" "$RED"
+      return 1
+    fi
+  fi
+
+  symlink_config "$go_root/bin/go" "$local_bin/go" || return 1
+  symlink_config "$go_root/bin/gofmt" "$local_bin/gofmt" || return 1
+  symlink_config "$runtime_dir/bin/gopls" "$local_bin/gopls" || return 1
+  export PATH="$local_bin:$PATH"
+  log "Go ${go_version} 与 gopls ${gopls_version} 安装成功" "$GREEN"
+}
+
 # 若 ~/.local/bin/mise 误为目录，移除以便安装真实二进制
 cleanup_mise_path_if_directory() {
   local home_dir="${HOME:-/root}"
