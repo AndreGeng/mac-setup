@@ -91,6 +91,15 @@ for module in "${MODULES[@]}"; do
   esac
 done
 
+module_selected() {
+  local requested="$1"
+  local module
+  for module in "${MODULES[@]}"; do
+    [[ "$module" == "$requested" ]] && return 0
+  done
+  return 1
+}
+
 # sync 是完整安装中的配置发布者，避免 vim 先复制再由 sync 备份并改成链接。
 for module in "${MODULES[@]}"; do
   if [[ "$module" == "sync" ]]; then
@@ -175,6 +184,13 @@ if [[ "$RUN_PLATFORM" == "true" ]]; then
       fi
     done
   done < <(platform_script_dirs "$SCRIPT_ROOT/platforms")
+fi
+
+# sync publishes ~/.zshrc after the zsh module has installed Zinit. Finish the
+# installation by materializing its plugins now, rather than during the user's
+# first interactive terminal session.
+if [[ "$DRY_RUN" != "true" ]] && module_selected zsh && module_selected sync; then
+  prewarm_zsh_environment
 fi
 
 log "=== 环境搭建完成 ===" "$GREEN"

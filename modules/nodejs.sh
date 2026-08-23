@@ -30,7 +30,16 @@ install_nodejs() {
   local runtime_name runtime_version
   while IFS='|' read -r runtime_name runtime_version; do
     log "安装 ${runtime_name} ${runtime_version}..." "$GREEN"
-    "$_mise_bin" use -g "${runtime_name}@${runtime_version}" || return 1
+    if declare -F run_with_retry >/dev/null 2>&1; then
+      run_with_retry "mise use ${runtime_name}@${runtime_version}" \
+        "${MAC_SETUP_MISE_INSTALL_ATTEMPTS:-3}" \
+        "${MAC_SETUP_MISE_RETRY_DELAY_SECONDS:-2}" \
+        "$_mise_bin" use -g "${runtime_name}@${runtime_version}" || return 1
+    else
+      # Compatibility for callers that inject only the historical install_mise
+      # interface before sourcing this standalone module.
+      "$_mise_bin" use -g "${runtime_name}@${runtime_version}" || return 1
+    fi
   done < <(node_manifest_records "$NODEJS_MODULE_ROOT" runtime)
 
   local node_version node_root npm_bin

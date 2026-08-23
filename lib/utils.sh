@@ -21,6 +21,70 @@ log() {
   echo -e "${color}${msg}${NC}"
 }
 
+# Retry a complete installer command. This complements each package manager's
+# own transport retries: streamed archives can still abort the whole process
+# after a temporary read timeout.
+run_with_retry() {
+  local description="$1"
+  local attempts="$2"
+  local retry_delay="$3"
+  shift 3
+  local attempt=1
+
+  [[ "$attempts" =~ ^[1-9][0-9]*$ ]] || {
+    log "安装重试次数无效: $attempts" "$RED"
+    return 1
+  }
+  [[ "$retry_delay" =~ ^[0-9]+$ ]] || {
+    log "安装重试等待时间无效: $retry_delay" "$RED"
+    return 1
+  }
+  (($# > 0)) || {
+    log "安装重试命令为空: $description" "$RED"
+    return 1
+  }
+
+  while ((attempt <= attempts)); do
+    if "$@"; then
+      return 0
+    fi
+    if ((attempt < attempts)); then
+      log "$description 失败，准备重试 ($attempt/$attempts)" "$YELLOW" >&2
+      if ((retry_delay > 0)); then
+        sleep "$retry_delay"
+      fi
+    fi
+    attempt=$((attempt + 1))
+  done
+
+  log "$description 在 $attempts 次尝试后仍失败" "$RED" >&2
+  return 1
+}
+
+# Run a non-interactive pip install with both pip-level network retries and a
+# bounded retry around the complete install. The outer retry is important for
+# streamed wheel downloads: a read timeout can abort pip after its connection
+# retry budget has already been consumed.
+pip_install_with_retry() {
+  local python="$1"
+  local package="$2"
+  local attempts="${3:-${MAC_SETUP_PIP_INSTALL_ATTEMPTS:-3}}"
+  local timeout_seconds="${4:-${MAC_SETUP_PIP_TIMEOUT_SECONDS:-300}}"
+  local network_retries="${5:-${MAC_SETUP_PIP_NETWORK_RETRIES:-10}}"
+  local retry_delay="${6:-${MAC_SETUP_PIP_RETRY_DELAY_SECONDS:-2}}"
+  [[ "$timeout_seconds" =~ ^[1-9][0-9]*$ ]] || {
+    log "pip 网络超时无效: $timeout_seconds" "$RED"
+    return 1
+  }
+  [[ "$network_retries" =~ ^[0-9]+$ ]] || {
+    log "pip 网络重试次数无效: $network_retries" "$RED"
+    return 1
+  }
+  run_with_retry "pip install $package" "$attempts" "$retry_delay" \
+    "$python" -m pip install --disable-pip-version-check --no-input \
+    --timeout "$timeout_seconds" --retries "$network_retries" "$package"
+}
+
 # 获取脚本根目录
 get_script_root() {
   local script_path="${BASH_SOURCE[0]}"
@@ -176,6 +240,38 @@ ensure_zsh_default_shell() {
     return 1
   fi
   log "默认登录 shell 已切换；当前终端请运行: exec $zsh_path -l" "$GREEN"
+}
+
+# Materialize Zinit plugins during setup so the user's first terminal does not
+# become an implicit network/install step. Run from HOME to avoid project-local
+# mise trust prompts, and provide a real terminfo name for headless installers.
+prewarm_zsh_environment() {
+  local home_dir="${HOME:-/root}"
+  local zsh_path terminal
+
+  [[ -r "$home_dir/.zshrc" ]] || {
+    log "找不到 $home_dir/.zshrc，无法预热 Zsh 环境" "$RED"
+    return 1
+  }
+  zsh_path="$(resolve_zsh_executable)" || {
+    log "找不到 zsh，无法预热 Zsh 环境" "$RED"
+    return 1
+  }
+
+  terminal="${TERM:-}"
+  case "$terminal" in
+  "" | dumb | unknown) terminal="xterm-256color" ;;
+  esac
+
+  log "预热 Zsh/Zinit 插件环境..." "$GREEN"
+  if ! (
+    cd "$home_dir"
+    TERM="$terminal" "$zsh_path" -lic exit
+  ); then
+    log "Zsh/Zinit 插件预热失败" "$RED"
+    return 1
+  fi
+  log "Zsh/Zinit 插件环境已就绪" "$GREEN"
 }
 
 node_runtime_command_matches() {
@@ -626,7 +722,10 @@ install_tree_sitter_cli() {
       return 1
     fi
     if ! install_mise || ! mise_cmd="$(resolve_mise_executable)" ||
-      ! "$mise_cmd" install "$build_runtime" ||
+      ! run_with_retry "mise install $build_runtime" \
+        "${MAC_SETUP_MISE_INSTALL_ATTEMPTS:-3}" \
+        "${MAC_SETUP_MISE_RETRY_DELAY_SECONDS:-2}" \
+        "$mise_cmd" install "$build_runtime" ||
       # nvim-treesitter builds repositories that already contain generated parser.c files.
       # The default qjs-rt feature is only needed to generate parsers from grammar.js and
       # would add a libclang/QuickJS build dependency to the base editor environment.
@@ -744,7 +843,10 @@ install_editor_toolchain() {
     log "未找到 mise，无法安装 Go 编辑器工具链" "$RED"
     return 1
   }
-  "$mise_cmd" install "go@${go_version}" || return 1
+  run_with_retry "mise install go@${go_version}" \
+    "${MAC_SETUP_MISE_INSTALL_ATTEMPTS:-3}" \
+    "${MAC_SETUP_MISE_RETRY_DELAY_SECONDS:-2}" \
+    "$mise_cmd" install "go@${go_version}" || return 1
   go_root="$("$mise_cmd" where "go@${go_version}" 2>/dev/null)" || {
     log "无法定位 go@${go_version} 的安装目录" "$RED"
     return 1

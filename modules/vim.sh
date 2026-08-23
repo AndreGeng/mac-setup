@@ -122,7 +122,10 @@ setup_python_env() {
   # 安装 Python
   if ! "$mise_cmd" ls python 2>/dev/null | grep -q "$python3_version"; then
     log "安装 Python $python3_version..." "$GREEN"
-    "$mise_cmd" install python@"$python3_version"
+    run_with_retry "mise install python@${python3_version}" \
+      "${MAC_SETUP_MISE_INSTALL_ATTEMPTS:-3}" \
+      "${MAC_SETUP_MISE_RETRY_DELAY_SECONDS:-2}" \
+      "$mise_cmd" install "python@${python3_version}" || return 1
   fi
 
   python_root="$("$mise_cmd" where "python@${python3_version}" 2>/dev/null)" || {
@@ -145,13 +148,13 @@ setup_python_env() {
   # 安装 pynvim
   if ! "$venv_path/bin/pip" show pynvim &>/dev/null; then
     log "安装 pynvim..." "$GREEN"
-    "$venv_path/bin/pip" install pynvim
+    pip_install_with_retry "$venv_path/bin/python" pynvim || return 1
   fi
 
   # 安装 neovim-remote
   if ! "$venv_path/bin/pip" show neovim-remote &>/dev/null; then
     log "安装 neovim-remote..." "$GREEN"
-    "$venv_path/bin/pip" install neovim-remote
+    pip_install_with_retry "$venv_path/bin/python" neovim-remote || return 1
   fi
 }
 

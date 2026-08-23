@@ -11,31 +11,27 @@ fail() {
 
 "$ROOT_DIR/setup.sh" || fail 'setup.sh failed'
 
-export PATH="$HOME/.local/bin:$PATH"
+"$ROOT_DIR/test/e2e/linux-runtime.sh" "$EXPECTED_PLATFORM" first ||
+  fail 'first runtime acceptance failed'
 
-actual_shell="$(getent passwd "$(id -un)" | cut -d: -f7)"
-expected_shell="$(command -v zsh)"
-[[ "$actual_shell" == "$expected_shell" ]] ||
-  fail "login shell is $actual_shell instead of $expected_shell"
+managed_state_digest() {
+  sha256sum \
+    "$HOME/.bashrc" \
+    "$HOME/.config/opencode/opencode.json" \
+    "$HOME/.config/opencode/AGENTS.md" \
+    "$HOME/.codex/config.toml" \
+    "$HOME/.codex/hooks.json" |
+    sha256sum | awk '{print $1}'
+}
 
-[[ -L "$HOME/.local/bin/opencode" ]] || fail 'managed OpenCode command link is missing'
-[[ -L "$HOME/.local/bin/codex" ]] || fail 'managed Codex command link is missing'
-[[ -L "$HOME/.local/bin/node" ]] || fail 'managed Node runtime link is missing'
-[[ -L "$HOME/.local/bin/bun" ]] || fail 'managed Bun runtime link is missing'
-command -v node >/dev/null 2>&1 || fail 'Node is unavailable through ~/.local/bin'
-command -v bun >/dev/null 2>&1 || fail 'Bun is unavailable through ~/.local/bin'
-command -v opencode >/dev/null 2>&1 || fail 'OpenCode is unavailable through ~/.local/bin'
-command -v codex >/dev/null 2>&1 || fail 'Codex is unavailable through ~/.local/bin'
-[[ "$(opencode --version)" == 1.18.20 ]] || fail 'OpenCode version does not match the manifest'
-[[ "$(codex --version)" == 'codex-cli 0.149.0' ]] ||
-  fail 'Codex version does not match the manifest'
+before_digest="$(managed_state_digest)"
+printf 'E2E %s idempotence: run setup.sh a second time\n' "$EXPECTED_PLATFORM"
+"$ROOT_DIR/setup.sh" || fail 'second setup.sh failed during idempotence validation'
+after_digest="$(managed_state_digest)"
+[[ "$after_digest" == "$before_digest" ]] ||
+  fail 'second setup changed stable shell or Agent configuration'
 
-[[ -f "$HOME/.config/opencode/opencode.json" ]] || fail 'OpenCode config is missing'
-[[ -f "$HOME/.config/opencode/AGENTS.md" ]] || fail 'OpenCode agent instructions are missing'
-[[ -f "$HOME/.codex/config.toml" ]] || fail 'Codex config is missing'
-[[ -f "$HOME/.codex/hooks.json" ]] || fail 'Codex hooks are missing'
-[[ -L "$HOME/.agents/skills/mac-setup" ]] || fail 'shared mac-setup skill is missing'
-
-bash "$ROOT_DIR/modules/agents.sh" --audit >/dev/null || fail 'Agent config audit failed'
+"$ROOT_DIR/test/e2e/linux-runtime.sh" "$EXPECTED_PLATFORM" second ||
+  fail 'second runtime acceptance failed'
 
 printf 'PASS %s full setup E2E\n' "$EXPECTED_PLATFORM"

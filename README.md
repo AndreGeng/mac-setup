@@ -196,7 +196,9 @@ bash scripts/privacy-scan.sh
 # Docker 中真实执行 Agent terminal 的 plan/apply/verify/replan 闭环
 bash test/ubuntu-terminal-test.sh
 
-# Docker 中执行 Ubuntu/Arch 全量安装并验收 Zsh、OpenCode、Codex 和 Agent 配置
+# Docker 中执行 Ubuntu/Arch 全量安装：使用全新登录 Zsh 验收命令发现，
+# 实际启动 Neovim/Lazy/tree-sitter/gopls 与 OpenCode/Codex 配置加载器，
+# 然后再次完整安装并重复运行态验收，检查幂等性
 bash test/ubuntu-test.sh
 bash test/arch-test.sh
 ```

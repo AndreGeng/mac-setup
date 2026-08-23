@@ -735,8 +735,7 @@ install_reme() {
     mkdir -p "$REME_ROOT"
     rm -rf "$REME_VERSIONED_VENV"
     if ! "$REME_PYTHON" -m venv "$REME_VERSIONED_VENV" ||
-      ! "$REME_VERSIONED_VENV/bin/python" -m pip install \
-        --disable-pip-version-check --no-input "$package"; then
+      ! pip_install_with_retry "$REME_VERSIONED_VENV/bin/python" "$package"; then
       rm -rf "$REME_VERSIONED_VENV"
       return 1
     fi
@@ -1319,7 +1318,11 @@ PY
 audit_reme_runtime() {
   local bun_path=""
 
-  bun_path="$(command -v bun 2>/dev/null || true)"
+  if [[ -f "$HOME/.local/bin/bun" && -x "$HOME/.local/bin/bun" ]]; then
+    bun_path="$HOME/.local/bin/bun"
+  else
+    bun_path="$(command -v bun 2>/dev/null || true)"
+  fi
   if [[ -n "$bun_path" && -f "$bun_path" && -x "$bun_path" ]]; then
     audit_ok bun-runtime "$bun_path"
   else
