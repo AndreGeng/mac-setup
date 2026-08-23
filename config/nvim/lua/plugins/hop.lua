@@ -1,6 +1,7 @@
 return {
   -- easy motion
-  'phaazon/hop.nvim',
+  'smoka7/hop.nvim',
+  version = 'v2.7.2',
   opts = {},
   keys = {
     { 'f',  ':HopChar1<cr>', noremap = true },
