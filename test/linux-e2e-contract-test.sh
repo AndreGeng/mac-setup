@@ -36,8 +36,12 @@ test_runtime_uses_a_fresh_login_zsh() {
   grep -Fq 'sudo -iu' "$RUNTIME_E2E" || return 1
   grep -Fq 'zsh -lic' "$RUNTIME_E2E" || return 1
   grep -Fq 'TERM=xterm-256color' "$RUNTIME_E2E" || return 1
-  grep -Fq 'mac-setup-e2e "$ROOT_DIR" "$REQUIRED_COMMANDS"' "$RUNTIME_E2E" || return 1
-  grep -Fq '"$1/test/e2e/linux-login.zsh" "$2"' "$RUNTIME_E2E" || return 1
+  grep -Fq "printf -v quoted_root '%q' \"\$ROOT_DIR\"" "$RUNTIME_E2E" || return 1
+  grep -Fq "printf -v quoted_required_commands '%q' \"\$REQUIRED_COMMANDS\"" \
+    "$RUNTIME_E2E" || return 1
+  grep -Fq '$quoted_root/test/e2e/linux-login.zsh $quoted_required_commands' \
+    "$RUNTIME_E2E" || return 1
+  ! grep -Fq 'mac-setup-e2e "$ROOT_DIR" "$REQUIRED_COMMANDS"' "$RUNTIME_E2E" || return 1
   grep -Fq 'required_commands="${1:' "$LOGIN_PROBE" || return 1
   ! grep -Fq 'MAC_SETUP_E2E_REQUIRED_COMMANDS' "$LOGIN_PROBE" || return 1
   grep -Fq 'login-shell.stderr' "$RUNTIME_E2E" || return 1
