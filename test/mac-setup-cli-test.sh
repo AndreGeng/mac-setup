@@ -476,6 +476,7 @@ test_tmux_config_guards_macos_clipboard_helpers() {
   local config="$ROOT_DIR/config/.tmux.conf"
   grep -q "if-shell 'command -v reattach-to-user-namespace" "$config" || return 1
   grep -q "if-shell 'command -v pbcopy" "$config" || return 1
+  grep -q "if-shell 'tmux show-options -g extended-keys-format" "$config" || return 1
   ! grep -q '^set -g default-command "reattach-to-user-namespace' "$config"
 }
 

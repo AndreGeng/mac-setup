@@ -28,7 +28,7 @@ setopt    incappendhistory  #Immediately append to the history file, not just wh
 # Basic Environment Vars {{{
 
 export ZSH_DISABLE_COMPFIX=true
-export PATH="$PATH:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH="$HOME/.local/bin:$PATH:/usr/bin:/bin:/usr/sbin:/sbin"
 export EDITOR=nvim
 export LC_CTYPE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
@@ -136,7 +136,9 @@ zinit light-mode for \
 zinit snippet OMZP::git/git.plugin.zsh
 zinit snippet OMZ::plugins/vi-mode/vi-mode.plugin.zsh
 zinit snippet OMZ::plugins/colored-man-pages/colored-man-pages.plugin.zsh
-zinit snippet OMZ::plugins/autojump/autojump.plugin.zsh
+if command -v autojump >/dev/null 2>&1; then
+  zinit snippet OMZ::plugins/autojump/autojump.plugin.zsh
+fi
 zinit ice svn
 zinit ice depth=1; zinit light romkatv/powerlevel10k
 zinit load zsh-users/zsh-syntax-highlighting
@@ -148,8 +150,8 @@ zinit load davidparsson/zsh-pyenv-lazy
 [[ -e ~/fzf-addons/fzf-git.sh ]] && source ~/fzf-addons/fzf-git.sh
 
 # binds Up and Down to a history search
-bindkey "$terminfo[kcuu1]" history-substring-search-up
-bindkey "$terminfo[kcud1]" history-substring-search-down
+[[ -n "${terminfo[kcuu1]:-}" ]] && bindkey "$terminfo[kcuu1]" history-substring-search-up
+[[ -n "${terminfo[kcud1]:-}" ]] && bindkey "$terminfo[kcud1]" history-substring-search-down
 
 ### End of Zinit's installer chunk
 

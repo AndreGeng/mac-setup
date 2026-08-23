@@ -570,7 +570,11 @@ test_shell_config_guards_optional_integrations() {
   ! grep -q '^\. "$HOME/.local/bin/env"$' "$ROOT_DIR/config/.zshrc" || return 1
   ! grep -q '^source "$HOME/.openclaw/completions/openclaw.zsh"$' \
     "$ROOT_DIR/config/.zshrc" || return 1
-  [[ "$(grep -c '^export BUN_INSTALL=' "$ROOT_DIR/config/.zshrc")" == "1" ]]
+  [[ "$(grep -c '^export BUN_INSTALL=' "$ROOT_DIR/config/.zshrc")" == "1" ]] || return 1
+  grep -q 'export PATH="$HOME/.local/bin:$PATH:/usr/bin' \
+    "$ROOT_DIR/config/.zshrc" || return 1
+  grep -q '^if command -v autojump ' "$ROOT_DIR/config/.zshrc" || return 1
+  grep -Fq '[[ -n "${terminfo[kcuu1]:-}" ]]' "$ROOT_DIR/config/.zshrc"
 }
 
 run_test help-has-no-side-effects test_help_has_no_side_effects
