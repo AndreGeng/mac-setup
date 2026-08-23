@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FULL_E2E="$ROOT_DIR/test/e2e/linux-full.sh"
 RUNTIME_E2E="$ROOT_DIR/test/e2e/linux-runtime.sh"
+SETUP="$ROOT_DIR/setup.sh"
 
 failures=0
 
@@ -33,8 +34,14 @@ test_full_e2e_repeats_setup_and_acceptance() {
 test_runtime_uses_a_fresh_login_zsh() {
   grep -Fq 'sudo -iu' "$RUNTIME_E2E" || return 1
   grep -Fq 'zsh -lic' "$RUNTIME_E2E" || return 1
+  grep -Fq 'TERM=xterm-256color' "$RUNTIME_E2E" || return 1
+  grep -Fq 'mac-setup-e2e "$ROOT_DIR" "$REQUIRED_COMMANDS"' "$RUNTIME_E2E" || return 1
   grep -Fq 'login-shell.stderr' "$RUNTIME_E2E" || return 1
   ! grep -Fq 'export PATH="$HOME/.local/bin:$PATH"' "$RUNTIME_E2E"
+}
+
+test_full_setup_prewarms_login_zsh() {
+  grep -Fq 'prewarm_zsh_environment' "$SETUP"
 }
 
 test_runtime_exercises_neovim_plugins() {
@@ -63,6 +70,7 @@ test_runtime_checks_required_commands() {
 run_test full-e2e-uses-runtime-acceptance test_full_e2e_uses_runtime_acceptance
 run_test full-e2e-repeats-setup-and-acceptance test_full_e2e_repeats_setup_and_acceptance
 run_test runtime-uses-a-fresh-login-zsh test_runtime_uses_a_fresh_login_zsh
+run_test full-setup-prewarms-login-zsh test_full_setup_prewarms_login_zsh
 run_test runtime-exercises-neovim-plugins test_runtime_exercises_neovim_plugins
 run_test runtime-exercises-agent-config-loaders test_runtime_exercises_agent_config_loaders
 run_test runtime-checks-required-commands test_runtime_checks_required_commands
@@ -72,4 +80,4 @@ if [[ "$failures" -ne 0 ]]; then
   exit 1
 fi
 
-printf 'PASS Linux E2E contract tests (6 cases)\n'
+printf 'PASS Linux E2E contract tests (7 cases)\n'
