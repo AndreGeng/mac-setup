@@ -240,6 +240,12 @@ run_module_quiet "$home" --apply
 expect_fail "$TEMP_ROOT/audit-no-bun.out" run_module_without_bun "$home" --audit --only codex
 grep -q 'bun-runtime' "$TEMP_ROOT/audit-no-bun.out"
 
+mkdir -p "$home/.local/bin"
+ln -s "$(command -v true)" "$home/.local/bin/bun"
+run_module_without_bun "$home" --audit --only codex >"$TEMP_ROOT/audit-local-bun.out"
+grep -q "AUDIT OK   bun-runtime        $home/.local/bin/bun" \
+  "$TEMP_ROOT/audit-local-bun.out"
+
 test -f "$home/.config/opencode/opencode.json"
 test -f "$home/.config/opencode/AGENTS.md"
 test -L "$home/.config/opencode/plugins/workmux-status.ts"
