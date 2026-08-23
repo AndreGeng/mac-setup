@@ -47,6 +47,20 @@ json_has "$verify_json" '"id":"fd-executable","status":"PASS"' ||
   fail 'fd executable did not pass verification'
 json_has "$verify_json" '"id":"zinit-repository","status":"PASS"' ||
   fail 'Zinit repository did not pass verification'
+json_has "$verify_json" '"id":"nvim-version","status":"PASS"' ||
+  fail 'the pinned Neovim version did not pass verification'
+json_has "$verify_json" '"id":"nvim-config-load","status":"PASS"' ||
+  fail 'the managed Neovim configuration did not load successfully'
+
+expected_nvim_version="$({
+  # shellcheck source=../../lib/bootstrap-manifest.sh
+  source "$ROOT_DIR/lib/bootstrap-manifest.sh"
+  neovim_bootstrap_version "$ROOT_DIR"
+})"
+[[ "$(nvim --version | head -n 1)" == "NVIM v${expected_nvim_version}" ]] ||
+  fail 'Neovim does not match the exact manifest version'
+MAC_SETUP_NVIM_VERIFY=1 nvim --headless +qa >/dev/null 2>&1 ||
+  fail 'Neovim failed to start with the managed core configuration'
 
 zinit_dir="$HOME/.local/share/zinit/zinit.git"
 [[ -d "$zinit_dir/.git" ]] || fail 'canonical Zinit Git repository is missing'
