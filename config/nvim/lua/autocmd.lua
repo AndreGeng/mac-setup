@@ -64,10 +64,12 @@ vim.cmd([[
   autocmd BufWinEnter * if line2byte(line("$") + 1) > 1000000 | syntax clear | endif
 ]])
 
--- 加载 Neovim 0.12+ 内置可选插件
-vim.api.nvim_create_autocmd("VimEnter", {
-  callback = function()
-    vim.cmd("packadd nvim.difftool")
-    vim.cmd("packadd nvim.undotree")
-  end,
-})
+-- 加载 Neovim 0.12+ 内置可选插件；版本漂移或裁剪发行包都不应阻断启动。
+if vim.fn.has("nvim-0.12") == 1 then
+  vim.api.nvim_create_autocmd("VimEnter", {
+    callback = function()
+      pcall(vim.cmd, "packadd nvim.difftool")
+      pcall(vim.cmd, "packadd nvim.undotree")
+    end,
+  })
+end

@@ -12,15 +12,21 @@ fi
 install_neovim() {
   log "=== 安装 Neovim ===" "$GREEN"
 
+  local deps=("curl" "tar" "unzip" "ripgrep")
+  if is_linux; then
+    deps+=("c-compiler")
+  fi
+  for dep in "${deps[@]}"; do
+    pkg_install "$dep" || log "跳过 $dep" "$YELLOW"
+  done
+
+  install_neovim_runtime
+  install_tree_sitter_cli
+
   # setup-lite 默认设置 MAC_SETUP_SKIP_NVIM_PYTHON=1：不装 mise(仅vim)/venv/nvr；nodejs 模块仍会装 mise
   if [[ "${MAC_SETUP_SKIP_NVIM_PYTHON:-}" != "1" ]]; then
     install_mise
   fi
-
-  local deps=("neovim" "ripgrep")
-  for dep in "${deps[@]}"; do
-    pkg_install "$dep" || log "跳过 $dep" "$YELLOW"
-  done
 
   # install_fzf_safe 已省略；fzf 由 cli-tools 安装
   install_fd_safe

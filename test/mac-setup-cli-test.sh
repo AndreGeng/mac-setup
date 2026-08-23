@@ -62,6 +62,35 @@ write_fake_command() {
   chmod +x "$path"
 }
 
+write_fake_nvim() {
+  local path="$1"
+  mkdir -p "$(dirname "$path")"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'if [[ "${1:-}" == "--version" ]]; then' \
+    '  printf "%s\n" "NVIM v0.12.4"' \
+    '  exit 0' \
+    'fi' \
+    '[[ "${MAC_SETUP_NVIM_VERIFY:-}" == "1" ]]' >"$path"
+  chmod +x "$path"
+}
+
+write_fake_tree_sitter() {
+  local path="$1"
+  mkdir -p "$(dirname "$path")"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'printf "%s\n" "tree-sitter 0.26.11"' >"$path"
+  chmod +x "$path"
+}
+
+write_fake_editor_tools() {
+  local fake_bin="$1"
+  write_fake_nvim "$fake_bin/nvim"
+  write_fake_tree_sitter "$fake_bin/tree-sitter"
+  write_fake_command "$fake_bin/rg"
+  write_fake_command "$fake_bin/fd"
+  write_fake_command "$fake_bin/cc"
+}
+
 write_fake_linux_uname() {
   local path="$1"
   mkdir -p "$(dirname "$path")"
@@ -200,9 +229,7 @@ test_vim_apply_and_verify_complete_agent_workflow() {
   local verify="$TEMP_ROOT/vim-verify.json"
   mkdir -p "$home/.config/nvim" "$fake_bin"
   printf '%s\n' existing >"$home/.config/nvim/local.lua"
-  write_fake_command "$fake_bin/nvim"
-  write_fake_command "$fake_bin/rg"
-  write_fake_command "$fake_bin/fd"
+  write_fake_editor_tools "$fake_bin"
 
   cli_env "$home" "$state" "$fake_bin" plan vim --format json >"$plan" || return 1
   local plan_id
@@ -228,8 +255,10 @@ test_vim_verify_discovers_user_local_fd_compat_command() {
   local output="$TEMP_ROOT/vim-local-fd-verify.json"
   mkdir -p "$home/.config" "$home/.local/bin" "$fake_bin"
   ln -s "$ROOT_DIR/config/nvim" "$home/.config/nvim"
-  write_fake_command "$fake_bin/nvim"
+  write_fake_nvim "$fake_bin/nvim"
+  write_fake_tree_sitter "$fake_bin/tree-sitter"
   write_fake_command "$fake_bin/rg"
+  write_fake_command "$fake_bin/cc"
   write_fake_command "$home/.local/bin/fd"
 
   cli_env "$home" "$state" "$fake_bin" verify vim --format json >"$output" || return 1
@@ -530,7 +559,7 @@ test_terminal_profile_plan_aggregates_changes_and_approvals() {
   json_assert "$output" \
     'value["members"] == ["shell.zsh", "editor.nvim"]' || return 1
   json_assert "$output" \
-    'set(item["resource"] for item in value["changes"]) >= {"zinit", "nvim"}' || return 1
+    'set(item["resource"] for item in value["changes"]) >= {"zinit", "neovim@0.12.4", "tree-sitter@0.26.11"}' || return 1
   json_assert "$output" \
     'len([item for item in value["changes"] if item["resource"].endswith("/.zshrc")]) == 1' ||
     return 1
@@ -554,9 +583,7 @@ test_terminal_profile_apply_and_verify_complete_agent_workflow() {
   mkdir -p "$home/.local/share/zinit/zinit.git/.git" "$fake_bin"
   : >"$home/.local/share/zinit/zinit.git/zinit.zsh"
   write_fake_command "$fake_bin/zsh"
-  write_fake_command "$fake_bin/nvim"
-  write_fake_command "$fake_bin/rg"
-  write_fake_command "$fake_bin/fd"
+  write_fake_editor_tools "$fake_bin"
 
   cli_env "$home" "$state" "$fake_bin" plan terminal --format json >"$plan" || return 1
   local plan_id

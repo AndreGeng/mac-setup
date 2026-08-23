@@ -54,6 +54,10 @@ json_has "$verify_json" '"id":"nvim-config-load","status":"PASS"' ||
 json_has "$verify_json" '"id":"tree-sitter-version","status":"PASS"' ||
   fail 'the pinned tree-sitter CLI did not pass verification'
 
+# The test runs in a non-interactive Bash process, so it does not reload the managed
+# shell configuration after apply. Mirror the PATH that a new terminal receives.
+export PATH="$HOME/.local/bin:$PATH"
+
 expected_nvim_version="$({
   # shellcheck source=../../lib/bootstrap-manifest.sh
   source "$ROOT_DIR/lib/bootstrap-manifest.sh"
@@ -64,6 +68,12 @@ expected_nvim_version="$({
 MAC_SETUP_NVIM_VERIFY=1 nvim --headless +qa >/dev/null 2>&1 ||
   fail 'Neovim failed to start with the managed core configuration'
 command -v cc >/dev/null 2>&1 || fail 'a C compiler is unavailable for tree-sitter parsers'
+
+printf '%s\n' 'E2E Neovim plugins and tree-sitter parsers'
+nvim --headless '+Lazy! restore' +qa >/dev/null 2>&1 ||
+  fail 'Lazy failed to restore the locked Neovim plugins'
+MAC_SETUP_NVIM_BOOTSTRAP=1 nvim --headless +qa >/dev/null 2>&1 ||
+  fail 'nvim-treesitter failed to install the configured parsers'
 
 zinit_dir="$HOME/.local/share/zinit/zinit.git"
 [[ -d "$zinit_dir/.git" ]] || fail 'canonical Zinit Git repository is missing'

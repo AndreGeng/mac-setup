@@ -235,9 +235,12 @@ test_vim_module_publishes_fd_compat_command_on_ubuntu() {
 
   ROOT_DIR="$ROOT_DIR" HOME="$home" PATH="$fake_bin:/usr/bin:/bin" \
     MAC_SETUP_SKIP_NVIM_CONFIG=1 MAC_SETUP_SKIP_NVIM_PYTHON=1 bash -c '
-      log() { :; }
-      install_mise() { :; }
-      pkg_install() { :; }
+    log() { :; }
+    is_linux() { return 0; }
+    install_mise() { :; }
+    install_neovim_runtime() { :; }
+    install_tree_sitter_cli() { :; }
+    pkg_install() { :; }
       source "$ROOT_DIR/modules/vim.sh"
       "$HOME/.local/bin/fd"
     ' >"$output" 2>&1 || return 1
@@ -269,7 +272,10 @@ test_vim_module_activates_mise_python_for_downstream_modules() {
   ROOT_DIR="$ROOT_DIR" HOME="$home" PINNED_PYTHON_ROOT="$python_root" \
     PATH="$fake_bin:/usr/bin:/bin" MAC_SETUP_SKIP_NVIM_CONFIG=1 bash -c '
       log() { :; }
+      is_linux() { return 0; }
       install_mise() { :; }
+      install_neovim_runtime() { :; }
+      install_tree_sitter_cli() { :; }
       pkg_install() { :; }
       resolve_mise_executable() { printf "%s\n" "$HOME/.local/bin/mise"; }
       source "$ROOT_DIR/modules/vim.sh"

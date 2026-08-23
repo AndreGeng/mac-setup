@@ -72,6 +72,9 @@ pkg_map_name() {
   fd-find:ubuntu) echo "fd-find" ;;
   fd-find:macos) echo "fd" ;;
   fd:ubuntu) echo "fd-find" ;;
+  c-compiler:ubuntu) echo "build-essential" ;;
+  c-compiler:fedora) echo "gcc" ;;
+  c-compiler:arch) echo "base-devel" ;;
   *) echo "$pkg" ;;
   esac
 }
@@ -84,6 +87,7 @@ tool_command_name() {
   imagemagick) echo "magick" ;;
   sevenzip) echo "7zz" ;;
   poppler) echo "pdftotext" ;;
+  c-compiler) echo "cc" ;;
   *) echo "$1" ;;
   esac
 }

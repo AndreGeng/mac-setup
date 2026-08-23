@@ -1,3 +1,10 @@
+local parsers = {
+  'typescript', 'tsx', 'javascript', 'jsdoc',
+  'lua', 'vim', 'vimdoc', 'html', 'css',
+  'json', 'yaml', 'markdown', 'bash', 'python',
+  'java', 'go', 'gomod', 'gosum', 'gowork',
+}
+
 return {
   { 'HerringtonDarkholme/yats.vim' },
   {
@@ -6,12 +13,10 @@ return {
     lazy = false,
     build = ':TSUpdate',
     config = function()
-      require('nvim-treesitter').install({
-        'typescript', 'tsx', 'javascript', 'jsdoc',
-        'lua', 'vim', 'vimdoc', 'html', 'css',
-        'json', 'yaml', 'markdown', 'bash', 'python',
-        'java', 'go', 'gomod', 'gosum', 'gowork',
-      })
+      local install = require('nvim-treesitter').install(parsers)
+      if vim.env.MAC_SETUP_NVIM_BOOTSTRAP == '1' then
+        install:wait(300000)
+      end
     end,
   },
 }

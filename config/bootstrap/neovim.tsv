@@ -1,0 +1,6 @@
+# version	os	arch	filename	sha256
+# Digests: https://github.com/neovim/neovim/releases/tag/v0.12.4
+0.12.4	macos	arm64	nvim-macos-arm64.tar.gz	51ab83afa66d663627c2ab1be43209b0f4e81360d4598b53efaa4d8195f24c89
+0.12.4	macos	x64	nvim-macos-x86_64.tar.gz	03fe16f8dd9f1e9eaf52d5e294913a39917b9e2faea30d7fb0fb385fbd36fe59
+0.12.4	linux	arm64	nvim-linux-arm64.tar.gz	ceb7e88c6b681f0515d135dcdfad54f5eb4373b25ce6172197cd9a69c758063f
+0.12.4	linux	x64	nvim-linux-x86_64.tar.gz	012bf3fcac5ade43914df3f174668bf64d05e049a4f032a388c027b1ebd78628

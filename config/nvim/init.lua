@@ -38,4 +38,7 @@ end
 -- 尝试设置文件描述符限制
 set_file_descriptor_limit()
 
-require("config.lazy")
+-- mac-setup verify 会加载真实核心配置，但不在只读校验里触发插件下载。
+if vim.env.MAC_SETUP_NVIM_VERIFY ~= "1" then
+  require("config.lazy")
+end

@@ -143,14 +143,14 @@ expected = {
         "crates-io",
         "tree-sitter-cli-0.26.11.crate",
         "a6f16e9ff5d7f9b59635332fde46be6a36efdf8bd811f96b5f6ad1678367d6a2",
-        "rust@1.84.1",
+        "rust@1.88.0",
     ),
     ("linux", "x64"): (
         "0.26.11",
         "crates-io",
         "tree-sitter-cli-0.26.11.crate",
         "a6f16e9ff5d7f9b59635332fde46be6a36efdf8bd811f96b5f6ad1678367d6a2",
-        "rust@1.84.1",
+        "rust@1.88.0",
     ),
     ("macos", "arm64"): (
         "0.26.11",
@@ -191,10 +191,10 @@ test_linux_tree_sitter_uses_locked_cargo_source_build() {
 
   printf '%s\n' '#!/usr/bin/env bash' \
     'printf "%s\n" "$*" >>"$MISE_TRACE"' \
-    'if [[ "${1:-}" == "install" && "${2:-}" == "rust@1.84.1" ]]; then' \
+    'if [[ "${1:-}" == "install" && "${2:-}" == "rust@1.88.0" ]]; then' \
     '  exit 0' \
     'fi' \
-    'if [[ "${1:-}" == "exec" && "${2:-}" == "rust@1.84.1" ]]; then' \
+    'if [[ "${1:-}" == "exec" && "${2:-}" == "rust@1.88.0" ]]; then' \
     '  shift 3' \
     '  install_root=""' \
     '  while [[ $# -gt 0 ]]; do' \
@@ -217,7 +217,7 @@ test_linux_tree_sitter_uses_locked_cargo_source_build() {
       }
       tree_sitter_bootstrap_record() {
         printf "%s|%s|%s|%s|%s\n" 0.26.11 crates-io \
-          tree-sitter-cli-0.26.11.crate "$EXPECTED_SHA256" rust@1.84.1
+          tree-sitter-cli-0.26.11.crate "$EXPECTED_SHA256" rust@1.88.0
       }
       install_mise() { :; }
       resolve_mise_executable() { printf "%s\n" "$FAKE_MISE"; }
@@ -238,8 +238,9 @@ test_linux_tree_sitter_uses_locked_cargo_source_build() {
 
   [[ -L "$home/.local/bin/tree-sitter" ]] || return 1
   [[ "$("$home/.local/bin/tree-sitter" --version)" == 'tree-sitter 0.26.11' ]] || return 1
-  grep -Fxq 'install rust@1.84.1' "$trace" || return 1
-  grep -Fq 'exec rust@1.84.1 -- cargo install --locked --path ' "$trace"
+  grep -Fxq 'install rust@1.88.0' "$trace" || return 1
+  grep -Fq \
+    'exec rust@1.88.0 -- cargo install --locked --no-default-features --path ' "$trace"
 }
 
 test_installer_replaces_old_neovim_with_pinned_runtime() {

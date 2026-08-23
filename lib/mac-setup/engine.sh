@@ -170,6 +170,19 @@ plan_member_changes() {
 
   case "$capability" in
   editor.nvim)
+    local neovim_version tree_sitter_version
+    neovim_version="$(neovim_bootstrap_version "$MAC_SETUP_REPO_ROOT")" || return 1
+    tree_sitter_version="$(tree_sitter_bootstrap_version "$MAC_SETUP_REPO_ROOT")" || return 1
+    if ! neovim_runtime_matches "$MAC_SETUP_REPO_ROOT"; then
+      add_plan_change CONFIGURE_RUNTIME "neovim@${neovim_version}" \
+        'Install the exact Neovim release declared by the repository.'
+      add_plan_approval network 'Neovim must be downloaded from its official release.'
+    fi
+    if ! tree_sitter_runtime_matches "$MAC_SETUP_REPO_ROOT"; then
+      add_plan_change CONFIGURE_RUNTIME "tree-sitter@${tree_sitter_version}" \
+        'Install the exact tree-sitter CLI required by nvim-treesitter.'
+      add_plan_approval network 'tree-sitter CLI must be downloaded from its official release.'
+    fi
     if [[ "$feature_python" == "true" &&
       ! -x "$HOME/.local/share/neovim/neovim3/bin/python" ]]; then
       add_plan_change CONFIGURE_FEATURE python-provider \
@@ -571,14 +584,35 @@ build_verify_member() {
   VERIFY_CURRENT_MEMBER="$capability"
   case "$capability" in
   editor.nvim)
+    local neovim_version tree_sitter_version nvim_path tree_sitter_path
+    neovim_version="$(neovim_bootstrap_version "$MAC_SETUP_REPO_ROOT")" || true
+    tree_sitter_version="$(tree_sitter_bootstrap_version "$MAC_SETUP_REPO_ROOT")" || true
+    nvim_path="$(resolve_neovim_executable 2>/dev/null)" || true
+    tree_sitter_path="$(resolve_tree_sitter_executable 2>/dev/null)" || true
     verify_command nvim-executable nvim
+    verify_command tree-sitter-executable tree-sitter
     verify_command ripgrep-executable rg
     verify_command fd-executable fd
     verify_configs "$capability"
-    if command -v nvim >/dev/null 2>&1 && nvim --headless --clean +qa >/dev/null 2>&1; then
-      add_verify_check nvim-headless-start PASS 'Neovim starts in clean headless mode.'
+    if [[ -n "$nvim_path" && -n "$neovim_version" ]] &&
+      neovim_executable_matches "$nvim_path" "$neovim_version"; then
+      add_verify_check nvim-version PASS "neovim@${neovim_version} ($nvim_path)"
     else
-      add_verify_check nvim-headless-start FAIL 'Neovim failed to start in clean headless mode.'
+      add_verify_check nvim-version FAIL "neovim@${neovim_version} is unavailable."
+    fi
+    if [[ -n "$tree_sitter_path" && -n "$tree_sitter_version" ]] &&
+      tree_sitter_executable_matches "$tree_sitter_path" "$tree_sitter_version"; then
+      add_verify_check tree-sitter-version PASS \
+        "tree-sitter@${tree_sitter_version} ($tree_sitter_path)"
+    else
+      add_verify_check tree-sitter-version FAIL \
+        "tree-sitter@${tree_sitter_version} is unavailable."
+    fi
+    if [[ -n "$nvim_path" ]] &&
+      MAC_SETUP_NVIM_VERIFY=1 "$nvim_path" --headless +qa >/dev/null 2>&1; then
+      add_verify_check nvim-config-load PASS 'Neovim loads the managed core configuration.'
+    else
+      add_verify_check nvim-config-load FAIL 'Neovim failed to load the managed core configuration.'
     fi
     if [[ "$feature_python" == "true" ]]; then
       if [[ -x "$HOME/.local/share/neovim/neovim3/bin/python" ]]; then

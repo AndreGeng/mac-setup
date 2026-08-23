@@ -217,6 +217,14 @@ if target_has_member "$CAPABILITY" runtime.node &&
   exit 2
 fi
 
+if target_has_member "$CAPABILITY" editor.nvim &&
+  { ! validate_neovim_bootstrap_manifest "$MAC_SETUP_REPO_ROOT" ||
+    ! validate_tree_sitter_bootstrap_manifest "$MAC_SETUP_REPO_ROOT"; }; then
+  emit_cli_error "$COMMAND" FAILED INVALID_MANIFEST \
+    'The repository Neovim or tree-sitter bootstrap manifest is invalid.'
+  exit 2
+fi
+
 if [[ "$COMMAND" == describe ]]; then
   if [[ "$FORMAT" == json ]]; then
     if [[ "$(target_kind "$CAPABILITY")" == profile ]]; then

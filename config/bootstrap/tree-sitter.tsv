@@ -1,0 +1,8 @@
+# version	os	arch	method	artifact	sha256	build-runtime
+# macOS digests: https://github.com/tree-sitter/tree-sitter/releases/tag/v0.26.11
+# Linux crate: https://index.crates.io/tr/ee/tree-sitter-cli
+# Linux uses a locked Cargo build because the upstream binary requires GLIBC_2.39.
+0.26.11	macos	arm64	github-release	tree-sitter-cli-macos-arm64.zip	050f41d60a054b608ea392ba14722bba9457bdc0ab11a5706c77f034dafc68ac	-
+0.26.11	macos	x64	github-release	tree-sitter-cli-macos-x64.zip	e3c2cdec71bbc60344b25df3dad5da378a174f2292af953ff0d641e06aaee099	-
+0.26.11	linux	arm64	crates-io	tree-sitter-cli-0.26.11.crate	a6f16e9ff5d7f9b59635332fde46be6a36efdf8bd811f96b5f6ad1678367d6a2	rust@1.88.0
+0.26.11	linux	x64	crates-io	tree-sitter-cli-0.26.11.crate	a6f16e9ff5d7f9b59635332fde46be6a36efdf8bd811f96b5f6ad1678367d6a2	rust@1.88.0

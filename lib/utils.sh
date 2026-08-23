@@ -177,6 +177,320 @@ verify_file_sha256() {
   [[ "$actual" == "$expected" ]]
 }
 
+resolve_neovim_executable() {
+  local home_dir="${HOME:-/root}"
+  local local_nvim="$home_dir/.local/bin/nvim"
+  local resolved
+
+  if [[ -f "$local_nvim" && -x "$local_nvim" ]]; then
+    printf '%s\n' "$local_nvim"
+    return 0
+  fi
+  resolved="$(command -v nvim 2>/dev/null || true)"
+  [[ -n "$resolved" && -f "$resolved" && -x "$resolved" ]] || return 1
+  printf '%s\n' "$resolved"
+}
+
+neovim_executable_version() {
+  local executable="$1"
+  local output
+  [[ -f "$executable" && -x "$executable" ]] || return 1
+  output="$("$executable" --version 2>/dev/null | head -n 1)" || return 1
+  [[ "$output" =~ ^NVIM[[:space:]]v([0-9]+\.[0-9]+\.[0-9]+)$ ]] || return 1
+  printf '%s\n' "${BASH_REMATCH[1]}"
+}
+
+neovim_executable_matches() {
+  local executable="$1"
+  local expected_version="$2"
+  local actual_version
+  actual_version="$(neovim_executable_version "$executable")" || return 1
+  [[ "$actual_version" == "$expected_version" ]]
+}
+
+neovim_runtime_matches() {
+  local repo_root="${1:-$UTILS_REPO_ROOT}"
+  local expected_version executable
+  expected_version="$(neovim_bootstrap_version "$repo_root")" || return 1
+  executable="$(resolve_neovim_executable)" || return 1
+  neovim_executable_matches "$executable" "$expected_version"
+}
+
+install_neovim_runtime() {
+  local home_dir="${HOME:-/root}"
+  local local_bin="$home_dir/.local/bin"
+  local repo_root="$UTILS_REPO_ROOT"
+  local os arch
+  export PATH="$local_bin:$PATH"
+
+  os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  arch="$(uname -m)"
+  case "$os" in
+  darwin) os=macos ;;
+  linux) ;;
+  *)
+    log "不支持的 Neovim 操作系统: $os" "$RED"
+    return 1
+    ;;
+  esac
+  case "$arch" in
+  x86_64) arch=x64 ;;
+  arm64 | aarch64) arch=arm64 ;;
+  *)
+    log "不支持的 Neovim 架构: $arch" "$RED"
+    return 1
+    ;;
+  esac
+
+  local record version filename expected_sha256
+  if ! record="$(neovim_bootstrap_record "$repo_root" "$os" "$arch")"; then
+    log "Neovim bootstrap manifest 无效或不支持当前平台" "$RED"
+    return 1
+  fi
+  IFS='|' read -r version filename expected_sha256 <<<"$record"
+
+  local current_nvim=""
+  current_nvim="$(resolve_neovim_executable 2>/dev/null)" || true
+  if [[ -n "$current_nvim" ]] && neovim_executable_matches "$current_nvim" "$version"; then
+    log "Neovim v${version} 已安装，跳过" "$YELLOW"
+    return 0
+  fi
+
+  if [[ -n "$current_nvim" ]]; then
+    log "Neovim 版本偏离，更新到 v${version}..." "$GREEN"
+  else
+    log "安装 Neovim v${version}..." "$GREEN"
+  fi
+
+  local url="https://github.com/neovim/neovim/releases/download/v${version}/${filename}"
+  local tmp_dir archive extract_dir extracted_root runtime_parent runtime_dir stage_dir
+  tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/neovim-install.XXXXXX")" || return 1
+  archive="$tmp_dir/$filename"
+  extract_dir="$tmp_dir/extract"
+  extracted_root="$extract_dir/${filename%.tar.gz}"
+  runtime_parent="$home_dir/.local/share/neovim/versions"
+  runtime_dir="$runtime_parent/$version"
+
+  log "下载 Neovim v${version}..." "$GREEN"
+  if ! curl --proto '=https' --tlsv1.2 -fL -o "$archive" "$url"; then
+    rm -rf "$tmp_dir"
+    log "Neovim 下载失败；未修改现有安装" "$RED"
+    return 1
+  fi
+  if ! verify_file_sha256 "$archive" "$expected_sha256"; then
+    rm -rf "$tmp_dir"
+    log "Neovim 下载文件 SHA-256 校验失败；未解压或修改现有安装" "$RED"
+    return 1
+  fi
+
+  mkdir -p "$extract_dir" "$runtime_parent" "$local_bin"
+  if ! tar -xzf "$archive" -C "$extract_dir" || [[ ! -x "$extracted_root/bin/nvim" ]]; then
+    rm -rf "$tmp_dir"
+    log "Neovim 归档解压失败；未修改现有安装" "$RED"
+    return 1
+  fi
+
+  stage_dir="$(mktemp -d "$runtime_parent/.${version}.new.XXXXXX")" || {
+    rm -rf "$tmp_dir"
+    return 1
+  }
+  if ! cp -R "$extracted_root/." "$stage_dir/" ||
+    ! neovim_executable_matches "$stage_dir/bin/nvim" "$version"; then
+    rm -rf "$stage_dir" "$tmp_dir"
+    log "Neovim 解压内容版本不匹配；未修改现有安装" "$RED"
+    return 1
+  fi
+
+  rm -rf "$runtime_dir"
+  if ! mv "$stage_dir" "$runtime_dir" ||
+    ! symlink_config "$runtime_dir/bin/nvim" "$local_bin/nvim"; then
+    rm -rf "$stage_dir" "$tmp_dir"
+    log "Neovim 安装发布失败" "$RED"
+    return 1
+  fi
+
+  rm -rf "$tmp_dir"
+  export PATH="$local_bin:$PATH"
+  log "Neovim v${version} 安装成功" "$GREEN"
+}
+
+resolve_tree_sitter_executable() {
+  local home_dir="${HOME:-/root}"
+  local local_tree_sitter="$home_dir/.local/bin/tree-sitter"
+  local resolved
+
+  if [[ -f "$local_tree_sitter" && -x "$local_tree_sitter" ]]; then
+    printf '%s\n' "$local_tree_sitter"
+    return 0
+  fi
+  resolved="$(command -v tree-sitter 2>/dev/null || true)"
+  [[ -n "$resolved" && -f "$resolved" && -x "$resolved" ]] || return 1
+  printf '%s\n' "$resolved"
+}
+
+tree_sitter_executable_version() {
+  local executable="$1"
+  local output
+  [[ -f "$executable" && -x "$executable" ]] || return 1
+  output="$("$executable" --version 2>/dev/null | head -n 1)" || return 1
+  [[ "$output" =~ ^tree-sitter[[:space:]]+([0-9]+\.[0-9]+\.[0-9]+) ]] || return 1
+  printf '%s\n' "${BASH_REMATCH[1]}"
+}
+
+tree_sitter_executable_matches() {
+  local executable="$1"
+  local expected_version="$2"
+  local actual_version
+  actual_version="$(tree_sitter_executable_version "$executable")" || return 1
+  [[ "$actual_version" == "$expected_version" ]]
+}
+
+tree_sitter_runtime_matches() {
+  local repo_root="${1:-$UTILS_REPO_ROOT}"
+  local expected_version executable
+  expected_version="$(tree_sitter_bootstrap_version "$repo_root")" || return 1
+  executable="$(resolve_tree_sitter_executable)" || return 1
+  tree_sitter_executable_matches "$executable" "$expected_version"
+}
+
+install_tree_sitter_cli() {
+  local home_dir="${HOME:-/root}"
+  local local_bin="$home_dir/.local/bin"
+  local repo_root="$UTILS_REPO_ROOT"
+  local os arch
+  export PATH="$local_bin:$PATH"
+
+  os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  arch="$(uname -m)"
+  case "$os" in
+  darwin) os=macos ;;
+  linux) ;;
+  *)
+    log "不支持的 tree-sitter 操作系统: $os" "$RED"
+    return 1
+    ;;
+  esac
+  case "$arch" in
+  x86_64) arch=x64 ;;
+  arm64 | aarch64) arch=arm64 ;;
+  *)
+    log "不支持的 tree-sitter 架构: $arch" "$RED"
+    return 1
+    ;;
+  esac
+
+  local record version method artifact expected_sha256 build_runtime
+  if ! record="$(tree_sitter_bootstrap_record "$repo_root" "$os" "$arch")"; then
+    log "tree-sitter bootstrap manifest 无效或不支持当前平台" "$RED"
+    return 1
+  fi
+  IFS='|' read -r version method artifact expected_sha256 build_runtime <<<"$record"
+
+  local current_tree_sitter=""
+  current_tree_sitter="$(resolve_tree_sitter_executable 2>/dev/null)" || true
+  if [[ -n "$current_tree_sitter" ]] &&
+    tree_sitter_executable_matches "$current_tree_sitter" "$version"; then
+    log "tree-sitter CLI v${version} 已安装，跳过" "$YELLOW"
+    return 0
+  fi
+
+  local url tmp_dir archive extract_dir runtime_parent runtime_dir stage_dir=""
+  local source_dir mise_cmd
+  tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/tree-sitter-install.XXXXXX")" || return 1
+  archive="$tmp_dir/$artifact"
+  extract_dir="$tmp_dir/extract"
+  runtime_parent="$home_dir/.local/share/tree-sitter/versions"
+  runtime_dir="$runtime_parent/$version"
+
+  case "$method" in
+  github-release)
+    url="https://github.com/tree-sitter/tree-sitter/releases/download/v${version}/${artifact}"
+    ;;
+  crates-io)
+    url="https://static.crates.io/crates/tree-sitter-cli/${artifact}"
+    ;;
+  *)
+    rm -rf "$tmp_dir"
+    log "不支持的 tree-sitter CLI 安装方式: $method" "$RED"
+    return 1
+    ;;
+  esac
+
+  log "下载 tree-sitter CLI v${version}（${method}）..." "$GREEN"
+  if ! curl --proto '=https' --tlsv1.2 -fL -o "$archive" "$url"; then
+    rm -rf "$tmp_dir"
+    log "tree-sitter CLI 下载失败；未修改现有安装" "$RED"
+    return 1
+  fi
+  if ! verify_file_sha256 "$archive" "$expected_sha256"; then
+    rm -rf "$tmp_dir"
+    log "tree-sitter CLI 下载文件 SHA-256 校验失败；未解压或修改现有安装" "$RED"
+    return 1
+  fi
+
+  mkdir -p "$extract_dir" "$runtime_parent" "$local_bin"
+  stage_dir="$(mktemp -d "$runtime_parent/.${version}.new.XXXXXX")" || {
+    rm -rf "$tmp_dir"
+    return 1
+  }
+
+  case "$method" in
+  github-release)
+    if ! unzip -q "$archive" -d "$extract_dir" ||
+      [[ ! -f "$extract_dir/tree-sitter" ]] ||
+      ! mkdir -p "$stage_dir/bin" ||
+      ! cp "$extract_dir/tree-sitter" "$stage_dir/bin/tree-sitter" ||
+      ! chmod 0755 "$stage_dir/bin/tree-sitter"; then
+      rm -rf "$stage_dir" "$tmp_dir"
+      log "tree-sitter CLI 归档解压失败；未修改现有安装" "$RED"
+      return 1
+    fi
+    ;;
+  crates-io)
+    if ! tar -xzf "$archive" -C "$extract_dir"; then
+      rm -rf "$stage_dir" "$tmp_dir"
+      log "tree-sitter CLI 源码归档解压失败；未修改现有安装" "$RED"
+      return 1
+    fi
+    source_dir="$extract_dir/tree-sitter-cli-${version}"
+    if [[ ! -f "$source_dir/Cargo.toml" || ! -f "$source_dir/Cargo.lock" ]]; then
+      rm -rf "$stage_dir" "$tmp_dir"
+      log "tree-sitter CLI 源码缺少 Cargo.toml 或 Cargo.lock" "$RED"
+      return 1
+    fi
+    if ! install_mise || ! mise_cmd="$(resolve_mise_executable)" ||
+      ! "$mise_cmd" install "$build_runtime" ||
+      # nvim-treesitter builds repositories that already contain generated parser.c files.
+      # The default qjs-rt feature is only needed to generate parsers from grammar.js and
+      # would add a libclang/QuickJS build dependency to the base editor environment.
+      ! "$mise_cmd" exec "$build_runtime" -- cargo install --locked \
+        --no-default-features --path "$source_dir" --root "$stage_dir"; then
+      rm -rf "$stage_dir" "$tmp_dir"
+      log "tree-sitter CLI 锁定源码构建失败；未修改现有安装" "$RED"
+      return 1
+    fi
+    ;;
+  esac
+
+  if ! tree_sitter_executable_matches "$stage_dir/bin/tree-sitter" "$version"; then
+    rm -rf "$stage_dir" "$tmp_dir"
+    log "tree-sitter CLI 解压内容版本不匹配；未修改现有安装" "$RED"
+    return 1
+  fi
+
+  rm -rf "$runtime_dir"
+  if ! mv "$stage_dir" "$runtime_dir" ||
+    ! symlink_config "$runtime_dir/bin/tree-sitter" "$local_bin/tree-sitter"; then
+    rm -rf "$stage_dir" "$tmp_dir"
+    log "tree-sitter CLI 安装发布失败" "$RED"
+    return 1
+  fi
+
+  rm -rf "$tmp_dir"
+  export PATH="$local_bin:$PATH"
+  log "tree-sitter CLI v${version} 安装成功" "$GREEN"
+}
+
 # 若 ~/.local/bin/mise 误为目录，移除以便安装真实二进制
 cleanup_mise_path_if_directory() {
   local home_dir="${HOME:-/root}"
