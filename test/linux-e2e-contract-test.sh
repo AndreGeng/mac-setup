@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FULL_E2E="$ROOT_DIR/test/e2e/linux-full.sh"
 RUNTIME_E2E="$ROOT_DIR/test/e2e/linux-runtime.sh"
+LOGIN_PROBE="$ROOT_DIR/test/e2e/linux-login.zsh"
 SETUP="$ROOT_DIR/setup.sh"
 
 failures=0
@@ -36,7 +37,11 @@ test_runtime_uses_a_fresh_login_zsh() {
   grep -Fq 'zsh -lic' "$RUNTIME_E2E" || return 1
   grep -Fq 'TERM=xterm-256color' "$RUNTIME_E2E" || return 1
   grep -Fq 'mac-setup-e2e "$ROOT_DIR" "$REQUIRED_COMMANDS"' "$RUNTIME_E2E" || return 1
+  grep -Fq '"$1/test/e2e/linux-login.zsh" "$2"' "$RUNTIME_E2E" || return 1
+  grep -Fq 'required_commands="${1:' "$LOGIN_PROBE" || return 1
+  ! grep -Fq 'MAC_SETUP_E2E_REQUIRED_COMMANDS' "$LOGIN_PROBE" || return 1
   grep -Fq 'login-shell.stderr' "$RUNTIME_E2E" || return 1
+  grep -Fq 'show_artifact "$ARTIFACT_DIR/login-shell.stdout"' "$RUNTIME_E2E" || return 1
   ! grep -Fq 'export PATH="$HOME/.local/bin:$PATH"' "$RUNTIME_E2E"
 }
 
