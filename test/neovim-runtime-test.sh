@@ -111,6 +111,53 @@ if records != expected:
 PY
 }
 
+test_manifest_pins_supported_tree_sitter_cli() {
+  local manifest="$ROOT_DIR/config/bootstrap/tree-sitter.tsv"
+  [[ -f "$manifest" ]] || return 1
+  ROOT_DIR="$ROOT_DIR" bash -c '
+    source "$ROOT_DIR/lib/bootstrap-manifest.sh"
+    validate_tree_sitter_bootstrap_manifest "$ROOT_DIR"
+    [[ "$(tree_sitter_bootstrap_version "$ROOT_DIR")" == "0.26.11" ]]
+  ' >/dev/null 2>&1 || return 1
+
+  python3 - "$manifest" <<'PY'
+import pathlib
+import sys
+
+records = {}
+for line in pathlib.Path(sys.argv[1]).read_text(encoding="utf-8").splitlines():
+    if not line or line.startswith("#"):
+        continue
+    version, os_name, arch, filename, sha256 = line.split("\t")
+    records[(os_name, arch)] = (version, filename, sha256)
+
+expected = {
+    ("linux", "arm64"): (
+        "0.26.11",
+        "tree-sitter-cli-linux-arm64.zip",
+        "db28509fe6db8902f9d14c43c486858c7486b42c3a96b30e811e73f105762336",
+    ),
+    ("linux", "x64"): (
+        "0.26.11",
+        "tree-sitter-cli-linux-x64.zip",
+        "ff1b7f9863f2faafd78dc0e66d902ee85b37f709b314b22c009f51caf233eebd",
+    ),
+    ("macos", "arm64"): (
+        "0.26.11",
+        "tree-sitter-cli-macos-arm64.zip",
+        "050f41d60a054b608ea392ba14722bba9457bdc0ab11a5706c77f034dafc68ac",
+    ),
+    ("macos", "x64"): (
+        "0.26.11",
+        "tree-sitter-cli-macos-x64.zip",
+        "e3c2cdec71bbc60344b25df3dad5da378a174f2292af953ff0d641e06aaee099",
+    ),
+}
+if records != expected:
+    raise SystemExit(1)
+PY
+}
+
 test_installer_replaces_old_neovim_with_pinned_runtime() {
   local home="$TEMP_ROOT/install.home"
   local fixture_root="$TEMP_ROOT/install.fixture"
@@ -205,11 +252,13 @@ test_vim_module_uses_pinned_runtime_installer() {
       log() { :; }
       install_mise() { :; }
       install_neovim_runtime() { printf "%s\n" neovim-runtime >>"$TRACE"; }
+      install_tree_sitter_cli() { printf "%s\n" tree-sitter-runtime >>"$TRACE"; }
       pkg_install() { printf "package:%s\n" "$1" >>"$TRACE"; }
       source "$ROOT_DIR/modules/vim.sh"
     ' >/dev/null 2>&1 || return 1
 
   grep -Fxq neovim-runtime "$trace" || return 1
+  grep -Fxq tree-sitter-runtime "$trace" || return 1
   ! grep -Fxq package:neovim "$trace"
 }
 
@@ -221,14 +270,38 @@ test_agent_plan_detects_neovim_version_drift() {
   mkdir -p "$home/.config" "$fake_bin"
   ln -s "$ROOT_DIR/config/nvim" "$home/.config/nvim"
   write_fake_nvim "$fake_bin/nvim" 0.10.4
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'printf "%s\n" "tree-sitter 0.26.11"' >"$fake_bin/tree-sitter"
+  chmod +x "$fake_bin/tree-sitter"
   write_fake_command "$fake_bin/rg"
   write_fake_command "$fake_bin/fd"
+  write_fake_command "$fake_bin/cc"
 
   env OSTYPE=linux-gnu HOME="$home" XDG_STATE_HOME="$state" \
     PATH="$fake_bin:/usr/bin:/bin" "$CLI" plan vim --format json >"$output" || return 1
   json_assert "$output" 'value["status"] == "CHANGES_REQUIRED"' || return 1
   json_assert "$output" \
     'len([item for item in value["changes"] if item["type"] == "CONFIGURE_RUNTIME" and item["resource"] == "neovim@0.12.4"]) == 1' || return 1
+  json_assert "$output" \
+    'set(item["type"] for item in value["requiredApprovals"]) == {"network"}'
+}
+
+test_agent_plan_detects_missing_tree_sitter_cli() {
+  local home="$TEMP_ROOT/tree-sitter-plan.home"
+  local state="$TEMP_ROOT/tree-sitter-plan.state"
+  local fake_bin="$TEMP_ROOT/tree-sitter-plan.bin"
+  local output="$TEMP_ROOT/tree-sitter-plan.json"
+  mkdir -p "$home/.config" "$home/.local/bin" "$fake_bin"
+  ln -s "$ROOT_DIR/config/nvim" "$home/.config/nvim"
+  write_fake_nvim "$home/.local/bin/nvim" 0.12.4
+  write_fake_command "$fake_bin/rg"
+  write_fake_command "$fake_bin/fd"
+  write_fake_command "$fake_bin/cc"
+
+  env OSTYPE=linux-gnu HOME="$home" XDG_STATE_HOME="$state" \
+    PATH="$fake_bin:/usr/bin:/bin" "$CLI" plan vim --format json >"$output" || return 1
+  json_assert "$output" \
+    'len([item for item in value["changes"] if item["type"] == "CONFIGURE_RUNTIME" and item["resource"] == "tree-sitter@0.26.11"]) == 1' || return 1
   json_assert "$output" \
     'set(item["type"] for item in value["requiredApprovals"]) == {"network"}'
 }
@@ -242,8 +315,12 @@ test_verify_requires_exact_version_and_loads_managed_config() {
   mkdir -p "$home/.config" "$home/.local/bin" "$fake_bin"
   ln -s "$ROOT_DIR/config/nvim" "$home/.config/nvim"
   write_fake_nvim "$home/.local/bin/nvim" 0.12.4 "$trace"
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'printf "%s\n" "tree-sitter 0.26.11"' >"$home/.local/bin/tree-sitter"
+  chmod +x "$home/.local/bin/tree-sitter"
   write_fake_command "$fake_bin/rg"
   write_fake_command "$fake_bin/fd"
+  write_fake_command "$fake_bin/cc"
 
   env OSTYPE=linux-gnu HOME="$home" XDG_STATE_HOME="$state" \
     PATH="$fake_bin:/usr/bin:/bin" "$CLI" verify vim --format json >"$output" || return 1
@@ -252,6 +329,8 @@ test_verify_requires_exact_version_and_loads_managed_config() {
     'len([item for item in value["checks"] if item["id"] == "nvim-version" and item["status"] == "PASS"]) == 1' || return 1
   json_assert "$output" \
     'len([item for item in value["checks"] if item["id"] == "nvim-config-load" and item["status"] == "PASS"]) == 1' || return 1
+  json_assert "$output" \
+    'len([item for item in value["checks"] if item["id"] == "tree-sitter-version" and item["status"] == "PASS"]) == 1' || return 1
   grep -q -- '--headless' "$trace" || return 1
   ! grep -q -- '--clean' "$trace"
 }
@@ -265,6 +344,8 @@ test_neovim_012_optional_packages_are_guarded() {
 
 run_test manifest-pins-official-neovim-release \
   test_manifest_pins_official_neovim_release
+run_test manifest-pins-supported-tree-sitter-cli \
+  test_manifest_pins_supported_tree_sitter_cli
 run_test installer-replaces-old-neovim-with-pinned-runtime \
   test_installer_replaces_old_neovim_with_pinned_runtime
 run_test checksum-failure-preserves-existing-neovim \
@@ -273,6 +354,8 @@ run_test vim-module-uses-pinned-runtime-installer \
   test_vim_module_uses_pinned_runtime_installer
 run_test agent-plan-detects-neovim-version-drift \
   test_agent_plan_detects_neovim_version_drift
+run_test agent-plan-detects-missing-tree-sitter-cli \
+  test_agent_plan_detects_missing_tree_sitter_cli
 run_test verify-requires-exact-version-and-loads-managed-config \
   test_verify_requires_exact_version_and_loads_managed_config
 run_test neovim-012-optional-packages-are-guarded \
