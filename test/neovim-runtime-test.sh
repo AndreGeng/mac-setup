@@ -128,34 +128,118 @@ records = {}
 for line in pathlib.Path(sys.argv[1]).read_text(encoding="utf-8").splitlines():
     if not line or line.startswith("#"):
         continue
-    version, os_name, arch, filename, sha256 = line.split("\t")
-    records[(os_name, arch)] = (version, filename, sha256)
+    version, os_name, arch, method, artifact, sha256, build_runtime = line.split("\t")
+    records[(os_name, arch)] = (
+        version,
+        method,
+        artifact,
+        sha256,
+        build_runtime,
+    )
 
 expected = {
     ("linux", "arm64"): (
         "0.26.11",
-        "tree-sitter-cli-linux-arm64.zip",
-        "db28509fe6db8902f9d14c43c486858c7486b42c3a96b30e811e73f105762336",
+        "crates-io",
+        "tree-sitter-cli-0.26.11.crate",
+        "a6f16e9ff5d7f9b59635332fde46be6a36efdf8bd811f96b5f6ad1678367d6a2",
+        "rust@1.84.1",
     ),
     ("linux", "x64"): (
         "0.26.11",
-        "tree-sitter-cli-linux-x64.zip",
-        "ff1b7f9863f2faafd78dc0e66d902ee85b37f709b314b22c009f51caf233eebd",
+        "crates-io",
+        "tree-sitter-cli-0.26.11.crate",
+        "a6f16e9ff5d7f9b59635332fde46be6a36efdf8bd811f96b5f6ad1678367d6a2",
+        "rust@1.84.1",
     ),
     ("macos", "arm64"): (
         "0.26.11",
+        "github-release",
         "tree-sitter-cli-macos-arm64.zip",
         "050f41d60a054b608ea392ba14722bba9457bdc0ab11a5706c77f034dafc68ac",
+        "-",
     ),
     ("macos", "x64"): (
         "0.26.11",
+        "github-release",
         "tree-sitter-cli-macos-x64.zip",
         "e3c2cdec71bbc60344b25df3dad5da378a174f2292af953ff0d641e06aaee099",
+        "-",
     ),
 }
 if records != expected:
     raise SystemExit(1)
 PY
+}
+
+test_linux_tree_sitter_uses_locked_cargo_source_build() {
+  local home="$TEMP_ROOT/tree-sitter-install.home"
+  local fixture_root="$TEMP_ROOT/tree-sitter-install.fixture"
+  local fixture="$TEMP_ROOT/tree-sitter-cli-0.26.11.crate"
+  local fake_mise="$TEMP_ROOT/tree-sitter-install.mise"
+  local trace="$TEMP_ROOT/tree-sitter-install.trace"
+  local expected_sha256
+  mkdir -p "$home" "$fixture_root/tree-sitter-cli-0.26.11"
+  printf '%s\n' '[package]' 'name = "tree-sitter-cli"' 'version = "0.26.11"' \
+    >"$fixture_root/tree-sitter-cli-0.26.11/Cargo.toml"
+  printf '%s\n' '# locked fixture' >"$fixture_root/tree-sitter-cli-0.26.11/Cargo.lock"
+  tar -czf "$fixture" -C "$fixture_root" tree-sitter-cli-0.26.11 || return 1
+  expected_sha256="$(ROOT_DIR="$ROOT_DIR" FIXTURE="$fixture" bash -c '
+    source "$ROOT_DIR/lib/utils.sh"
+    file_sha256 "$FIXTURE"
+  ')" || return 1
+
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'printf "%s\n" "$*" >>"$MISE_TRACE"' \
+    'if [[ "${1:-}" == "install" && "${2:-}" == "rust@1.84.1" ]]; then' \
+    '  exit 0' \
+    'fi' \
+    'if [[ "${1:-}" == "exec" && "${2:-}" == "rust@1.84.1" ]]; then' \
+    '  shift 3' \
+    '  install_root=""' \
+    '  while [[ $# -gt 0 ]]; do' \
+    '    if [[ "$1" == "--root" ]]; then install_root="$2"; shift 2; else shift; fi' \
+    '  done' \
+    '  mkdir -p "$install_root/bin"' \
+    '  printf "%s\n" "#!/usr/bin/env bash" "printf \"%s\\n\" \"tree-sitter 0.26.11\"" >"$install_root/bin/tree-sitter"' \
+    '  chmod +x "$install_root/bin/tree-sitter"' \
+    '  exit 0' \
+    'fi' \
+    'exit 1' >"$fake_mise"
+  chmod +x "$fake_mise"
+
+  ROOT_DIR="$ROOT_DIR" HOME="$home" FIXTURE="$fixture" \
+    EXPECTED_SHA256="$expected_sha256" FAKE_MISE="$fake_mise" MISE_TRACE="$trace" \
+    bash -c '
+      source "$ROOT_DIR/lib/utils.sh"
+      uname() {
+        [[ "${1:-}" == "-m" ]] && printf "%s\n" x86_64 || printf "%s\n" Linux
+      }
+      tree_sitter_bootstrap_record() {
+        printf "%s|%s|%s|%s|%s\n" 0.26.11 crates-io \
+          tree-sitter-cli-0.26.11.crate "$EXPECTED_SHA256" rust@1.84.1
+      }
+      install_mise() { :; }
+      resolve_mise_executable() { printf "%s\n" "$FAKE_MISE"; }
+      curl() {
+        local argument output_path="" take_next=false
+        for argument in "$@"; do
+          if [[ "$take_next" == true ]]; then
+            output_path="$argument"
+            take_next=false
+            continue
+          fi
+          [[ "$argument" == "-o" ]] && take_next=true
+        done
+        cp "$FIXTURE" "$output_path"
+      }
+      install_tree_sitter_cli
+    ' >/dev/null 2>&1 || return 1
+
+  [[ -L "$home/.local/bin/tree-sitter" ]] || return 1
+  [[ "$("$home/.local/bin/tree-sitter" --version)" == 'tree-sitter 0.26.11' ]] || return 1
+  grep -Fxq 'install rust@1.84.1' "$trace" || return 1
+  grep -Fq 'exec rust@1.84.1 -- cargo install --locked --path ' "$trace"
 }
 
 test_installer_replaces_old_neovim_with_pinned_runtime() {
@@ -346,6 +430,8 @@ run_test manifest-pins-official-neovim-release \
   test_manifest_pins_official_neovim_release
 run_test manifest-pins-supported-tree-sitter-cli \
   test_manifest_pins_supported_tree_sitter_cli
+run_test linux-tree-sitter-uses-locked-cargo-source-build \
+  test_linux_tree_sitter_uses_locked_cargo_source_build
 run_test installer-replaces-old-neovim-with-pinned-runtime \
   test_installer_replaces_old_neovim_with_pinned_runtime
 run_test checksum-failure-preserves-existing-neovim \
