@@ -87,6 +87,12 @@ plan 和 verify 共享这些 desired state；Neovim 启动时优先使用发布�
 受管工具，因此不依赖启动它的旧终端是否已经重新加载 PATH。gopls 不再由 Mason 在编辑器
 启动时隐式安装，Mason 只管理仓库未接管的插件工具。
 
+Go 文件保存时会先通过已连接的 gopls 同步整理 import，再由 Conform 调用 LSP 格式化
+（遵循 gopls 的 `gofumpt` 设置）；尚未连接 gopls 时仅回退到 `gofmt` 排版。
+`:FormatDisable!` 关闭当前文件的保存格式化，`:FormatDisable` 全局关闭，
+`:FormatEnable` 恢复。若 Go 补全或跳转不可用，先执行 `bin/mac-setup verify vim --format json`
+检查受管 `~/.local/bin/gopls`，通过 plan/apply 修复，不要改用 Mason 的另一个版本。
+
 `runtime.node` 从 `config/runtime/node.tsv` 读取 Node、Bun 和全局 npm 工具的唯一 desired
 state，并从 `config/bootstrap/mise.tsv` 读取 mise 引导版本及 macOS/Linux、arm64/x64
 资产的 SHA-256。安装、plan 和 verify 共享这两份 manifest；下载内容必须通过摘要校验后
@@ -188,6 +194,9 @@ OpenCode、Claude Code 和 Pi 复用。可以直接对 Agent 说：“用 mac-se
 
 ```bash
 bash test/setup-test.sh
+bash test/nvim-go-test.sh
+# 使用本机已有 Neovim、gopls 和 Conform，离线验证真实 import/格式化保存流程
+bash test/nvim-go-test.sh --integration
 bash test/agents-test.sh
 bun test ./test/reme-memory-test.ts ./test/reme-bridge-test.ts
 bash test/security-scan-test.sh

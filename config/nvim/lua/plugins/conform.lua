@@ -15,33 +15,22 @@ return {
       graphql = { "prettier" },
       lua = { "stylua" },
       python = { "ruff_format" },
-      go = { "goimports", "gofmt", stop_after_first = true },
+      go = { "gofmt", lsp_format = "prefer" },
     },
     format_on_save = function(bufnr)
       -- Disable with a global or buffer-local variable
       if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then
         return
       end
-      return { timeout_ms = 10000, lsp_format = false } -- 增加到10秒，适合大文件
+      if vim.bo[bufnr].filetype == "go" then
+        require("config.go").organize_imports(bufnr)
+      end
+      return { timeout_ms = 10000 }
     end
   },
   init = function()
-    -- 保存自动format
-    vim.api.nvim_create_autocmd("BufWritePre", {
-      pattern = "*",
-      callback = function(args)
-        if vim.g.disable_autoformat then
-          return
-        end
-        require("conform").format({ 
-          bufnr = args.buf,
-          timeout_ms = 10000, -- 增加超时时间
-        })
-      end,
-    })
     vim.keymap.set({ "n", "v" }, "<leader>fa", function()
       require("conform").format({
-        lsp_fallback = false,
         async = false,
         timeout_ms = 10000, -- 增加到10秒，适合大文件
       })
