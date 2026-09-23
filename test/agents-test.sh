@@ -257,6 +257,8 @@ HOME="$home" "$home/.local/bin/mac-setup" list --format json \
   >"$TEMP_ROOT/mac-setup-list.json"
 grep -q '"editor.nvim"' "$TEMP_ROOT/mac-setup-list.json"
 test -L "$home/.config/agents/reme-memory-bridge.ts"
+test -L "$home/.local/bin/codex-monitor"
+test -x "$home/.local/bin/codex-monitor"
 test -L "$home/.local/share/mac-setup/reme/venv"
 test "$(readlink "$home/.local/share/mac-setup/reme/venv")" = \
   "$home/.local/share/mac-setup/reme/venv-0.4.1.7"
@@ -409,6 +411,8 @@ test "$(jq -r '.providers.openai // empty' \
 home="$(new_home only)"
 run_module_quiet "$home" --apply --only codex
 test -f "$home/.codex/config.toml"
+test -L "$home/.local/bin/codex-monitor"
+test -x "$home/.local/bin/codex-monitor"
 test -L "$home/.local/share/mac-setup/reme/venv"
 test -f "$home/.config/reme/opencode-candidate.yaml"
 test -f "$home/.config/reme/opencode-global.yaml"

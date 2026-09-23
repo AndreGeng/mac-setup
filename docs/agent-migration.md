@@ -13,6 +13,7 @@ locally maintained shared skills.
 | Third-party skills/hooks/plugins | Upstream installer | Upstream-owned output |
 | ReMe runtime | Pinned PyPI package | Dedicated venv plus generated project/global configs |
 | Shared ReMe bridge | `config/agents/reme-memory-bridge.ts` | Symlink under `~/.config/agents` |
+| Codex latency monitor | `config/agents/codex-monitor.ts` | Symlink under `~/.local/bin` |
 | Secrets and private endpoints | Keychain/password manager/local secret file | Runtime injection only |
 
 OpenCode, Codex, and Pi discover the shared `~/.agents/skills` directory. Do not create extra
@@ -100,6 +101,44 @@ bash modules/agents.sh --apply --only opencode --force
 Quit and restart OpenCode after any configuration, agent, skill, command, or plugin change.
 Start a new Claude or Codex session after configuration changes. Pi extensions may support
 `/reload`; restart Pi for settings or package changes.
+
+## Codex Latency Diagnostics
+
+The Codex hooks record three metadata-only lifecycle events: prompt accepted, tool completed, and
+turn stopped. The local report separates time before the first completed tool from time after the
+last completed tool, and flags a turn when no observable progress crosses the selected threshold:
+
+```bash
+codex-monitor report
+codex-monitor report --format json --stale-seconds 120 --limit 20
+```
+
+Use `status`, `suspectedPhase`, `timeToFirstToolMs`, `finalizationMs`, `currentQuietMs`, and
+`maxQuietMs` to narrow a delay. `model_before_first_tool_or_answer` means no tool completion or
+final stop was observed after the prompt. `model_after_last_tool_or_hook_before_stop` means tools
+finished but Codex did not reach the Stop hook. The latter can include model finalization, network
+delivery, and hooks that run before the monitor, so it identifies a phase rather than proving one
+component is at fault. A new prompt marks the preceding unfinished turn as `interrupted`.
+
+State is private and local under
+`$XDG_STATE_HOME/mac-setup/codex-monitor/` or
+`~/.local/state/mac-setup/codex-monitor/`. Session IDs and working directories are salted hashes.
+The monitor never writes prompts, assistant messages, reasoning, tool names, commands, arguments,
+results, paths, credentials, or hook errors. Hook input is bounded, malformed input is discarded,
+and each hook is fail-open with a one-second timeout so diagnostics cannot block Codex. Daily NDJSON
+files are capped at 4 MiB, retained for 14 days, and created with owner-only permissions. Removing
+the state directory resets the local salt and makes old and new session hashes intentionally
+unjoinable.
+
+Apply a changed monitor and hook template, then start a new Codex session:
+
+```bash
+bash modules/agents.sh --apply --only codex --force
+bash modules/agents.sh --audit --only codex
+```
+
+Because Codex settings are mutable copies, `--force` also refreshes `config.toml`; review and
+preserve any intentional local-only Codex settings before running it.
 
 ## Cross-Agent Active Memory
 

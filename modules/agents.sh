@@ -964,6 +964,9 @@ apply_claude() {
 }
 
 apply_codex() {
+  install_managed_link \
+    "$REPO_ROOT/config/agents/codex-monitor.ts" \
+    "$HOME/.local/bin/codex-monitor"
   install_agent_template \
     "$REPO_ROOT/config/codex/config.toml" \
     "$HOME/.codex/config.toml" 600
@@ -1428,6 +1431,14 @@ audit_claude() {
 }
 
 audit_codex() {
+  audit_managed_link \
+    "$REPO_ROOT/config/agents/codex-monitor.ts" \
+    "$HOME/.local/bin/codex-monitor"
+  if [[ -x "$HOME/.local/bin/codex-monitor" ]]; then
+    audit_ok executable "$HOME/.local/bin/codex-monitor"
+  else
+    audit_fail executable "$HOME/.local/bin/codex-monitor"
+  fi
   audit_template \
     "$REPO_ROOT/config/codex/config.toml" \
     "$HOME/.codex/config.toml"

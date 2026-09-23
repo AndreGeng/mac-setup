@@ -6,6 +6,11 @@
           {
             "type": "command",
             "command": "command -v workmux >/dev/null 2>&1 && workmux set-window-status working || true"
+          },
+          {
+            "type": "command",
+            "command": "command -v codex-monitor >/dev/null 2>&1 && CODEX_MONITOR_EVENT=PostToolUse codex-monitor hook || true",
+            "timeout": 1
           }
         ]
       }
@@ -22,6 +27,11 @@
             "command": "command -v bun >/dev/null 2>&1 && test -f \"$HOME/.config/agents/reme-memory-bridge.ts\" && REME_HOOK_HOST=codex REME_HOOK_EVENT=Stop bun \"$HOME/.config/agents/reme-memory-bridge.ts\" || true",
             "timeout": 3,
             "async": true
+          },
+          {
+            "type": "command",
+            "command": "command -v codex-monitor >/dev/null 2>&1 && CODEX_MONITOR_EVENT=Stop codex-monitor hook || true",
+            "timeout": 1
           }
         ]
       }
@@ -29,6 +39,11 @@
     "UserPromptSubmit": [
       {
         "hooks": [
+          {
+            "type": "command",
+            "command": "command -v codex-monitor >/dev/null 2>&1 && CODEX_MONITOR_EVENT=UserPromptSubmit codex-monitor hook || true",
+            "timeout": 1
+          },
           {
             "type": "command",
             "command": "command -v workmux >/dev/null 2>&1 && workmux set-window-status working || true"
