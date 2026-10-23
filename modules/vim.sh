@@ -23,6 +23,9 @@ install_neovim() {
   install_neovim_runtime
   install_tree_sitter_cli
   install_editor_toolchain
+  if [[ "${MAC_SETUP_NVIM_RUST:-0}" == 1 ]]; then
+    install_rust_editor_components || return 1
+  fi
 
   # setup-lite 默认设置 MAC_SETUP_SKIP_NVIM_PYTHON=1：不装 mise(仅vim)/venv/nvr；nodejs 模块仍会装 mise
   if [[ "${MAC_SETUP_SKIP_NVIM_PYTHON:-}" != "1" ]]; then

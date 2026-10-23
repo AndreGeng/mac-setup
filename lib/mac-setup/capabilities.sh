@@ -132,7 +132,7 @@ capability_tools() {
 
 capability_optional_features() {
   case "$1" in
-  editor.nvim) printf '%s\n' python-provider ;;
+  editor.nvim) printf '%s\n' python-provider rust-tools ;;
   shell.zsh | terminal.tmux | runtime.node) return 0 ;;
   esac
 }

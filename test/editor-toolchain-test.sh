@@ -38,6 +38,8 @@ test_installer_publishes_managed_go_and_gopls() {
     '  install:go@1.26.3) exit 0 ;;' \
     '  where:go@1.26.3) printf "%s\n" "$FAKE_GO_ROOT"; exit 0 ;;' \
     '  exec:go@1.26.3)' \
+    '    [[ "${4:-}" == env && "${5:-}" == GOBIN=* && "${6:-}" == go ]] || exit 1' \
+    '    GOBIN="${5#GOBIN=}"' \
     '    mkdir -p "$GOBIN"' \
     '    printf "%s\n" "#!/usr/bin/env bash" "printf \"%s\\n\" \"golang.org/x/tools/gopls v0.23.0\"" >"$GOBIN/gopls"' \
     '    chmod +x "$GOBIN/gopls"' \
@@ -68,7 +70,7 @@ test_installer_publishes_managed_go_and_gopls() {
     return 1
   grep -Fxq 'install go@1.26.3' "$trace" || return 1
   grep -Fq \
-    'exec go@1.26.3 -- go install golang.org/x/tools/gopls@v0.23.0' "$trace"
+    'exec go@1.26.3 -- env GOBIN=' "$trace"
 }
 
 test_neovim_uses_managed_user_tools() {

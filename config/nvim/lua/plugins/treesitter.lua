@@ -2,7 +2,7 @@ local parsers = {
   'typescript', 'tsx', 'javascript', 'jsdoc',
   'lua', 'vim', 'vimdoc', 'html', 'css',
   'json', 'yaml', 'markdown', 'bash', 'python',
-  'java', 'go', 'gomod', 'gosum', 'gowork',
+  'java', 'go', 'gomod', 'gosum', 'gowork', 'rust',
 }
 
 return {

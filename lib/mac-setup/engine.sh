@@ -202,6 +202,11 @@ plan_member_changes() {
         'Install Python 3.11, pynvim, and neovim-remote.'
       add_plan_approval network 'The optional Neovim Python provider requires downloads.'
     fi
+    if [[ "${FEATURE_RUST:-false}" == true ]] && ! rust_editor_components_match; then
+      add_plan_change CONFIGURE_FEATURE "rust-tools@$(rust_editor_toolchain)" \
+        'Install rust-analyzer, rust-src, rustfmt, and clippy for the active rustup toolchain.'
+      add_plan_approval network 'Rust editor components must be downloaded through rustup.'
+    fi
     ;;
   shell.zsh)
     local zsh_path=""
@@ -299,6 +304,9 @@ plan_target() {
   platform="$(detect_platform)"
   repo_revision="$(git -C "$MAC_SETUP_REPO_ROOT" rev-parse HEAD 2>/dev/null || printf unknown)"
   plan_material="$target|$feature_python|$platform|$repo_revision|$PLAN_STATUS"
+  if [[ "${FEATURE_RUST:-false}" == true ]]; then
+    plan_material="$plan_material|rust-tools:$(rust_editor_toolchain)"
+  fi
   for ((index = 0; index < ${#PLAN_CHANGE_TYPES[@]}; index++)); do
     plan_material="$plan_material|${PLAN_CHANGE_MEMBERS[$index]}|${PLAN_CHANGE_TYPES[$index]}"
     plan_material="$plan_material|${PLAN_CHANGE_RESOURCES[$index]}"
@@ -545,6 +553,9 @@ run_capability_module() {
 
   (
     export MAC_SETUP_SKIP_NVIM_CONFIG=1
+    if [[ "${FEATURE_RUST:-false}" == true ]]; then
+      export MAC_SETUP_NVIM_RUST=1
+    fi
     if [[ "$capability" == "editor.nvim" && "$feature_python" != "true" ]]; then
       export MAC_SETUP_SKIP_NVIM_PYTHON=1
     else
@@ -647,6 +658,13 @@ build_verify_member() {
     verify_command gopls-executable gopls
     verify_command ripgrep-executable rg
     verify_command fd-executable fd
+    if [[ "${FEATURE_RUST:-false}" == true ]]; then
+      if rust_editor_components_match; then
+        add_verify_check rust-editor-components PASS "Rust editor components ($(rust_editor_toolchain))"
+      else
+        add_verify_check rust-editor-components FAIL 'Rust editor components are missing or unusable.'
+      fi
+    fi
     verify_configs "$capability"
     if [[ -n "$nvim_path" && -n "$neovim_version" ]] &&
       neovim_executable_matches "$nvim_path" "$neovim_version"; then

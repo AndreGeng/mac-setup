@@ -67,7 +67,7 @@ return {
 
       -- Enable the following language servers
       -- 注意：Java (jdtls) 由 nvim-jdtls 插件单独管理，不要在这里添加
-      local servers = { 'eslint_d', 'ts_ls', 'lua_ls', 'emmet_language_server', 'bashls', 'html', 'tailwindcss', 'gopls', 'pyright', 'ruff' }
+      local servers = { 'eslint_d', 'ts_ls', 'lua_ls', 'emmet_language_server', 'bashls', 'html', 'tailwindcss', 'gopls', 'pyright', 'ruff', 'rust_analyzer' }
       for _, lsp in ipairs(servers) do
         vim.lsp.enable(lsp)
         vim.lsp.config(lsp, {
@@ -78,6 +78,12 @@ return {
           on_attach = on_attach,
           capabilities = capabilities,
           settings = {
+            ['rust-analyzer'] = {
+              check = { command = 'clippy' },
+              -- Let rust-analyzer watch Cargo and sysroot files; Neovim's watcher
+              -- can exhaust file descriptors while traversing the Rust sources.
+              files = { watcher = 'server' },
+            },
             Lua = {
               diagnostics = {
                 globals = { 'vim' }

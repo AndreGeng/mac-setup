@@ -27,6 +27,7 @@ TARGET=""
 PLAN_ID_ARG=""
 NON_INTERACTIVE=false
 FEATURE_PYTHON=false
+FEATURE_RUST=false
 ALLOW_VALUES=()
 
 usage() {
@@ -45,7 +46,7 @@ Options:
   --format human|json
   --plan-id ID
   --allow network|sudo|replace-config
-  --with python-provider
+  --with python-provider|rust-tools
   --non-interactive
   --no-color
 EOF
@@ -135,6 +136,8 @@ while [[ $# -gt 0 ]]; do
     }
     if [[ "$2" == python-provider ]]; then
       FEATURE_PYTHON=true
+    elif [[ "$2" == rust-tools ]]; then
+      FEATURE_RUST=true
     else
       emit_cli_error "$COMMAND" FAILED UNKNOWN_FEATURE "Unknown feature: $2"
       exit 2
@@ -207,6 +210,18 @@ if [[ "$FEATURE_PYTHON" == true ]] && ! target_has_member "$CAPABILITY" editor.n
   emit_cli_error "$COMMAND" FAILED UNKNOWN_FEATURE \
     'python-provider is only available for editor.nvim.'
   exit 2
+fi
+
+if [[ "$FEATURE_RUST" == true ]]; then
+  if ! target_has_member "$CAPABILITY" editor.nvim; then
+    emit_cli_error "$COMMAND" FAILED UNKNOWN_FEATURE 'rust-tools is only available for editor.nvim.'
+    exit 2
+  fi
+  if ! rust_editor_toolchain >/dev/null; then
+    emit_cli_error "$COMMAND" BLOCKED RUST_TOOLCHAIN_REQUIRED \
+      'rust-tools requires an existing rustup toolchain in the current directory.'
+    exit 20
+  fi
 fi
 
 if target_has_member "$CAPABILITY" runtime.node &&

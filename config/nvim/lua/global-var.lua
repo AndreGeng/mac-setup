@@ -13,6 +13,8 @@ if vim then
   -- mac-setup 把 tree-sitter、Go、gopls 等受管工具发布到这里。即使 Neovim
   -- 从尚未重新加载 .zshrc 的旧终端启动，也应优先使用仓库声明的版本。
   vim.env.PATH = vim.env.HOME .. "/.local/bin:" .. vim.env.PATH
+  -- rustup proxies select the project's toolchain, including rust-toolchain.toml.
+  vim.env.PATH = vim.env.PATH .. ":" .. vim.env.HOME .. "/.cargo/bin"
 
   -- disable matchparen plugin
   vim.g.loaded_matchparen = 1

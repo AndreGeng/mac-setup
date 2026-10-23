@@ -21,6 +21,41 @@ log() {
   echo -e "${color}${msg}${NC}"
 }
 
+rust_editor_toolchain() {
+  local output
+  local rustup_bin="${HOME:-/root}/.cargo/bin/rustup"
+  if command -v rustup >/dev/null 2>&1; then
+    rustup_bin=rustup
+  fi
+  output="$(RUSTUP_AUTO_INSTALL=0 "$rustup_bin" show active-toolchain 2>/dev/null)" || return 1
+  [[ -n "$output" ]] || return 1
+  printf '%s\n' "${output%% *}"
+}
+
+rust_editor_components_match() {
+  local toolchain components component
+  local PATH="$PATH:${HOME:-/root}/.cargo/bin"
+  toolchain="$(rust_editor_toolchain)" || return 1
+  components="$(rustup component list --installed --toolchain "$toolchain")" || return 1
+  for component in rust-analyzer rust-src rustfmt clippy; do
+    printf '%s\n' "$components" | grep -Eq "^${component}(-|$)" || return 1
+  done
+  rustup run "$toolchain" rust-analyzer --version >/dev/null 2>&1
+}
+
+install_rust_editor_components() {
+  local toolchain
+  export PATH="$PATH:${HOME:-/root}/.cargo/bin"
+  toolchain="$(rust_editor_toolchain)" || {
+    log 'Rust editor support requires an existing rustup toolchain.' "$RED"
+    return 1
+  }
+  rust_editor_components_match && return 0
+  log "安装 Rust 编辑器组件 ($toolchain)..." "$GREEN"
+  rustup component add --toolchain "$toolchain" rust-analyzer rust-src rustfmt clippy || return 1
+  rust_editor_components_match
+}
+
 # Retry a complete installer command. This complements each package manager's
 # own transport retries: streamed archives can still abort the whole process
 # after a temporary read timeout.
@@ -867,8 +902,9 @@ install_editor_toolchain() {
     stage_dir="$(mktemp -d "$runtime_parent/.${gopls_version}.new.XXXXXX")" || return 1
     mkdir -p "$stage_dir/bin"
     log "安装 gopls v${gopls_version}..." "$GREEN"
-    if ! GOBIN="$stage_dir/bin" "$mise_cmd" exec "go@${go_version}" -- \
-      go install "golang.org/x/tools/gopls@v${gopls_version}" ||
+    # mise may define GOBIN itself; set the staging directory after activation.
+    if ! "$mise_cmd" exec "go@${go_version}" -- \
+      env GOBIN="$stage_dir/bin" go install "golang.org/x/tools/gopls@v${gopls_version}" ||
       ! gopls_executable_matches "$stage_dir/bin/gopls" "$gopls_version"; then
       rm -rf "$stage_dir"
       log "gopls v${gopls_version} 安装失败；未修改现有安装" "$RED"

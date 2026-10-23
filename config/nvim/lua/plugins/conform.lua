@@ -15,6 +15,7 @@ return {
       graphql = { "prettier" },
       lua = { "stylua" },
       python = { "ruff_format" },
+      rust = { "rustfmt" },
       go = { "gofmt", lsp_format = "prefer" },
     },
     format_on_save = function(bufnr)
