@@ -17,18 +17,3 @@ function toggleAppWindows()
   print('toggleAppWindows')
 end
 hyperKey:bind({}, 's',toggleAppWindows , nil)
-
-function yabai(args, alterArgs)
-
-  -- Runs in background very fast
-  hs.task.new("/usr/local/bin/yabai",function(exitCode)
-  end, args):start()
-
-end
-
-hs.hotkey.bind({"cmd"}, 'i', function() yabai({"-m", "window", "--toggle", "zoom-fullscreen"}) end)
-
-hs.hotkey.bind({"cmd"}, 'h', function() yabai({"-m", "window", "--focus", "west"}) end,nil)
-hs.hotkey.bind({"cmd"}, 'l', function() yabai({"-m", "window", "--focus", "east"}) end,nil)
-hs.hotkey.bind({"cmd"}, 'j', function() yabai({"-m", "window", "--focus", "south"}) end,nil)
-hs.hotkey.bind({"cmd"}, 'k', function() yabai({"-m", "window", "--focus", "north"}) end,nil)
