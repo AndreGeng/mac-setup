@@ -1,14 +1,16 @@
--- atuo reload hammerspoon config files when changes in place
-function reloadConfig(files)
-    doReload = false
-    for _,file in pairs(files) do
-        if file:sub(-4) == ".lua" then
-            doReload = true
-        end
+-- Watch the repository directory even when ~/.hammerspoon is a symlink.
+local function reloadConfig(files)
+  for _, file in ipairs(files) do
+    if file:sub(-4) == '.lua' then
+      hs.reload()
+      return
     end
-    if doReload then
-        hs.reload()
-    end
+  end
 end
-local myWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", reloadConfig):start()
-hs.alert.show("Config reloaded")
+
+local configPath = assert(hs.fs.pathToAbsolute(hs.configdir))
+local watcher = hs.pathwatcher.new(configPath, reloadConfig):start()
+hs.alert.show('Config reloaded')
+
+-- require() retains this object in package.loaded, preventing collection.
+return watcher
