@@ -128,7 +128,7 @@ return {
         })
       end
 
-
+      require('config.rust').setup()
     end,
   },
   {

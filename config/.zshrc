@@ -227,3 +227,6 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 
 # Hermes Agent — ensure ~/.local/bin is on PATH
 export PATH="$HOME/.local/bin:$PATH"
+
+# claw-auth-proxy managed PATH
+export PATH="$HOME/.claw-auth-proxy/bin:$PATH"
