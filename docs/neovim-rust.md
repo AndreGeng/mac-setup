@@ -31,9 +31,11 @@ Standalone `.rs` files without `Cargo.toml` or `rust-project.json` are also supp
 The configuration passes each file explicitly through rust-analyzer's `detachedFiles`
 initialization option instead of treating its directory or Git root as a Cargo workspace.
 Each independent file uses a separate client; reopening it reuses that client. Cargo
-projects keep nvim-lspconfig's workspace detection. Clippy save checking is disabled for
-standalone files because it requires Cargo; rustfmt and language-service navigation remain
-available. Use a Cargo project when the code depends on external crates.
+projects keep nvim-lspconfig's workspace detection and Clippy checking. Standalone files
+use `rustc --error-format=json --emit=metadata -o /dev/null` for compiler diagnostics on
+save, including trait and borrow-checking errors. This only checks compilation; it does
+not run the program or create a binary. It uses rustc's default edition. Use a Cargo
+project for external crates, an explicit edition, features, or custom compiler flags.
 
 Restart Neovim after applying. In a Rust file:
 
@@ -48,6 +50,7 @@ Regression checks use temporary files and do not download dependencies:
 bash test/nvim-rust-test.sh
 bash test/nvim-rust-test.sh --integration
 bash test/nvim-rust-standalone-test.sh
+bash test/nvim-rust-standalone-test.sh --diagnostics
 ```
 
 The integration check requires existing nvim-lspconfig and conform.nvim checkouts under
@@ -57,3 +60,6 @@ project. Treesitter parser installation uses the existing Neovim plugin bootstra
 The standalone check loads the complete installed Neovim configuration and checks `gd`
 without a Cargo manifest. `RUST_STANDALONE_FILE` can point to an existing file that calls
 `transpose`; the check reads that file without saving or formatting it.
+The diagnostics variant checks that an invalid `collect()` publishes `E0277`, then fixes
+the temporary fixture and verifies that the diagnostic clears. With `RUST_STANDALONE_FILE`
+it only reads the provided saved file and checks for `E0277`, without modifying it.

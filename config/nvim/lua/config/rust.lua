@@ -17,7 +17,16 @@ function M.setup()
       config.root_dir = nil
       config.workspace_folders = nil
       config.settings['rust-analyzer'].detachedFiles = { filename }
-      config.settings['rust-analyzer'].checkOnSave = false
+      -- Detached files have no Cargo manifest. Feed rustc's JSON diagnostics to
+      -- rust-analyzer instead; metadata-only checking never runs the program.
+      config.settings['rust-analyzer'].checkOnSave = true
+      config.settings['rust-analyzer'].check = vim.tbl_deep_extend('force',
+        config.settings['rust-analyzer'].check or {}, {
+          overrideCommand = {
+            'rustc', '--error-format=json', '--emit=metadata', '-o', '/dev/null', filename,
+          },
+          invocationStrategy = 'once',
+        })
       -- Start here rather than calling on_dir: each independent file gets its
       -- own detached-file configuration, even when several share a directory.
       vim.lsp.start(config, {

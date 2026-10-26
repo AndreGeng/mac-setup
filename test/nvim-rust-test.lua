@@ -25,7 +25,11 @@ vim.api.nvim_buf_set_name(0, '/tmp/rust-standalone-test.rs')
 configs.rust_analyzer.root_dir(0, function() error('standalone must not start a directory workspace') end)
 assert(started.config.root_dir == nil)
 assert(started.config.settings['rust-analyzer'].detachedFiles[1] == vim.api.nvim_buf_get_name(0))
-assert(started.config.settings['rust-analyzer'].checkOnSave == false)
+assert(started.config.settings['rust-analyzer'].checkOnSave == true)
+assert(vim.deep_equal(started.config.settings['rust-analyzer'].check.overrideCommand, {
+  'rustc', '--error-format=json', '--emit=metadata', '-o', '/dev/null', vim.api.nvim_buf_get_name(0),
+}))
+assert(started.config.settings['rust-analyzer'].check.invocationStrategy == 'once')
 assert(started.opts.reuse_client({ name = 'rust_analyzer', config = started.config }))
 assert(not started.opts.reuse_client({ name = 'rust_analyzer', config = {} }))
 assert(configs.rust_analyzer.settings['rust-analyzer'].detachedFiles == nil,
