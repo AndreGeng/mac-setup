@@ -26,6 +26,11 @@ run_case() (
     cp "$TEMP_ROOT/fixture.tar.gz" "${@: -1}"
   }
   python3() {
+    if [[ "${1:-}" == */scripts/configure-toshy.py ]]; then
+      printf 'configure shortcuts\n' >>"$trace"
+      [[ "$scenario" != configure-failure ]]
+      return
+    fi
     printf 'python %s\n' "$*" >>"$trace"
     [[ "$scenario" != installer-failure ]] || return 7
     mkdir -p "$HOME/.config/toshy" "$HOME/.local/bin"
@@ -57,12 +62,12 @@ run_case() (
     ;;
   esac
   case "$scenario" in
-  checksum-failure | download-failure | installer-failure)
+  checksum-failure | download-failure | installer-failure | configure-failure)
     if install_toshy; then
       printf 'Unexpected success: %s\n' "$scenario" >&2
       return 1
     fi
-    if [[ "$scenario" != installer-failure ]]; then
+    if [[ "$scenario" != installer-failure && "$scenario" != configure-failure ]]; then
       ! grep -q '^python ' "$trace" || return 1
     fi
     ;;
@@ -74,16 +79,17 @@ run_case() (
     install_toshy || return 1
     grep -q 'ac3dbfcdd6e7a11c95ea892c19fb5b1643f45a82' "$trace" || return 1
     grep -q '^python ./setup_toshy.py install$' "$trace" || return 1
+    grep -q '^configure shortcuts$' "$trace" || return 1
     : >"$trace"
     install_toshy || return 1
-    [[ ! -s "$trace" ]] || return 1
+    [[ "$(cat "$trace")" == 'configure shortcuts' ]] || return 1
     ;;
   esac
   [[ -z "$(ls -A "$TMPDIR")" ]]
 )
 
 for scenario in macos root no-root opt-out headless noninteractive desktop wayland \
-  checksum-failure download-failure installer-failure; do
+  checksum-failure download-failure installer-failure configure-failure; do
   run_case "$scenario" >"$TEMP_ROOT/$scenario.out" 2>&1 || {
     cat "$TEMP_ROOT/$scenario.out" >&2
     printf 'FAIL toshy %s\n' "$scenario" >&2
@@ -122,3 +128,5 @@ output="$(OSTYPE=linux-gnu bash "$ROOT_DIR/setup-lite.sh" --dry-run --with-platf
 output="$(OSTYPE=darwin bash "$ROOT_DIR/setup.sh" --dry-run)"
 [[ "$output" != *'/platforms/linux/toshy.sh'* ]]
 printf 'PASS toshy setup entry points\n'
+
+PYTHONDONTWRITEBYTECODE=1 python3 "$ROOT_DIR/test/toshy-config-test.py"

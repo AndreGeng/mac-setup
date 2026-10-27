@@ -147,7 +147,26 @@ Toshy 需要普通用户的 X11/Wayland 桌面会话和交互终端。root/sudo 
 安装器保留官方交互提示，自行请求 sudo、安装依赖、配置 udev/input 权限和用户服务。
 请按提示操作；GNOME Wayland 可能还需安装并启用兼容扩展，权限变更后可能需要注销或重启。
 完成后运行 `toshy-services-status` 检查服务，并在实际应用中确认快捷键。
-检测到已有 Toshy 配置和启动命令时跳过，保留现有配置；更新、修复和卸载使用
+安装后以及检测到已有 Toshy 时，模块会同步 `config/toshy/` 中的默认快捷键：
+
+- 按住 `d` + `h/j/k/l` → 左/下/上/右；单击 `d` 仍输入字母。
+- Caps Lock 单击为 Esc，按住为 Ctrl。
+- Cmd+Space 直接调用 `fcitx5-remote -t` 切换输入法。
+- 移除 Fcitx 的 Ctrl+Space 切换绑定，为 Herdr 前缀保留该组合键。
+
+快捷键写入 Toshy 的 `user_custom_modmaps` / `user_apps` 用户区域内的受管块，
+其他配置保留；重复运行不会重复插入。会迁移本仓库此前手动添加的相同快捷键；
+若同名快捷键已被自行修改则停止，请先解决冲突。上游重装会保留这些用户区域。
+Fcitx 只修改 TriggerKeys 中的 Ctrl+Space，其余快捷键和设置保留；没有配置文件时
+创建空的 TriggerKeys 列表，禁用其默认 Ctrl+Space。此步骤不安装 Fcitx，
+Cmd+Space 需要另行安装并启动 Fcitx5；`d` 组合键在快速打字时可能误触。
+
+同步会使用 Toshy 的 Python runtime 校验完整配置，失败时恢复原配置文件，
+不会创建含用户配置的备份。更改后重载运行中的 Fcitx 并重启运行中的 Toshy 用户服务；
+未启动的服务仍需按上游提示启动、注销或重启。可在桌面终端重新运行
+`./setup.sh --modules toshy` 同步后续配置更新。
+
+Toshy 的更新、修复和卸载仍使用
 [上游安装器](https://github.com/RedBearAK/toshy#how-to-install)及其 `install` / `uninstall`
 命令，不由配置同步模块覆盖。
 
@@ -219,6 +238,7 @@ Toshy 需要普通用户的 X11/Wayland 桌面会话和交互终端。root/sudo 
 
 ```bash
 bash test/setup-test.sh
+bash test/toshy-test.sh
 bash test/nvim-go-test.sh
 # 使用本机已有 Neovim、gopls 和 Conform，离线验证真实 import/格式化保存流程
 bash test/nvim-go-test.sh --integration

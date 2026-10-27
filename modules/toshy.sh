@@ -9,6 +9,20 @@ source "$TOSHY_MODULE_DIR/../lib/utils.sh"
 
 toshy_has_terminal() { [[ -t 0 && -t 1 ]]; }
 
+configure_toshy() (
+  local runtime_helper="$HOME/.config/toshy/scripts/toshy-runtime-env.sh"
+  local python=python3
+  if [[ -f "$runtime_helper" ]]; then
+    # Upstream resolves its venv or an externally managed runtime.
+    source "$runtime_helper" || return 1
+    python="$TOSHY_PYTHON"
+  elif [[ -x "$HOME/.config/toshy/.venv/bin/python" ]]; then
+    python="$HOME/.config/toshy/.venv/bin/python"
+  fi
+  log "同步 Toshy 自定义快捷键和 Fcitx 输入法绑定" "$GREEN"
+  "$python" "$TOSHY_MODULE_DIR/../scripts/configure-toshy.py"
+)
+
 # Keep upstream's interactive prompts and privilege handling. Run in a subshell
 # so its working directory and our cleanup trap cannot affect other modules.
 install_toshy() (
@@ -31,8 +45,9 @@ install_toshy() (
   fi
   if [[ -f "$HOME/.config/toshy/toshy_config.py" &&
     -x "$HOME/.local/bin/toshy-config-start" ]]; then
-    log "Toshy 已安装，保留现有配置并跳过" "$GREEN"
-    return 0
+    log "Toshy 已安装，跳过安装并同步快捷键" "$GREEN"
+    configure_toshy
+    return $?
   fi
 
   local dependency
@@ -68,6 +83,7 @@ install_toshy() (
     log "Toshy 安装失败，请检查上游安装器输出后重试" "$RED"
     return 1
   fi
+  configure_toshy || return 1
   log "Toshy 安装器已完成；请按提示注销或重启，并运行 toshy-services-status 检查服务" "$GREEN"
 )
 
