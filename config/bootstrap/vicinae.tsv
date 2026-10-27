@@ -1,0 +1,4 @@
+# target version-or-revision asset sha256
+installer	4e7af129ca89fbb6574c8409a4d32ad468c7161d	scripts/install.sh	481ed1287e0b79655d81a09e1fd1fddef4cb454461da47d610e52bdc5c9997fd
+x86_64	v0.29.2	Vicinae-x86_64.AppImage	2c7f222b09355186a3b047e8018fed3e2f5438778c039214ad47af878ac453fc
+aarch64	v0.29.2	Vicinae-aarch64.AppImage	682c25fc0acd7e11305604db60fc61d01fca83b72ea8c933f7adbcfd4813e034

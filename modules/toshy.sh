@@ -9,19 +9,7 @@ source "$TOSHY_MODULE_DIR/../lib/utils.sh"
 
 toshy_has_terminal() { [[ -t 0 && -t 1 ]]; }
 
-configure_toshy() (
-  local runtime_helper="$HOME/.config/toshy/scripts/toshy-runtime-env.sh"
-  local python=python3
-  if [[ -f "$runtime_helper" ]]; then
-    # Upstream resolves its venv or an externally managed runtime.
-    source "$runtime_helper" || return 1
-    python="$TOSHY_PYTHON"
-  elif [[ -x "$HOME/.config/toshy/.venv/bin/python" ]]; then
-    python="$HOME/.config/toshy/.venv/bin/python"
-  fi
-  log "同步 Toshy 自定义快捷键和 Fcitx 输入法绑定" "$GREEN"
-  "$python" "$TOSHY_MODULE_DIR/../scripts/configure-toshy.py"
-)
+source "$TOSHY_MODULE_DIR/../lib/toshy.sh"
 
 # Keep upstream's interactive prompts and privilege handling. Run in a subshell
 # so its working directory and our cleanup trap cannot affect other modules.

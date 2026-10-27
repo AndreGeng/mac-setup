@@ -29,6 +29,8 @@ class ConfigurationTests(unittest.TestCase):
         self.assertIn('C("DNav-h"): C("Left")', updated)
         self.assertIn('Key.CAPSLOCK: [Key.ESC, Key.LEFT_CTRL]', updated)
         self.assertIn('fcitx5-remote', updated)
+        self.assertEqual(updated.count('keymap("User Vicinae Ctrl bracket launcher"'), 1)
+        self.assertIn('C("Super-Left_Brace"): C("LC-Left_Brace")', updated)
         self.assertNotIn('C("LC-Space")', updated)
 
     def test_migrates_previous_manual_settings(self):

@@ -1,3 +1,8 @@
+# Physical Ctrl becomes Super in GUI apps under Toshy; restore Ctrl for Vicinae.
+keymap("User Vicinae Ctrl bracket launcher", {
+    C("Super-Left_Brace"): C("LC-Left_Brace"),
+}, when=lambda ctx: cnfg.screen_has_focus)
+
 # Global cursor navigation, including terminals.
 keymap("User D HJKL arrows", {
     C("DNav-h"): C("Left"),

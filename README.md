@@ -53,6 +53,7 @@ cd mac-setup
 | workmux | Workmux 并行开发工作区工具 | macOS, Linux |
 | agents | OpenCode、Claude Code、Codex、Pi 配置与自定义 skills | macOS, Linux |
 | toshy | Toshy：在桌面交互终端安装 macOS 风格快捷键 | Linux |
+| vicinae | Vicinae 启动器、Ctrl+[ 快捷键和登录自启动 | Linux |
 
 ## 让 Codex / OpenCode 配置电脑
 
@@ -128,6 +129,7 @@ OpenCode、Claude Code 和 Pi 复用。可以直接对 Agent 说：“用 mac-se
 
 - 字体：手动下载安装 Nerd Font
 - 键盘：[Toshy](https://github.com/RedBearAK/toshy)，使用 macOS 风格快捷键
+- 启动器：[Vicinae](https://docs.vicinae.com/)，默认通过 `Ctrl+[` 唤起
 
 完整 `./setup.sh` 在 Linux 平台阶段自动尝试安装 Toshy；精简安装通过
 `./setup-lite.sh --with-platform` 包含此步骤，也可以单独执行：
@@ -153,6 +155,7 @@ Toshy 需要普通用户的 X11/Wayland 桌面会话和交互终端。root/sudo 
 - Caps Lock 单击为 Esc，按住为 Ctrl。
 - Cmd+Space 直接调用 `fcitx5-remote -t` 切换输入法。
 - 移除 Fcitx 的 Ctrl+Space 切换绑定，为 Herdr 前缀保留该组合键。
+- 为 Vicinae 将 GUI 应用中的实体 Ctrl+[ 恢复为字面的 Ctrl+[。
 
 快捷键写入 Toshy 的 `user_custom_modmaps` / `user_apps` 用户区域内的受管块，
 其他配置保留；重复运行不会重复插入。会迁移本仓库此前手动添加的相同快捷键；
@@ -169,6 +172,39 @@ Cmd+Space 需要另行安装并启动 Fcitx5；`d` 组合键在快速打字时�
 Toshy 的更新、修复和卸载仍使用
 [上游安装器](https://github.com/RedBearAK/toshy#how-to-install)及其 `install` / `uninstall`
 命令，不由配置同步模块覆盖。
+
+### Vicinae 默认安装
+
+完整 `./setup.sh` 的 Linux 平台阶段会在 Toshy 之后安装并配置 Vicinae；
+精简安装通过 `./setup-lite.sh --with-platform` 包含此步骤。也可单独运行：
+
+```bash
+./setup.sh --dry-run --modules vicinae
+./setup.sh --modules vicinae
+MAC_SETUP_SKIP_VICINAE=1 ./setup.sh  # 跳过安装、配置和服务操作
+```
+
+模块要求普通用户的 Linux 桌面交互终端、Python 3 和 systemd 用户服务。
+root/sudo 运行、无桌面、非交互环境及 `--no-root` 会明确跳过。已有 Vicinae 时
+不重新安装，但仍合并配置并重启用户服务；启动后检查服务状态、自启动状态和 `vicinae ping`。
+
+- Arch x86_64 使用已有的 `yay` 或 `paru` 交互安装 `vicinae-bin`，包及依赖由 AUR/系统管理。
+  不自动安装 AUR helper；没有 helper 时停止并提示。XFCE 的 Secret Service 提供者
+  可选择 `gnome-keyring`。AUR 安装钩子会配置输入辅助程序权限，安装时请审阅提示。
+- 其他 Linux（包括 Arch aarch64）使用 `config/bootstrap/vicinae.tsv` 固定的官方安装脚本和 AppImage，
+  分别校验 SHA-256 后调用上游安装器，安装到 `~/.local`。支持 x86_64/aarch64；
+  需已有 `curl`、`jq` 和 Node.js（可先运行 `./setup.sh --modules nodejs`）。
+  不执行上游的浮动版本下载，也不自动授予输入设备权限；文本片段和粘贴功能可能
+  需要按上游文档另行设置权限。升级时需一起更新版本/提交和校验值。
+
+`config/vicinae/settings.json` 只管理 `global_shortcuts.toggle = control+[`。
+合并器支持上游生成的 JSONC，保留其他设置值；需更新快捷键时会重新排版配置并去掉注释，
+无需更新时不重写。配置文件保持可写，不链接整个用户配置目录，也不复制凭据数据库。
+若 Toshy 已安装，会复用其配置同步器添加 Ctrl+[ 兼容映射并重载；不自动安装 Toshy。
+
+模块导入桌面环境和包含 `~/.local/bin` 的 PATH，启用并重启 `vicinae.service`。
+X11 支持原生全局快捷键；Wayland 取决于合成器支持，必要时在合成器中绑定
+`vicinae toggle`。重跑 `./setup.sh --modules vicinae` 可同步配置。
 
 ## 目录结构
 
@@ -196,7 +232,8 @@ Toshy 的更新、修复和卸载仍使用
 │   │   └── fonts.sh
 │   └── linux/
 │       ├── fonts.sh
-│       └── toshy.sh
+│       ├── toshy.sh
+│       └── vicinae.sh
 └── config/            # 配置文件
     ├── nvim/
     ├── .zshrc
@@ -239,6 +276,7 @@ Toshy 的更新、修复和卸载仍使用
 ```bash
 bash test/setup-test.sh
 bash test/toshy-test.sh
+bash test/vicinae-test.sh
 bash test/nvim-go-test.sh
 # 使用本机已有 Neovim、gopls 和 Conform，离线验证真实 import/格式化保存流程
 bash test/nvim-go-test.sh --integration
