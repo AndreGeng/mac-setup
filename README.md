@@ -52,6 +52,7 @@ cd mac-setup
 | opencode | OpenCode CLI 与常用 LSP | macOS, Linux |
 | workmux | Workmux 并行开发工作区工具 | macOS, Linux |
 | agents | OpenCode、Claude Code、Codex、Pi 配置与自定义 skills | macOS, Linux |
+| toshy | Toshy：在桌面交互终端安装 macOS 风格快捷键 | Linux |
 
 ## 让 Codex / OpenCode 配置电脑
 
@@ -126,6 +127,29 @@ OpenCode、Claude Code 和 Pi 复用。可以直接对 Agent 说：“用 mac-se
 ### Linux 专属
 
 - 字体：手动下载安装 Nerd Font
+- 键盘：[Toshy](https://github.com/RedBearAK/toshy)，使用 macOS 风格快捷键
+
+完整 `./setup.sh` 在 Linux 平台阶段自动尝试安装 Toshy；精简安装通过
+`./setup-lite.sh --with-platform` 包含此步骤，也可以单独执行：
+
+```bash
+./setup.sh --dry-run --modules toshy  # 预览
+./setup.sh --modules toshy            # 在 Linux 桌面终端中交互安装
+MAC_SETUP_SKIP_TOSHY=1 ./setup.sh     # 完整安装时跳过 Toshy
+```
+
+Toshy 需要普通用户的 X11/Wayland 桌面会话和交互终端。root/sudo 运行、无桌面、
+非交互环境（如 CI/容器）和 `--no-root` 均会明确跳过，之后可在桌面终端单独重跑。
+模块需要已有的 `curl`、`tar`、`python3`，下载固定提交的源码归档并验证 SHA-256，
+再运行官方 `python3 ./setup_toshy.py install`。版本与校验值一起记录在
+`modules/toshy.sh`；此固定范围为 Toshy 源码，上游安装器仍自行管理其系统/Python 依赖。
+
+安装器保留官方交互提示，自行请求 sudo、安装依赖、配置 udev/input 权限和用户服务。
+请按提示操作；GNOME Wayland 可能还需安装并启用兼容扩展，权限变更后可能需要注销或重启。
+完成后运行 `toshy-services-status` 检查服务，并在实际应用中确认快捷键。
+检测到已有 Toshy 配置和启动命令时跳过，保留现有配置；更新、修复和卸载使用
+[上游安装器](https://github.com/RedBearAK/toshy#how-to-install)及其 `install` / `uninstall`
+命令，不由配置同步模块覆盖。
 
 ## 目录结构
 
@@ -152,7 +176,8 @@ OpenCode、Claude Code 和 Pi 复用。可以直接对 Agent 说：“用 mac-se
 │   │   ├── apps.sh
 │   │   └── fonts.sh
 │   └── linux/
-│       └── fonts.sh
+│       ├── fonts.sh
+│       └── toshy.sh
 └── config/            # 配置文件
     ├── nvim/
     ├── .zshrc

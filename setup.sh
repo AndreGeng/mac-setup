@@ -33,7 +33,7 @@ usage() {
   --no-root           跳过需要 root 权限的步骤
   -h, --help          显示帮助信息
 
-可用模块: zsh, vim, tmux, cli-tools, nodejs, herdr, sync, opencode, workmux, agents
+可用模块: zsh, vim, tmux, cli-tools, nodejs, herdr, sync, opencode, workmux, agents, toshy
 EOF
 }
 
@@ -83,7 +83,7 @@ fi
 
 for module in "${MODULES[@]}"; do
   case "$module" in
-  zsh | vim | tmux | cli-tools | nodejs | herdr | sync | opencode | workmux | agents) ;;
+  zsh | vim | tmux | cli-tools | nodejs | herdr | sync | opencode | workmux | agents | toshy) ;;
   *)
     printf '未知模块: %s\n' "$module" >&2
     exit 2
@@ -171,7 +171,8 @@ done
 
 # 平台专属：Linux 先运行通用层，再运行发行版层；macOS 只运行 macos 层。
 if [[ "$RUN_PLATFORM" == "true" ]]; then
-  while IFS= read -r platform_dir; do
+  # Keep stdin attached to the terminal for interactive platform installers.
+  while IFS= read -r platform_dir <&3; do
     [[ -d "$platform_dir" ]] || continue
     log "=== 安装 $(basename "$platform_dir") 平台模块 ===" "$GREEN"
     for script in "$platform_dir"/*.sh; do
@@ -183,7 +184,7 @@ if [[ "$RUN_PLATFORM" == "true" ]]; then
         source "$script"
       fi
     done
-  done < <(platform_script_dirs "$SCRIPT_ROOT/platforms")
+  done 3< <(platform_script_dirs "$SCRIPT_ROOT/platforms")
 fi
 
 # sync publishes ~/.zshrc after the zsh module has installed Zinit. Finish the

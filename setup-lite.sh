@@ -166,9 +166,10 @@ for module in "${MODULES[@]}"; do
 done
 
 if [[ "$RUN_PLATFORM" == "true" ]]; then
-  platform_dir="$SCRIPT_ROOT/platforms/$PLATFORM"
-  if [[ -d "$platform_dir" ]]; then
-    log "=== 平台专属脚本 ($PLATFORM) ===" "$GREEN"
+  # Keep stdin attached to the terminal for interactive platform installers.
+  while IFS= read -r platform_dir <&3; do
+    [[ -d "$platform_dir" ]] || continue
+    log "=== 平台专属脚本 ($(basename "$platform_dir")) ===" "$GREEN"
     for script in "$platform_dir"/*.sh; do
       [[ -f "$script" ]] || continue
       if [[ "$DRY_RUN" == "true" ]]; then
@@ -179,9 +180,7 @@ if [[ "$RUN_PLATFORM" == "true" ]]; then
         source "$script"
       fi
     done
-  else
-    log "无平台目录: $platform_dir" "$YELLOW"
-  fi
+  done 3< <(platform_script_dirs "$SCRIPT_ROOT/platforms")
 fi
 
 log "=== setup-lite 完成 ===" "$GREEN"
