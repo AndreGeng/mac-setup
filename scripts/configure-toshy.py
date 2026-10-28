@@ -31,7 +31,9 @@ def migrate_legacy(body, template):
         C("RC-Space"): [bind, C("LC-Space")],
     }, when=lambda ctx: cnfg.screen_has_focus and not ctx_app_is_remote)
     '''
-    for node in ast.parse(template + '\n' + legacy).body:
+    # Adopt the previously published navigation map, before the Wubi fallback.
+    previous = template.replace('    C("DNav-Space"): [C("d"), C("Space")],\n', '')
+    for node in ast.parse(template + '\n' + legacy + '\n' + previous).body:
         accepted.setdefault(identity(node), set()).add(ast.dump(node))
     lines = body.splitlines(keepends=True)
     for node in reversed(ast.parse(body).body):

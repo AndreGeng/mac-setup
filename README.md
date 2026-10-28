@@ -54,6 +54,10 @@ cd mac-setup
 | agents | OpenCode、Claude Code、Codex、Pi 配置与自定义 skills | macOS, Linux |
 | toshy | Toshy：在桌面交互终端安装 macOS 风格快捷键 | Linux |
 | vicinae | Vicinae 启动器、Ctrl+[ 快捷键和登录自启动 | Linux |
+| xfce | XFCE 键盘重复：延迟 250ms、每秒 40 次 | Linux/XFCE |
+
+XFCE 键盘重复设置可用 `./setup.sh --modules xfce` 单独应用；Linux 平台阶段也会
+自动执行。仅在 XFCE 桌面会话中生效，不安装依赖，设置由 xfconf 保存。
 
 ## 让 Codex / OpenCode 配置电脑
 

@@ -22,6 +22,14 @@ def fixture():
 
 
 class ConfigurationTests(unittest.TestCase):
+    def test_migrates_navigation_without_space_fallback(self):
+        template = (ROOT / 'config/toshy/user_apps.py').read_text()
+        old = template.replace('    C("DNav-Space"): [C("d"), C("Space")],\n', '')
+        original = fixture().replace('###  SLICE_MARK_END: user_apps',
+                                     old + '\n###  SLICE_MARK_END: user_apps')
+        updated = config.merge_toshy(original, ROOT / 'config/toshy')
+        self.assertEqual(updated.count('C("DNav-Space")'), 1)
+
     def test_d_space_preserves_wubi_code_and_commit_order(self):
         maps = {}
         namespace = {
