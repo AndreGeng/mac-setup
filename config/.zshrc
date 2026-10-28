@@ -102,7 +102,8 @@ alias wm='workmux'
 # yazi wrapper - change directory after exit
 y() {
   local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
-  command yazi "$@" --cwd-file="$tmp"
+  FZF_DEFAULT_COMMAND='fd --hidden --type f --exclude .git' \
+    command yazi "$@" --cwd-file="$tmp"
   IFS= read -r -d '' cwd < "$tmp"
   [ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd"
   rm -f -- "$tmp"
