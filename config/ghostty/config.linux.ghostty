@@ -1,0 +1,2 @@
+# Increase touchpad scrolling speed in Ghostty, including terminal applications.
+mouse-scroll-multiplier = precision:3,discrete:3
