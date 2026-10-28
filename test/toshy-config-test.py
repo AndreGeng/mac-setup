@@ -22,6 +22,18 @@ def fixture():
 
 
 class ConfigurationTests(unittest.TestCase):
+    def test_d_space_preserves_wubi_code_and_commit_order(self):
+        maps = {}
+        namespace = {
+            'keymap': lambda name, mapping, **kwargs: maps.update({name: mapping}),
+            'C': lambda combo: combo,
+        }
+        exec((ROOT / 'config/toshy/user_apps.py').read_text(), namespace)
+        navigation = maps['User D HJKL arrows']
+        self.assertEqual(navigation['DNav-Space'], ['d', 'Space'])
+        for key, arrow in zip('hjkl', ('Left', 'Down', 'Up', 'Right')):
+            self.assertEqual(navigation[f'DNav-{key}'], arrow)
+
     def test_preserves_personal_config_and_is_idempotent(self):
         updated = config.merge_toshy(fixture(), ROOT / 'config/toshy')
         self.assertEqual(updated, config.merge_toshy(updated, ROOT / 'config/toshy'))

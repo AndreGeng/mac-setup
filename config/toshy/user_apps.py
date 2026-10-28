@@ -5,6 +5,8 @@ keymap("User Vicinae Ctrl bracket launcher", {
 
 # Global cursor navigation, including terminals.
 keymap("User D HJKL arrows", {
+    # A rolled D+Space must send the Wubi code before committing it.
+    C("DNav-Space"): [C("d"), C("Space")],
     C("DNav-h"): C("Left"),
     C("DNav-j"): C("Down"),
     C("DNav-k"): C("Up"),
