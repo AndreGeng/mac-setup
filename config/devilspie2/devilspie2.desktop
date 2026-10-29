@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Devilspie2 Workspace Rules
+Comment=Ghostty and browsers on workspace 1; other applications on workspace 2
+Exec=/usr/bin/devilspie2
+TryExec=/usr/bin/devilspie2
+Terminal=false
+OnlyShowIn=XFCE;
+X-GNOME-Autostart-enabled=true

@@ -49,6 +49,8 @@ sync_configs() {
     sync_macos_configs "$config_dir"
   elif is_linux; then
     symlink_config "$config_dir/gestures/gestures.kdl" "$HOME/.config/gestures/gestures.kdl"
+    symlink_config "$config_dir/devilspie2/workspaces.lua" "$HOME/.config/devilspie2/workspaces.lua"
+    symlink_config "$config_dir/devilspie2/devilspie2.desktop" "$HOME/.config/autostart/devilspie2.desktop"
   fi
 }
 

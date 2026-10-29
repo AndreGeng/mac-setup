@@ -48,7 +48,7 @@ cd mac-setup
 | cli-tools | lazygit, fzf, ripgrep, delta 等 | macOS, Linux |
 | nodejs | Node.js、Bun、OpenCode/Codex CLI + 全局 npm 包 | macOS, Linux |
 | herdr | Herdr agent multiplexer + 配置 | macOS, Linux |
-| sync | 配置文件符号链接 | macOS, Linux |
+| sync | 配置文件符号链接（Linux 含 Devilspie2 工作区规则） | macOS, Linux |
 | opencode | OpenCode CLI 与常用 LSP | macOS, Linux |
 | workmux | Workmux 并行开发工作区工具 | macOS, Linux |
 | agents | OpenCode、Claude Code、Codex、Pi 配置与自定义 skills | macOS, Linux |
@@ -339,6 +339,20 @@ bash modules/agents.sh --apply --only opencode --force
 `--force` 检测到明文凭据时会在创建备份前停止。第三方 skills 不复制进仓库，其来源、
 审计和安全更新流程见
 [docs/agent-migration.md](docs/agent-migration.md)。
+
+### Devilspie2 工作区分配（Linux/X11）
+
+`config/devilspie2/workspaces.lua` 管理普通应用窗口的初始工作区：
+Ghostty 和浏览器到桌面 1，其他应用到桌面 2；Vicinae 保留打开时的桌面。
+面板、菜单和弹出对话框不单独移动。桌面环境需要至少两个工作区。
+
+Arch 上先用 `yay -S devilspie2`（或 `paru -S devilspie2`）安装程序，
+再运行 `./setup.sh --modules sync` 发布规则和 XFCE 登录自启动项。
+同步沿用仓库的备份和软链接机制；该模块同时同步其他已管理的配置。
+当前会话可运行 `devilspie2` 启动，已运行时规则文件修改会用于后续打开的窗口。
+配置同步本身不会安装程序、启动进程或搬动现有窗口。
+
+验证：`bash test/devilspie2-sync-test.sh`。
 
 ## 许可证
 
