@@ -4,6 +4,16 @@
 `~/.config/gestures/gestures.kdl`。参数是在 Apple bcm5974 触控板、XFCE/X11 上
 试用的值：三指拖拽速度 2.5 倍，抬手后 150 毫秒释放左键。
 
+四指左滑切到下一个工作区，右滑切到上一个工作区，抬手时触发。
+此绑定通过 `xdotool set_desktop --relative` 控制 X11 工作区，不依赖键盘快捷键；
+需要 `xdotool` 命令在服务的 PATH 中，并已配置至少两个工作区。
+四指绑定仅适用于 X11，Wayland 需替换为对应桌面的命令。
+
+四指轻放并停住，随后抬起，会直接框选截图并复制到剪贴板
+（`xfce4-screenshooter --region --clipboard`），不再选择后续操作。
+需安装 `xfce4-screenshooter`；它与四指滑动共用手指数，试用时检查是否误触。
+gestures v0.8.3 在 hold 结束时执行命令，而不是手指仍停在触控板上时执行。
+
 同步只发布配置，不安装程序、不修改设备权限、不启动或重载服务。macOS 不同步此配置。
 
 ## 安装与试用

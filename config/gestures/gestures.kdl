@@ -1,3 +1,10 @@
 // ferstar/gestures v0.8.3: three-finger drag, tested on XFCE/X11 with bcm5974.
 // acceleration=25 means 2.5x; release 150 ms after fingers lift.
 swipe direction="any" fingers=3 mouse-up-delay=150 acceleration=25
+
+// X11 workspaces: swipe left for next, right for previous; requires xdotool.
+swipe direction="w" fingers=4 end="xdotool set_desktop --relative 1"
+swipe direction="e" fingers=4 end="xdotool set_desktop --relative -- -1"
+
+// Rest four fingers, then lift to select a screenshot region (XFCE).
+hold fingers=4 action="xfce4-screenshooter --region --clipboard"

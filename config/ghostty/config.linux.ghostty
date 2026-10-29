@@ -1,5 +1,5 @@
 # Increase touchpad scrolling speed in Ghostty, including terminal applications.
-mouse-scroll-multiplier = precision:3,discrete:3
+mouse-scroll-multiplier = precision:5,discrete:3
 
 # Toshy's D navigation uses F24 internally; never send its escape sequence to the shell.
 keybind = f24=ignore
