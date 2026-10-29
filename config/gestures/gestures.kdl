@@ -1,0 +1,3 @@
+// ferstar/gestures v0.8.3: three-finger drag, tested on XFCE/X11 with bcm5974.
+// acceleration=25 means 2.5x; release 150 ms after fingers lift.
+swipe direction="any" fingers=3 mouse-up-delay=150 acceleration=25

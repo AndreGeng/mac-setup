@@ -134,6 +134,8 @@ OpenCode、Claude Code 和 Pi 复用。可以直接对 Agent 说：“用 mac-se
 - 字体：手动下载安装 Nerd Font
 - 键盘：[Toshy](https://github.com/RedBearAK/toshy)，使用 macOS 风格快捷键
 - 启动器：[Vicinae](https://docs.vicinae.com/)，默认通过 `Ctrl+[` 唤起
+- 触控板：[gestures 三指拖拽](docs/gestures.md)，Linux `sync` 发布配置：2.5 倍速度、
+  150ms 释放延迟；程序安装与登录自启按文档手动启用，已在 XFCE/X11 试用。
 
 完整 `./setup.sh` 在 Linux 平台阶段自动尝试安装 Toshy；精简安装通过
 `./setup-lite.sh --with-platform` 包含此步骤，也可以单独执行：

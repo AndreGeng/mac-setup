@@ -47,6 +47,8 @@ sync_configs() {
   # 平台专属配置
   if is_macos; then
     sync_macos_configs "$config_dir"
+  elif is_linux; then
+    symlink_config "$config_dir/gestures/gestures.kdl" "$HOME/.config/gestures/gestures.kdl"
   fi
 }
 

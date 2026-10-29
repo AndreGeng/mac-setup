@@ -1,4 +1,5 @@
 # name	version/source	install strategy
+gestures	v0.8.3 / 9dcbb2192503c5fd46285345c244269386bbfc71	ferstar/gestures; build with cargo install --git and --rev --locked against local libxdo; upstream owns binary and generated user service, mac-setup Linux sync owns only config/gestures/gestures.kdl. See docs/gestures.md for installation, reload and disabling autostart.
 skillshare	local canonical source	Publish reviewed shared skills to ~/.agents/skills; do not copy per-tool trees.
 ecc-universal	1.10.0	Install with the upstream ECC installer; do not vendor its agents, rules, hooks, or skills.
 gstack	v1.56.0.0	https://github.com/garrytan/gstack.git; clone and run ./setup.
