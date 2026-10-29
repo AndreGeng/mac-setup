@@ -2,6 +2,8 @@
 """Replay keys offline through xwaykeyz; never connect to input devices or the desktop."""
 from pathlib import Path
 from collections import Counter
+from itertools import permutations
+import asyncio
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
@@ -38,6 +40,8 @@ class EventTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         config_api.reset_configuration()
+        # Match the installed Toshy global timeout policy.
+        config_api.timeouts(multipurpose=1, suspend=0)
         namespace = dict(vars(config_api), cnfg=SimpleNamespace(screen_has_focus=True),
                          ctx_app_is_remote=False)
         for region in ('user_custom_modmaps', 'user_apps'):
@@ -86,30 +90,87 @@ class EventTests(unittest.TestCase):
                 self.assertEqual(self.replay([('C', 1), ('D', 1)] + releases),
                                  [Key.C, Key.D, Key.SPACE])
 
+    def test_cd_space_with_real_timer_ticks(self):
+        async def run():
+            events = [('C', 1), ('C', 0), ('D', 1), ('D', 0),
+                      ('SPACE', 1), ('SPACE', 0)]
+            for sequence in permutations(events):
+                if [k for k, a in sequence if a == 1] != ['C', 'D', 'SPACE']:
+                    continue
+                if any(sequence.index((k, 0)) < sequence.index((k, 1))
+                       for k in ('C', 'D', 'SPACE')):
+                    continue
+                transform.reset_transform()
+                self.sink.events.clear()
+                for name, action in sequence:
+                    transform.on_event(InputEvent(0, 0, ecodes.EV_KEY, Key[name], action),
+                                       self.device)
+                    await asyncio.sleep(0.01)
+                with self.subTest(sequence=sequence):
+                    self.assertEqual(self.replay([]), [Key.C, Key.D, Key.SPACE])
+        asyncio.run(run())
+
+    def test_all_cd_space_release_orders(self):
+        events = [('C', 1), ('C', 0), ('D', 1), ('D', 0),
+                  ('SPACE', 1), ('SPACE', 0)]
+        for sequence in permutations(events):
+            if [k for k, a in sequence if a == 1] != ['C', 'D', 'SPACE']:
+                continue
+            if any(sequence.index((k, 0)) < sequence.index((k, 1))
+                   for k in ('C', 'D', 'SPACE')):
+                continue
+            with self.subTest(sequence=sequence):
+                transform.reset_transform()
+                self.sink.events.clear()
+                self.assertEqual(self.replay(sequence), [Key.C, Key.D, Key.SPACE])
+
+    def test_mkdir_with_d_i_overlap(self):
+        self.assertEqual(self.replay([
+            ('M', 1), ('M', 0), ('K', 1), ('K', 0),
+            ('D', 1), ('I', 1), ('D', 0), ('I', 0), ('R', 1), ('R', 0),
+        ]), [Key.M, Key.K, Key.D, Key.I, Key.R])
+
+    def test_mkdir_while_d_stays_held(self):
+        self.assertEqual(self.replay([
+            ('M', 1), ('M', 0), ('K', 1), ('K', 0), ('D', 1),
+            ('I', 1), ('I', 0), ('R', 1), ('R', 0), ('D', 0),
+        ]), [Key.M, Key.K, Key.D, Key.I, Key.R])
+
+    def test_typing_fallback_keeps_hjkl_as_letters(self):
+        self.assertEqual(self.replay([
+            ('D', 1), ('I', 1), ('I', 0), ('H', 1), ('H', 0), ('D', 0),
+        ]), [Key.D, Key.I, Key.H])
+
+    def test_new_d_hold_restores_navigation_after_typing(self):
+        self.assertEqual(self.replay([
+            ('D', 1), ('I', 1), ('I', 0), ('D', 0),
+            ('D', 1), ('H', 1), ('H', 0), ('D', 0),
+        ]), [Key.D, Key.I, Key.LEFT])
+
     def test_d_tap_emits_letter(self):
         self.assertEqual(self.replay([('D', 1), ('D', 0)]), [Key.D])
 
     def test_d_after_overlapping_h_emits_letter(self):
         self.assertEqual(self.replay([
             ('D', 1), ('H', 1), ('H', 0), ('D', 0), ('D', 1), ('D', 0),
-        ]), [Key.D, Key.H, Key.D])
+        ]), [Key.LEFT, Key.D])
 
-    def test_d_hjkl_emit_letters(self):
-        for letter in 'HJKL':
+    def test_d_hjkl_emit_arrows(self):
+        for letter, arrow in zip('HJKL', (Key.LEFT, Key.DOWN, Key.UP, Key.RIGHT)):
             with self.subTest(letter=letter):
                 self.sink.events.clear()
                 self.assertEqual(self.replay([
                     ('D', 1), (letter, 1), (letter, 0), ('D', 0),
-                ]), [Key.D, Key[letter]])
+                ]), [arrow])
 
-    def test_ghostty_d_h_emit_letters_for_all_app_names(self):
+    def test_ghostty_d_h_emits_left_for_all_app_names(self):
         for app in ('ghostty', 'com.mitchellh.ghostty', 'Ghostty-debug'):
             with self.subTest(app=app):
                 self.set_app(app)
                 self.sink.events.clear()
                 self.assertEqual(self.replay([
                     ('D', 1), ('H', 1), ('H', 0), ('D', 0),
-                ]), [Key.D, Key.H])
+                ]), [Key.LEFT])
 
 
 if __name__ == '__main__':

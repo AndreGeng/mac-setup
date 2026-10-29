@@ -160,6 +160,8 @@ Toshy 需要普通用户的 X11/Wayland 桌面会话和交互终端。root/sudo 
 - 按住 `d` + `h/j/k/l` → 左/下/上/右；单击 `d` 仍输入字母。
   Ghostty 的 Linux 配置会忽略导航使用的 F24，避免控制序列进入 shell；
   `d` 与空格重叠时依次输出 `d` 和空格。
+  与其他普通字母、数字或常用标点重叠时补回 `d`；一旦识别为普通输入，
+  本次按住 D 期间的后续字母继续按文本输出，避免 `mkdir` 丢失 `d`。
 - Caps Lock 单击为 Esc，按住为 Ctrl。
 - Cmd+Space 直接调用 `fcitx5-remote -t` 切换输入法。
 - 移除 Fcitx 的 Ctrl+Space 切换绑定，为 Herdr 前缀保留该组合键。

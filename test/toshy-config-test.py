@@ -32,8 +32,8 @@ class ConfigurationTests(unittest.TestCase):
                                      old + '\n###  SLICE_MARK_END: user_custom_modmaps')
         updated = config.merge_toshy(original, ROOT / 'config/toshy')
         self.assertNotIn('Key.V_FAKEY', updated)
-        self.assertNotIn('add_modifier(', updated)
-        self.assertNotIn('Key.D:', updated)
+        self.assertEqual(updated.count('add_modifier('), 1)
+        self.assertIn('Key.D: [Key.D, Key.F24]', updated)
         self.assertNotIn('"ghostty" not in ctx.wm_class', updated)
 
     def test_migrates_navigation_without_space_fallback(self):
@@ -42,18 +42,19 @@ class ConfigurationTests(unittest.TestCase):
         original = fixture().replace('###  SLICE_MARK_END: user_apps',
                                      old + '\n###  SLICE_MARK_END: user_apps')
         updated = config.merge_toshy(original, ROOT / 'config/toshy')
-        self.assertNotIn('DNav', updated)
+        self.assertIn('DNav', updated)
 
-    def test_d_is_not_a_modifier(self):
+    def test_d_navigation_is_enabled(self):
         template = (ROOT / 'config/toshy/user_custom_modmaps.py').read_text()
-        self.assertNotIn('Key.D:', template)
-        self.assertNotIn('DNav', (ROOT / 'config/toshy/user_apps.py').read_text())
+        self.assertIn('Key.D: [Key.D, Key.F24]', template)
+        self.assertIn('user_d_nav_output',
+                      (ROOT / 'config/toshy/user_apps.py').read_text())
 
     def test_preserves_personal_config_and_is_idempotent(self):
         updated = config.merge_toshy(fixture(), ROOT / 'config/toshy')
         self.assertEqual(updated, config.merge_toshy(updated, ROOT / 'config/toshy'))
         self.assertEqual(updated.count('personal = True'), 2)
-        self.assertNotIn('DNav', updated)
+        self.assertIn('DNav', updated)
         self.assertIn('Key.CAPSLOCK: [Key.ESC, Key.LEFT_CTRL]', updated)
         self.assertIn('fcitx5-remote', updated)
         self.assertEqual(updated.count('keymap("User Vicinae Ctrl bracket launcher"'), 1)
@@ -67,7 +68,7 @@ class ConfigurationTests(unittest.TestCase):
             marker = f'###  SLICE_MARK_END: {region}'
             original = original.replace(marker, template + '\n' + marker)
         updated = config.merge_toshy(original, ROOT / 'config/toshy')
-        self.assertNotIn('add_modifier(', updated)
+        self.assertEqual(updated.count('add_modifier('), 1)
         self.assertEqual(updated.count('def user_toggle_fcitx('), 1)
 
     def test_migrates_old_cmd_space_mapping(self):
