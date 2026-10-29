@@ -33,7 +33,7 @@ usage() {
   --no-root           跳过需要 root 权限的步骤
   -h, --help          显示帮助信息
 
-可用模块: zsh, vim, tmux, cli-tools, nodejs, herdr, sync, opencode, workmux, agents, toshy, vicinae, xfce
+可用模块: zsh, vim, tmux, cli-tools, nodejs, herdr, sync, opencode, workmux, agents, toshy, vicinae, xfce, snipaste
 EOF
 }
 
@@ -83,7 +83,7 @@ fi
 
 for module in "${MODULES[@]}"; do
   case "$module" in
-  zsh | vim | tmux | cli-tools | nodejs | herdr | sync | opencode | workmux | agents | toshy | vicinae | xfce) ;;
+  zsh | vim | tmux | cli-tools | nodejs | herdr | sync | opencode | workmux | agents | toshy | vicinae | xfce | snipaste) ;;
   *)
     printf '未知模块: %s\n' "$module" >&2
     exit 2

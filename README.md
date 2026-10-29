@@ -55,6 +55,7 @@ cd mac-setup
 | toshy | Toshy：在桌面交互终端安装 macOS 风格快捷键 | Linux |
 | vicinae | Vicinae 启动器、Ctrl+[ 快捷键和登录自启动 | Linux |
 | xfce | XFCE 键盘重复：延迟 250ms、每秒 40 次 | Linux/XFCE |
+| snipaste | [Snipaste 安装、配置副本与启动器](docs/snipaste.md) | macOS, Linux x86_64 |
 
 XFCE 键盘重复设置可用 `./setup.sh --modules xfce` 单独应用；Linux 平台阶段也会
 自动执行。仅在 XFCE 桌面会话中生效，不安装依赖，设置由 xfconf 保存。

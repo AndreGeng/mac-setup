@@ -5,6 +5,3 @@ swipe direction="any" fingers=3 mouse-up-delay=150 acceleration=25
 // X11 workspaces: swipe left for next, right for previous; requires xdotool.
 swipe direction="w" fingers=4 end="xdotool set_desktop --relative 1"
 swipe direction="e" fingers=4 end="xdotool set_desktop --relative -- -1"
-
-// Rest four fingers, then lift to select a screenshot region (XFCE).
-hold fingers=4 action="xfce4-screenshooter --region --clipboard"

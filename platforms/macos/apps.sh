@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # macOS 平台脚本（由 setup.sh 在 platforms/macos/ 下 source）：用 brew --cask 安装 GUI 应用。
-# 每项后接 || true，单个 cask 失败不中断整脚本。
+# 普通 cask 失败继续；Snipaste 由专属模块校验安装并发布配置。
 #
 
 install_macos_apps() {
@@ -14,7 +14,7 @@ install_macos_apps() {
 
   # 实用工具
   brew install --cask alfred || true
-  brew install --cask snipaste || true
+  source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/modules/snipaste.sh"
   brew install --cask caffeine || true
   brew install --cask appcleaner || true
 
