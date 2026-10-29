@@ -89,27 +89,27 @@ class EventTests(unittest.TestCase):
     def test_d_tap_emits_letter(self):
         self.assertEqual(self.replay([('D', 1), ('D', 0)]), [Key.D])
 
-    def test_d_tap_after_navigation_emits_letter(self):
+    def test_d_after_overlapping_h_emits_letter(self):
         self.assertEqual(self.replay([
             ('D', 1), ('H', 1), ('H', 0), ('D', 0), ('D', 1), ('D', 0),
-        ]), [Key.LEFT, Key.D])
+        ]), [Key.D, Key.H, Key.D])
 
-    def test_navigation_emits_only_arrow(self):
-        for letter, arrow in zip('HJKL', ('LEFT', 'DOWN', 'UP', 'RIGHT')):
+    def test_d_hjkl_emit_letters(self):
+        for letter in 'HJKL':
             with self.subTest(letter=letter):
                 self.sink.events.clear()
                 self.assertEqual(self.replay([
                     ('D', 1), (letter, 1), (letter, 0), ('D', 0),
-                ]), [Key[arrow]])
+                ]), [Key.D, Key[letter]])
 
-    def test_ghostty_navigation_enabled_for_all_app_names(self):
+    def test_ghostty_d_h_emit_letters_for_all_app_names(self):
         for app in ('ghostty', 'com.mitchellh.ghostty', 'Ghostty-debug'):
             with self.subTest(app=app):
                 self.set_app(app)
                 self.sink.events.clear()
                 self.assertEqual(self.replay([
                     ('D', 1), ('H', 1), ('H', 0), ('D', 0),
-                ]), [Key.LEFT])
+                ]), [Key.D, Key.H])
 
 
 if __name__ == '__main__':

@@ -24,7 +24,7 @@ def identity(node):
     return None
 
 
-def migrate_legacy(body, template):
+def migrate_legacy(body, template, retired):
     """Adopt only exact, known manual versions of our named shortcuts."""
     accepted = {}
     legacy = '''keymap("User Cmd Space input method", {
@@ -32,14 +32,14 @@ def migrate_legacy(body, template):
     }, when=lambda ctx: cnfg.screen_has_focus and not ctx_app_is_remote)
     '''
     # Adopt the previously published navigation map, before the Wubi fallback.
-    previous = template.replace('    C("DNav-Space"): [C("d"), C("Space")],\n', '')
+    previous = retired.replace('    C("DNav-Space"): [C("d"), C("Space")],\n', '')
     # Adopt the earlier virtual carrier and the temporary Ghostty exclusion.
-    old_navigation = template.replace('Key.F24', 'Key.V_FAKEY')
+    old_navigation = retired.replace('Key.F24', 'Key.V_FAKEY')
     old_carrier = old_navigation.replace(
         '}, when=lambda ctx: cnfg.screen_has_focus)',
         '}, when=lambda ctx: cnfg.screen_has_focus and "ghostty" not in ctx.wm_class.casefold())',
         1)
-    for node in ast.parse(template + '\n' + legacy + '\n' + previous
+    for node in ast.parse(template + '\n' + retired + '\n' + legacy + '\n' + previous
                           + '\n' + old_navigation + '\n' + old_carrier).body:
         accepted.setdefault(identity(node), set()).add(ast.dump(node))
     lines = body.splitlines(keepends=True)
@@ -70,7 +70,8 @@ def merge_toshy(original, templates):
         body = re.sub(rf'^{re.escape(BEGIN)}\n.*?^{re.escape(END)}\n?', '',
                       body, flags=re.MULTILINE | re.DOTALL)
         template = (templates / f'{region}.py').read_text()
-        body = migrate_legacy(body, template)
+        retired = (templates / 'legacy' / f'{region}.py').read_text()
+        body = migrate_legacy(body, template, retired)
         replacement = (match.group(1) + '\n' + BEGIN + '\n' + template.rstrip()
                        + '\n' + END + '\n\n' + body.lstrip('\n') + match.group(3))
         result = result[:match.start()] + replacement + result[match.end():]

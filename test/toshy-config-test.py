@@ -23,7 +23,7 @@ def fixture():
 
 class ConfigurationTests(unittest.TestCase):
     def test_migrates_old_virtual_navigation_carrier(self):
-        template = (ROOT / 'config/toshy/user_custom_modmaps.py').read_text()
+        template = (ROOT / 'config/toshy/legacy/user_custom_modmaps.py').read_text()
         old = template.replace('Key.F24', 'Key.V_FAKEY').replace(
             '}, when=lambda ctx: cnfg.screen_has_focus)',
             '}, when=lambda ctx: cnfg.screen_has_focus and "ghostty" not in ctx.wm_class.casefold())',
@@ -32,35 +32,28 @@ class ConfigurationTests(unittest.TestCase):
                                      old + '\n###  SLICE_MARK_END: user_custom_modmaps')
         updated = config.merge_toshy(original, ROOT / 'config/toshy')
         self.assertNotIn('Key.V_FAKEY', updated)
-        self.assertEqual(updated.count('add_modifier('), 1)
-        self.assertIn('Key.D: [Key.D, Key.F24]', updated)
+        self.assertNotIn('add_modifier(', updated)
+        self.assertNotIn('Key.D:', updated)
         self.assertNotIn('"ghostty" not in ctx.wm_class', updated)
 
     def test_migrates_navigation_without_space_fallback(self):
-        template = (ROOT / 'config/toshy/user_apps.py').read_text()
+        template = (ROOT / 'config/toshy/legacy/user_apps.py').read_text()
         old = template.replace('    C("DNav-Space"): [C("d"), C("Space")],\n', '')
         original = fixture().replace('###  SLICE_MARK_END: user_apps',
                                      old + '\n###  SLICE_MARK_END: user_apps')
         updated = config.merge_toshy(original, ROOT / 'config/toshy')
-        self.assertEqual(updated.count('C("DNav-Space")'), 1)
+        self.assertNotIn('DNav', updated)
 
-    def test_d_space_preserves_wubi_code_and_commit_order(self):
-        maps = {}
-        namespace = {
-            'keymap': lambda name, mapping, **kwargs: maps.update({name: mapping}),
-            'C': lambda combo: combo,
-        }
-        exec((ROOT / 'config/toshy/user_apps.py').read_text(), namespace)
-        navigation = maps['User D HJKL arrows']
-        self.assertEqual(navigation['DNav-Space'], ['d', 'Space'])
-        for key, arrow in zip('hjkl', ('Left', 'Down', 'Up', 'Right')):
-            self.assertEqual(navigation[f'DNav-{key}'], arrow)
+    def test_d_is_not_a_modifier(self):
+        template = (ROOT / 'config/toshy/user_custom_modmaps.py').read_text()
+        self.assertNotIn('Key.D:', template)
+        self.assertNotIn('DNav', (ROOT / 'config/toshy/user_apps.py').read_text())
 
     def test_preserves_personal_config_and_is_idempotent(self):
         updated = config.merge_toshy(fixture(), ROOT / 'config/toshy')
         self.assertEqual(updated, config.merge_toshy(updated, ROOT / 'config/toshy'))
         self.assertEqual(updated.count('personal = True'), 2)
-        self.assertIn('C("DNav-h"): C("Left")', updated)
+        self.assertNotIn('DNav', updated)
         self.assertIn('Key.CAPSLOCK: [Key.ESC, Key.LEFT_CTRL]', updated)
         self.assertIn('fcitx5-remote', updated)
         self.assertEqual(updated.count('keymap("User Vicinae Ctrl bracket launcher"'), 1)
@@ -74,7 +67,7 @@ class ConfigurationTests(unittest.TestCase):
             marker = f'###  SLICE_MARK_END: {region}'
             original = original.replace(marker, template + '\n' + marker)
         updated = config.merge_toshy(original, ROOT / 'config/toshy')
-        self.assertEqual(updated.count('add_modifier('), 1)
+        self.assertNotIn('add_modifier(', updated)
         self.assertEqual(updated.count('def user_toggle_fcitx('), 1)
 
     def test_migrates_old_cmd_space_mapping(self):
