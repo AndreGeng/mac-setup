@@ -156,6 +156,8 @@ Toshy 需要普通用户的 X11/Wayland 桌面会话和交互终端。root/sudo 
 安装后以及检测到已有 Toshy 时，模块会同步 `config/toshy/` 中的默认快捷键：
 
 - 按住 `d` + `h/j/k/l` → 左/下/上/右；单击 `d` 仍输入字母。
+  Ghostty 的 Linux 配置会忽略导航使用的 F24，避免控制序列进入 shell；
+  `d` 与空格重叠时依次输出 `d` 和空格。
 - Caps Lock 单击为 Esc，按住为 Ctrl。
 - Cmd+Space 直接调用 `fcitx5-remote -t` 切换输入法。
 - 移除 Fcitx 的 Ctrl+Space 切换绑定，为 Herdr 前缀保留该组合键。
@@ -280,6 +282,8 @@ X11 支持原生全局快捷键；Wayland 取决于合成器支持，必要时�
 ```bash
 bash test/setup-test.sh
 bash test/toshy-test.sh
+# 可选：使用已安装的 Toshy runtime 离线回放按键，不访问真实输入设备。
+~/.config/toshy/.venv/bin/python test/toshy-events-test.py
 bash test/vicinae-test.sh
 bash test/nvim-go-test.sh
 # 使用本机已有 Neovim、gopls 和 Conform，离线验证真实 import/格式化保存流程

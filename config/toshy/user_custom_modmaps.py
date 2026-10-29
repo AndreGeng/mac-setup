@@ -1,4 +1,5 @@
 # Tap D for d; hold D with H/J/K/L for cursor navigation.
+# Ghostty consumes the F24 carrier with its repository-owned ignore binding.
 add_modifier("USER_D_NAV", aliases=["DNav"], key=Key.F24)
 multipurpose_modmap("User D navigation modifier", {
     Key.D: [Key.D, Key.F24],

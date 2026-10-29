@@ -33,7 +33,14 @@ def migrate_legacy(body, template):
     '''
     # Adopt the previously published navigation map, before the Wubi fallback.
     previous = template.replace('    C("DNav-Space"): [C("d"), C("Space")],\n', '')
-    for node in ast.parse(template + '\n' + legacy + '\n' + previous).body:
+    # Adopt the earlier virtual carrier and the temporary Ghostty exclusion.
+    old_navigation = template.replace('Key.F24', 'Key.V_FAKEY')
+    old_carrier = old_navigation.replace(
+        '}, when=lambda ctx: cnfg.screen_has_focus)',
+        '}, when=lambda ctx: cnfg.screen_has_focus and "ghostty" not in ctx.wm_class.casefold())',
+        1)
+    for node in ast.parse(template + '\n' + legacy + '\n' + previous
+                          + '\n' + old_navigation + '\n' + old_carrier).body:
         accepted.setdefault(identity(node), set()).add(ast.dump(node))
     lines = body.splitlines(keepends=True)
     for node in reversed(ast.parse(body).body):

@@ -22,6 +22,20 @@ def fixture():
 
 
 class ConfigurationTests(unittest.TestCase):
+    def test_migrates_old_virtual_navigation_carrier(self):
+        template = (ROOT / 'config/toshy/user_custom_modmaps.py').read_text()
+        old = template.replace('Key.F24', 'Key.V_FAKEY').replace(
+            '}, when=lambda ctx: cnfg.screen_has_focus)',
+            '}, when=lambda ctx: cnfg.screen_has_focus and "ghostty" not in ctx.wm_class.casefold())',
+            1)
+        original = fixture().replace('###  SLICE_MARK_END: user_custom_modmaps',
+                                     old + '\n###  SLICE_MARK_END: user_custom_modmaps')
+        updated = config.merge_toshy(original, ROOT / 'config/toshy')
+        self.assertNotIn('Key.V_FAKEY', updated)
+        self.assertEqual(updated.count('add_modifier('), 1)
+        self.assertIn('Key.D: [Key.D, Key.F24]', updated)
+        self.assertNotIn('"ghostty" not in ctx.wm_class', updated)
+
     def test_migrates_navigation_without_space_fallback(self):
         template = (ROOT / 'config/toshy/user_apps.py').read_text()
         old = template.replace('    C("DNav-Space"): [C("d"), C("Space")],\n', '')
