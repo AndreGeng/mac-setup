@@ -229,5 +229,13 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 # Hermes Agent — ensure ~/.local/bin is on PATH
 export PATH="$HOME/.local/bin:$PATH"
 
+# zoxide startup begin
+# Initialize after Zinit so zi opens the interactive directory picker.
+if command -v zoxide >/dev/null 2>&1; then
+  unalias zi 2>/dev/null
+  eval "$(zoxide init zsh)"
+fi
+# zoxide startup end
+
 # claw-auth-proxy managed PATH
 export PATH="$HOME/.claw-auth-proxy/bin:$PATH"
