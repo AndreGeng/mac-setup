@@ -54,11 +54,14 @@ cd mac-setup
 | agents | OpenCode、Claude Code、Codex、Pi 配置与自定义 skills | macOS, Linux |
 | toshy | Toshy：在桌面交互终端安装 macOS 风格快捷键 | Linux |
 | vicinae | Vicinae 启动器、Ctrl+[ 快捷键和登录自启动 | Linux |
-| xfce | XFCE 键盘重复：延迟 250ms、每秒 40 次 | Linux/XFCE |
+| xfce | XFCE 键盘重复（250ms、每秒 40 次）及顶栏电量百分比 | Linux/XFCE |
 | snipaste | [Snipaste 安装、配置副本与启动器](docs/snipaste.md) | macOS, Linux x86_64 |
 
-XFCE 键盘重复设置可用 `./setup.sh --modules xfce` 单独应用；Linux 平台阶段也会
+XFCE 设置可用 `./setup.sh --modules xfce` 单独应用；Linux 平台阶段也会
 自动执行。仅在 XFCE 桌面会话中生效，不安装依赖，设置由 xfconf 保存。
+已安装电源管理器时，会复用现有电池插件，或在标准顶部面板的时钟旁添加电池图标，
+并显示电量百分比；重复执行不会重复添加。新增插件后会短暂刷新面板，不关闭应用。
+无法识别顶部面板的自定义布局会跳过添加，保留原布局。
 
 ## 让 Codex / OpenCode 配置电脑
 
