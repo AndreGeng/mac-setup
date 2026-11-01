@@ -343,8 +343,9 @@ bash modules/agents.sh --apply --only opencode --force
 ### Devilspie2 工作区分配（Linux/X11）
 
 `config/devilspie2/workspaces.lua` 管理普通应用窗口的初始工作区：
-Ghostty 和浏览器到桌面 1，其他应用到桌面 2；Vicinae 保留打开时的桌面。
-面板、菜单和弹出对话框不单独移动。桌面环境需要至少两个工作区。
+只移动明确列出的应用，目前仅将 Thunar 文件管理器移到桌面 2。
+其他应用和音量通知保留打开时的桌面；面板、菜单和弹出对话框不单独移动。
+新增应用时在规则的 `application_workspaces` 表中指定工作区，桌面环境需要至少两个工作区。
 
 Arch 上先用 `yay -S devilspie2`（或 `paru -S devilspie2`）安装程序，
 再运行 `./setup.sh --modules sync` 发布规则和 XFCE 登录自启动项。
@@ -352,7 +353,8 @@ Arch 上先用 `yay -S devilspie2`（或 `paru -S devilspie2`）安装程序，
 当前会话可运行 `devilspie2` 启动，已运行时规则文件修改会用于后续打开的窗口。
 配置同步本身不会安装程序、启动进程或搬动现有窗口。
 
-验证：`bash test/devilspie2-sync-test.sh`。
+验证：`bash test/devilspie2-sync-test.sh`，以及
+`lua test/devilspie2-rules-test.lua config/devilspie2/workspaces.lua`。
 
 ## 许可证
 
