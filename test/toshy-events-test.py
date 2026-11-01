@@ -141,11 +141,11 @@ class EventTests(unittest.TestCase):
             ('D', 1), ('I', 1), ('I', 0), ('H', 1), ('H', 0), ('D', 0),
         ]), [Key.D, Key.I, Key.H])
 
-    def test_new_d_hold_restores_navigation_after_typing(self):
+    def test_new_d_hold_keeps_h_as_letter(self):
         self.assertEqual(self.replay([
             ('D', 1), ('I', 1), ('I', 0), ('D', 0),
             ('D', 1), ('H', 1), ('H', 0), ('D', 0),
-        ]), [Key.D, Key.I, Key.LEFT])
+        ]), [Key.D, Key.I, Key.D, Key.H])
 
     def test_d_tap_emits_letter(self):
         self.assertEqual(self.replay([('D', 1), ('D', 0)]), [Key.D])
@@ -153,24 +153,24 @@ class EventTests(unittest.TestCase):
     def test_d_after_overlapping_h_emits_letter(self):
         self.assertEqual(self.replay([
             ('D', 1), ('H', 1), ('H', 0), ('D', 0), ('D', 1), ('D', 0),
-        ]), [Key.LEFT, Key.D])
+        ]), [Key.D, Key.H, Key.D])
 
-    def test_d_hjkl_emit_arrows(self):
-        for letter, arrow in zip('HJKL', (Key.LEFT, Key.DOWN, Key.UP, Key.RIGHT)):
+    def test_d_hjkl_remain_letters(self):
+        for letter in 'HJKL':
             with self.subTest(letter=letter):
                 self.sink.events.clear()
                 self.assertEqual(self.replay([
                     ('D', 1), (letter, 1), (letter, 0), ('D', 0),
-                ]), [arrow])
+                ]), [Key.D, Key[letter]])
 
-    def test_ghostty_d_h_emits_left_for_all_app_names(self):
+    def test_ghostty_d_h_remain_letters_for_all_app_names(self):
         for app in ('ghostty', 'com.mitchellh.ghostty', 'Ghostty-debug'):
             with self.subTest(app=app):
                 self.set_app(app)
                 self.sink.events.clear()
                 self.assertEqual(self.replay([
                     ('D', 1), ('H', 1), ('H', 0), ('D', 0),
-                ]), [Key.LEFT])
+                ]), [Key.D, Key.H])
 
 
 if __name__ == '__main__':
