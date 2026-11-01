@@ -56,6 +56,7 @@ cd mac-setup
 | vicinae | Vicinae 启动器、Ctrl+[ 快捷键和登录自启动 | Linux |
 | xfce | XFCE 键盘重复（250ms、每秒 40 次）及顶栏电量百分比 | Linux/XFCE |
 | snipaste | [Snipaste 安装、配置副本与启动器](docs/snipaste.md) | macOS, Linux x86_64 |
+| localsend | [LocalSend 局域网文件与文字互传](docs/localsend.md)，复用已有安装或经 AUR 安装 | Linux（自动安装支持 Arch） |
 
 XFCE 设置可用 `./setup.sh --modules xfce` 单独应用；Linux 平台阶段也会
 自动执行。仅在 XFCE 桌面会话中生效，不安装依赖，设置由 xfconf 保存。
