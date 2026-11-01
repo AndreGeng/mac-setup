@@ -90,6 +90,41 @@ class EventTests(unittest.TestCase):
                 self.assertEqual(self.replay([('C', 1), ('D', 1)] + releases),
                                  [Key.C, Key.D, Key.SPACE])
 
+    def test_ctrl_cmd_hjkl_emit_plain_arrows(self):
+        for control in ('LEFT_CTRL', 'CAPSLOCK', 'LEFT_META'):
+            for letter, arrow in zip('HJKL', (Key.LEFT, Key.DOWN, Key.UP, Key.RIGHT)):
+                with self.subTest(control=control, letter=letter):
+                    transform.reset_transform()
+                    self.sink.events.clear()
+                    result = self.replay([
+                        (control, 1), ('RIGHT_CTRL', 1), (letter, 1),
+                        (letter, 0), ('RIGHT_CTRL', 0), (control, 0),
+                    ])
+                    self.assertIn(arrow, result)
+                    self.assertNotIn(Key[letter], result)
+                    held = set()
+                    for key, action in self.sink.events:
+                        if key == arrow and action == 1:
+                            self.assertFalse(held & {
+                                Key.LEFT_CTRL, Key.RIGHT_CTRL, Key.LEFT_ALT,
+                                Key.RIGHT_ALT, Key.LEFT_META, Key.RIGHT_META,
+                            })
+                        if action == 1:
+                            held.add(key)
+                        elif action == 0:
+                            held.discard(key)
+
+    def test_ctrl_hjkl_without_cmd_remain_terminal_shortcuts(self):
+        for letter in 'HJKL':
+            with self.subTest(letter=letter):
+                transform.reset_transform()
+                self.sink.events.clear()
+                result = self.replay([
+                    ('LEFT_CTRL', 1), (letter, 1), (letter, 0), ('LEFT_CTRL', 0),
+                ])
+                self.assertIn(Key[letter], result)
+                self.assertFalse(set(result) & {Key.LEFT, Key.DOWN, Key.UP, Key.RIGHT})
+
     def test_cd_space_with_real_timer_ticks(self):
         async def run():
             events = [('C', 1), ('C', 0), ('D', 1), ('D', 0),
