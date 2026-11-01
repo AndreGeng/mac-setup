@@ -10,7 +10,7 @@ macOS 和 Linux 桌面均包含 Snipaste，可单独执行：
 
 完整安装的平台阶段会执行此模块；精简安装可使用 `--with-platform`。
 `MAC_SETUP_SKIP_SNIPASTE=1` 可跳过安装。root/sudo、`--no-root` 和无 Linux 桌面会话
-均跳过；本模块不自动启动软件或启用登录自启。
+均跳过；本模块不立即启动软件。Linux 会添加 XFCE 登录自启项；macOS 不修改登录项。
 
 macOS 使用 Homebrew cask（Universal），已有应用则复用。首次运行按系统提示授予
 屏幕录制权限。Linux 优先复用 `Snipaste` 命令，例如通过 AUR 安装的版本；
@@ -29,7 +29,12 @@ Linux ARM 尚无此官方包，会明确跳过。
 Linux 应用菜单中的 **Snipaste (mac-setup)** 也使用此启动器。
 macOS 请通过该命令启动以使用仓库配置；从原始应用图标启动可能使用原有配置。
 如果已经有后台实例，请先从托盘退出，再使用启动器，否则配置参数可能不会生效。
-不改写现有的 `~/.snipaste/config.ini` 或其他原生配置，也不修改原有开机启动项。
+不改写现有的 `~/.snipaste/config.ini` 或其他原生配置。
+
+Linux 首次创建 `${XDG_CONFIG_HOME:-~/.config}/autostart/mac-setup-snipaste.desktop`，
+下次登录 XFCE 时通过同一个启动器启动。已有同名自启动项（包括禁用设置和软链接）
+保留，不重复创建；其他名称的 Snipaste 自启动项由用户管理，避免同时启用多个。
+可在 XFCE「会话和启动 → 应用程序自启动」中禁用。
 
 常用操作：F1 截图，框选后 Enter 复制，F3 贴图。
 程序已经在后台运行时也可调用：
@@ -47,6 +52,7 @@ Homebrew/AUR 安装由原包管理器更新和卸载。Linux 本地包由 mac-se
 升级时需同时审核和更新 manifest 与启动器内的固定版本。
 移除前退出软件，再删除本模块发布的 `~/.local/bin/snipaste`、Linux 菜单文件
 `~/.local/share/applications/mac-setup-snipaste.desktop` 和对应的版本目录。
+Linux 还需移除 `${XDG_CONFIG_HOME:-~/.config}/autostart/mac-setup-snipaste.desktop`。
 配置副本和历史由用户决定是否保留；若设置了 XDG_DATA_HOME，菜单文件位于其 applications 下。
 
 参考：[官方下载](https://www.snipaste.com/download.html)、

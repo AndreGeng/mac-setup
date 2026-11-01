@@ -62,8 +62,19 @@ APPIMAGE
   rg -q 'keep=true' "$config"
   if is_macos; then
     rg -q 'install --cask snipaste' "$HOME/brew.trace"
+    [[ ! -e "$HOME/.config/autostart/mac-setup-snipaste.desktop" ]]
   else
     [[ -f "$HOME/.local/share/applications/mac-setup-snipaste.desktop" ]]
+    local autostart="$HOME/.config/autostart/mac-setup-snipaste.desktop"
+    [[ -f "$autostart" && ! -L "$autostart" ]]
+    grep -Fxq "Exec=\"$HOME/.local/bin/snipaste\"" "$autostart"
+    grep -Fxq 'OnlyShowIn=XFCE;' "$autostart"
+    if command -v desktop-file-validate >/dev/null 2>&1; then
+      desktop-file-validate "$autostart"
+    fi
+    printf '\nHidden=true\n' >>"$autostart"
+    source "$ROOT_DIR/modules/snipaste.sh"
+    grep -Fxq 'Hidden=true' "$autostart"
   fi
   if [[ "$scenario" == existing ]]; then [[ ! -e "$HOME/download.trace" ]]; fi
 )

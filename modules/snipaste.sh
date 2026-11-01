@@ -86,9 +86,17 @@ install_snipaste() (
     escaped="${escaped//%/%%}"
     printf '[Desktop Entry]\nType=Application\nName=Snipaste (mac-setup)\nExec="%s"\nIcon=Snipaste\nCategories=Graphics;\nTerminal=false\n' \
       "$escaped" >"$desktop_dir/mac-setup-snipaste.desktop" || return 1
+    local autostart_dir="${XDG_CONFIG_HOME:-$HOME/.config}/autostart"
+    local autostart="$autostart_dir/mac-setup-snipaste.desktop"
+    # Preserve existing entries, including user-disabled entries and symlinks.
+    if [[ ! -e "$autostart" && ! -L "$autostart" ]]; then
+      mkdir -p "$autostart_dir" || return 1
+      cp "$desktop_dir/mac-setup-snipaste.desktop" "$autostart" || return 1
+      printf 'OnlyShowIn=XFCE;\n' >>"$autostart" || return 1
+    fi
   fi
   log "Snipaste 已安装；运行 ~/.local/bin/snipaste 使用仓库默认配置副本" "$GREEN"
-  log "已有设置保留；请先退出旧实例再启动，不自动启用登录自启" "$YELLOW"
+  log "已有设置保留；请先退出旧实例再启动；Linux 发布 XFCE 登录自启项" "$YELLOW"
 )
 
 install_snipaste
