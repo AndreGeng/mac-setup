@@ -40,8 +40,12 @@ project for external crates, an explicit edition, features, or custom compiler f
 Restart Neovim after applying. In a Rust file:
 
 - `gd`: definition; `gi`: implementation; `K`: hover documentation.
+- Space toggles indentation folds inside Rust blocks, like `za`. `zR` opens all folds.
+  On a line outside a fold, `za` reports `E490: No fold found`.
 - `grr`: references; `,rn`: rename; `,ca`: code actions.
 - Saving runs rustfmt. `:FormatDisable` / `:FormatEnable` toggle save formatting.
+- `,fa` formats the file or visual selection; `,ft` also uses rustfmt for Rust files.
+  Manual formatting works even when save formatting is disabled.
 - `:checkhealth vim.lsp` shows language service status.
 
 Regression checks use temporary files and do not download dependencies:

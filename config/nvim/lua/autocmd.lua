@@ -18,7 +18,7 @@ vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI", "FocusGained" }, {
 vim.cmd([[
   augroup folding
     au!
-    au FileType git,javascript,javascriptreact,typescript,typescriptreact,go setlocal foldmethod=indent
+    au FileType git,javascript,javascriptreact,typescript,typescriptreact,go,rust setlocal foldmethod=indent
     au FileType zsh,vim setlocal foldmethod=marker
   augroup END
 ]])

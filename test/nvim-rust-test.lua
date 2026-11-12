@@ -45,4 +45,34 @@ package.preload['nvim-treesitter'] = function()
   end }
 end
 dofile(root .. '/config/nvim/lua/plugins/treesitter.lua')[2].config()
-print('PASS Rust LSP, gd, formatting, and Treesitter configuration')
+-- The familiar ,ft shortcut must not send Rust source to Prettier's Babel parser.
+local format_opts
+package.loaded.conform = { format = function(opts) format_opts = opts end }
+dofile(root .. '/config/nvim/lua/keymaps.lua')
+vim.bo.filetype = 'rust'
+vim.g.disable_autoformat = true
+vim.fn.jobstart = function() error('Rust formatting must not launch Prettier') end
+vim.fn.maparg(',ft', 'n', false, true).callback()
+assert(format_opts and format_opts.async == false, ',ft must format Rust through Conform')
+assert(vim.g.disable_autoformat == true, 'manual formatting must preserve save-format preference')
+vim.g.disable_autoformat = nil
+dofile(root .. '/config/nvim/lua/autocmd.lua')
+vim.cmd('filetype plugin indent on')
+vim.bo.filetype = ''
+vim.bo.filetype = 'rust'
+assert(vim.wo.foldmethod == 'indent', 'Rust must enable indentation folding')
+vim.api.nvim_buf_set_lines(0, 0, -1, false, {
+  'fn main() {',
+  '    let a = 1;',
+  '    let b = 2;',
+  '    println!("{}", a + b);',
+  '}',
+})
+vim.cmd('normal! zx')
+vim.cmd('normal! zR')
+vim.api.nvim_win_set_cursor(0, { 2, 0 })
+vim.cmd('normal! za')
+assert(vim.fn.foldclosed(2) == 2, 'za must close a Rust block without E490')
+vim.cmd('normal! za')
+assert(vim.fn.foldclosed(2) == -1, 'za must reopen the Rust block')
+print('PASS Rust LSP, gd, formatting shortcuts, and Treesitter configuration')

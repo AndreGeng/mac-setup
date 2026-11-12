@@ -54,8 +54,13 @@ vim.keymap.set('n', '<leader>ll', ':call ToggleList("Location", "l")<cr>', { nor
 -- <C-t>: go back to previous buffer
 vim.keymap.set('n', '<C-t>', ':call GoBackToRecentBuffer()<cr>', { noremap = true })
 
--- Format with Biome (使用 <leader>ft 避免与 telescope buffers 冲突)
+-- Format Rust with Conform; use Prettier for web files.
 vim.keymap.set('n', '<leader>ft', function()
+  if vim.bo.filetype == 'rust' then
+    require('conform').format({ async = false, timeout_ms = 10000 })
+    return
+  end
+
   local filepath = vim.api.nvim_buf_get_name(0)
   if filepath == '' then
     vim.notify('当前文件未保存，无法格式化', vim.log.levels.WARN)
