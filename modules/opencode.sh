@@ -24,9 +24,10 @@ if [[ -z "$NPM_BIN" ]]; then
   log "Pinned npm is unavailable." "$RED"
   exit 1
 fi
-if ! "$NPM_BIN" list -g --depth=0 "opencode-ai@${OPENCODE_VERSION}" >/dev/null 2>&1; then
+NODE_ROOT="$(dirname "$(dirname "$NPM_BIN")")"
+if ! "$NPM_BIN" --prefix "$NODE_ROOT" list -g --depth=0 "opencode-ai@${OPENCODE_VERSION}" >/dev/null 2>&1; then
   log "Installing OpenCode ${OPENCODE_VERSION} via pinned npm..." "$YELLOW"
-  "$NPM_BIN" install -g "opencode-ai@${OPENCODE_VERSION}" || exit 1
+  "$NPM_BIN" --prefix "$NODE_ROOT" install -g "opencode-ai@${OPENCODE_VERSION}" || exit 1
 else
   log "OpenCode ${OPENCODE_VERSION} is already installed" "$GREEN"
 fi

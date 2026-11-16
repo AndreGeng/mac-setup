@@ -69,10 +69,6 @@
       "command": ["npx", "-y", "chrome-devtools-mcp@1.7.0"],
       "type": "local"
     },
-    "feishu-mcp": {
-      "type": "remote",
-      "url": "{env:FEISHU_MCP_URL}"
-    },
     "gitnexus": {
       "command": ["gitnexus", "mcp"],
       "type": "local"

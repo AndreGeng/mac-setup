@@ -55,6 +55,34 @@ bash modules/agents.sh --apply --only pi
 
 No arguments remains an alias for `--apply` for setup compatibility.
 
+The remote Feishu MCP entry has been retired in favor of the Feishu CLI and skills.
+Remove just this entry from an existing OpenCode installation with:
+
+```bash
+bash modules/agents.sh --remove-feishu-mcp --only opencode
+```
+
+This preserves all other settings and creates no backup because the old URL may contain
+credentials. It refuses symlinked or invalid JSON configuration and is safe to rerun.
+
+For existing OCX/KDCO plugins whose dependency declarations were lost, restore the exact
+dependencies in `config/opencode/plugin-dependencies.tsv` without replacing plugin sources:
+
+```bash
+bash modules/agents.sh --repair-opencode-deps --only opencode
+```
+
+This explicitly uses network access through the managed Bun runtime, merges dependency
+declarations into the mutable OpenCode package manifest, and disables lifecycle scripts.
+It re-resolves these fixed versions from the public npm registry for this invocation only,
+so stale private-mirror URLs in the old lockfile cannot block recovery.
+The SDK is aligned to the pinned OpenCode version. If ECC's package cache exists, the same
+SDK is installed in the common OpenCode cache ancestor to supply its missing runtime peer;
+ECC's published source files are not modified.
+Run the `runtime.node` plan/apply/verify flow first to publish the compatible OpenCode runtime.
+Global npm installs and checks use that runtime's explicit prefix so a user npm prefix cannot
+redirect them into a separate pnpm or Hermes installation.
+
 Existing mutable settings are preserved. To intentionally refresh one tool from the repository
 template, use a scoped force operation:
 

@@ -4,6 +4,7 @@ gestures	v0.8.3 / 9dcbb2192503c5fd46285345c244269386bbfc71	ferstar/gestures; bui
 xdotool	v3.20211022.1 / eb489de1b4fb3fd0cd935d68ae16ecd4c653ac7d	jordansissel/xdotool; local source build installs binary and libxdo.so.3 under ~/.local for gestures. Rebuild from pinned source as documented in docs/gestures.md; not installed by sync.
 skillshare	local canonical source	Publish reviewed shared skills to ~/.agents/skills; do not copy per-tool trees.
 ecc-universal	1.10.0	Install with the upstream ECC installer; do not vendor its agents, rules, hooks, or skills.
+ocx-kdco-plugins	upstream OCX receipts	OCX owns plugin sources and receipts. Restore dependencies for legacy installed plugins with modules/agents.sh --repair-opencode-deps --only opencode; exact dependency versions are in config/opencode/plugin-dependencies.tsv. Use OCX for source updates; inspect legacy plugin/ versus plugins/ layouts before reinstalling to avoid duplicate discovery.
 gstack	v1.56.0.0	https://github.com/garrytan/gstack.git; clone and run ./setup.
 lark-skills	larksuite/cli	Install into ~/.agents/skills with the upstream skills installer.
 gitnexus	upstream	Install GitNexus and let it publish its skills; avoid duplicate opencode/skill copies.

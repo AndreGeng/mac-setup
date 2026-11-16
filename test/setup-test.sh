@@ -209,6 +209,8 @@ test_opencode_resolves_pinned_npm_without_shell_activation() {
     'exit 1' >"$home/.local/bin/mise"
   chmod +x "$home/.local/bin/mise"
   printf '%s\n' '#!/usr/bin/env bash' \
+    '[[ "${1:-}" == "--prefix" && "${2:-}" == "$PINNED_NODE_ROOT" ]] || exit 99' \
+    'shift 2' \
     'if [[ "$*" == "install -g opencode-ai@1.18.20" ]]; then' \
     '  bin_dir="$(cd "$(dirname "$0")" && pwd)"' \
     '  printf "%s\n" "#!/usr/bin/env bash" "printf \"%s\\n\" test-opencode" >"$bin_dir/opencode"' \
@@ -315,6 +317,8 @@ test_node_module_installs_pinned_bun_runtime() {
   local path_result="$TEMP_ROOT/node-runtime-path.out"
   mkdir -p "$home" "$node_root/bin"
   printf '%s\n' '#!/usr/bin/env bash' \
+    '[[ "${1:-}" == "--prefix" && "${2:-}" == "$NODE_MODULE_RUNTIME" ]] || exit 99' \
+    'shift 2' \
     '[[ "${1:-}" == "list" ]] && exit 1' \
     'printf "%s\n" "$*" >>"$NPM_TRACE"' \
     'bin_dir="$(cd "$(dirname "$0")" && pwd)"' \
@@ -340,7 +344,7 @@ test_node_module_installs_pinned_bun_runtime() {
 
   ROOT_DIR="$ROOT_DIR" HOME="$home" FAKE_MISE="$fake_mise" MISE_TRACE="$trace" \
     NPM_TRACE="$npm_trace" NODE_MODULE_RUNTIME="$node_root" PATH_RESULT="$path_result" \
-    PATH="/usr/bin:/bin" bash -c '
+    NPM_CONFIG_PREFIX="$home/foreign-prefix" PATH="/usr/bin:/bin" bash -c '
     log() { :; }
     install_mise() { :; }
     resolve_mise_executable() { printf "%s\n" "$FAKE_MISE"; }

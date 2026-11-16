@@ -556,6 +556,7 @@ test_node_apply_and_verify_complete_agent_workflow() {
   printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\n" v22.23.2' >"$node_root/bin/node"
   printf '%s\n' '#!/usr/bin/env bash' \
     'command -v node >/dev/null || exit 1' \
+    '[[ "${1:-}" == "--prefix" && "${2:-}" == "$(cd "$(dirname "$0")/.." && pwd)" ]] || exit 99' \
     'exit 0' >"$node_root/bin/npm"
   printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\n" 1.3.7' >"$bun_root/bin/bun"
   write_fake_command "$node_root/bin/opencode"

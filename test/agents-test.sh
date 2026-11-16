@@ -227,6 +227,58 @@ expect_fail() {
   fi
 }
 
+home="$(new_home repair-opencode-deps)"
+mkdir -p "$home/.local/bin" "$home/.config/opencode" "$home/.cache/opencode/packages/ecc-universal"
+printf '%s\n' '{"private":true,"dependencies":{"custom":"1.0.0"}}' \
+  >"$home/.config/opencode/package.json"
+cat >"$home/.local/bin/bun" <<'EOF'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >>"$HOME/bun-args"
+EOF
+chmod +x "$home/.local/bin/bun"
+cat >"$home/.config/opencode/bun.lock" <<'EOF'
+{"packages": {
+  "zod": ["zod@4.3.5", "https://example.invalid/npm/zod/-/zod-4.3.5.tgz", {}, "sha512-pinned"],
+  "custom": ["custom@1.0.0", "https://example.invalid/custom-bundle.tgz", {}, "sha512-custom"]
+}}
+EOF
+run_module_quiet "$home" --repair-opencode-deps --only opencode
+jq -e '.packages.zod[1] == "" and .packages.zod[3] == "sha512-pinned" and
+  .packages.custom[1] == "https://example.invalid/custom-bundle.tgz"' \
+  "$home/.config/opencode/bun.lock" >/dev/null
+grep -Fq -- '--ignore-scripts' "$home/bun-args"
+grep -Fq -- '--force --registry https://registry.npmjs.org' "$home/bun-args"
+grep -Fq -- 'unique-names-generator@4.7.1' "$home/bun-args"
+grep -Fq -- 'zod@4.3.5' "$home/bun-args"
+grep -Fq -- "--cwd $home/.cache/opencode" "$home/bun-args"
+grep -Fq -- '@opencode-ai/plugin@1.18.20' "$home/bun-args"
+jq -e '.dependencies.custom == "1.0.0"' "$home/.config/opencode/package.json" >/dev/null
+expect_fail "$TEMP_ROOT/repair-opencode-target.out" \
+  run_module "$home" --repair-opencode-deps --only claude
+
+home="$(new_home remove-feishu-mcp)"
+mkdir -p "$home/.config/opencode"
+cat >"$home/.config/opencode/opencode.json" <<'EOF'
+{"model":"custom/model","mcp":{"feishu-mcp":{"type":"remote","url":"https://example.invalid/private"},"other":{"type":"local","command":["other"]}}}
+EOF
+run_module_quiet "$home" --remove-feishu-mcp --only opencode
+jq -e '.model == "custom/model" and (.mcp | keys == ["other"])' \
+  "$home/.config/opencode/opencode.json" >/dev/null
+test "$(find "$home" -type f | wc -l | tr -d ' ')" = 1
+cp "$home/.config/opencode/opencode.json" "$TEMP_ROOT/without-feishu.json"
+run_module_quiet "$home" --remove-feishu-mcp --only opencode
+cmp "$home/.config/opencode/opencode.json" "$TEMP_ROOT/without-feishu.json"
+printf '{invalid\n' >"$home/.config/opencode/opencode.json"
+expect_fail "$TEMP_ROOT/remove-feishu-invalid.out" \
+  run_module "$home" --remove-feishu-mcp --only opencode
+test "$(cat "$home/.config/opencode/opencode.json")" = '{invalid'
+mv "$home/.config/opencode/opencode.json" "$TEMP_ROOT/feishu-link-target.json"
+ln -s "$TEMP_ROOT/feishu-link-target.json" "$home/.config/opencode/opencode.json"
+expect_fail "$TEMP_ROOT/remove-feishu-link.out" \
+  run_module "$home" --remove-feishu-mcp --only opencode
+test -L "$home/.config/opencode/opencode.json"
+run_module_quiet "$(new_home remove-feishu-absent)" --remove-feishu-mcp --only opencode
+
 home="$(new_home install)"
 expect_fail "$TEMP_ROOT/audit-before.out" run_module "$home" --audit
 grep -q 'AUDIT FAIL' "$TEMP_ROOT/audit-before.out"

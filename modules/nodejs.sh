@@ -58,10 +58,10 @@ install_nodejs() {
   local package_name package_version package_spec
   while IFS='|' read -r package_name package_version; do
     package_spec="${package_name}@${package_version}"
-    if ! PATH="$node_root/bin:$PATH" "$npm_bin" list -g --depth=0 \
+    if ! PATH="$node_root/bin:$PATH" "$npm_bin" --prefix "$node_root" list -g --depth=0 \
       "$package_spec" &>/dev/null 2>&1; then
       log "安装 npm 包: $package_spec" "$GREEN"
-      PATH="$node_root/bin:$PATH" "$npm_bin" install -g "$package_spec" || return 1
+      PATH="$node_root/bin:$PATH" "$npm_bin" --prefix "$node_root" install -g "$package_spec" || return 1
     else
       log "npm 包 $package_spec 已安装，跳过" "$YELLOW"
     fi

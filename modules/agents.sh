@@ -32,12 +32,14 @@ REME_HOOK_STATE_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/mac-setup/reme-hooks
 
 usage() {
   cat <<'EOF'
-Usage: agents.sh [--apply | --audit | --remove-reme] [--only TARGET] [options]
+Usage: agents.sh [MODE] [--only TARGET] [options]
 
 Modes:
   --apply          Install missing templates and repair repository-managed links.
   --audit          Check installation, links, permissions, and sensitive config.
   --remove-reme    Remove repository-managed ReMe runtime files and links.
+  --remove-feishu-mcp  Remove only the retired OpenCode Feishu MCP entry.
+  --repair-opencode-deps  Restore pinned dependencies for existing OCX plugins (network).
 
 Options:
   --only TARGET    Limit work to shared, opencode, claude, codex, or pi.
@@ -54,7 +56,7 @@ set_mode() {
   local requested="$1"
 
   if [[ -n "$MODE" && "$MODE" != "$requested" ]]; then
-    printf '%s\n' 'Choose only one of --apply or --audit.' >&2
+    printf '%s\n' 'Choose only one mode.' >&2
     exit 2
   fi
   MODE="$requested"
@@ -72,6 +74,14 @@ while [[ $# -gt 0 ]]; do
     ;;
   --remove-reme)
     set_mode remove-reme
+    shift
+    ;;
+  --remove-feishu-mcp)
+    set_mode remove-feishu-mcp
+    shift
+    ;;
+  --repair-opencode-deps)
+    set_mode repair-opencode-deps
     shift
     ;;
   --only)
@@ -851,6 +861,89 @@ if alive:
 PY
 }
 
+repair_opencode_deps() {
+  local directory="$HOME/.config/opencode"
+  local bun_path="$HOME/.local/bin/bun"
+  local name version extra
+  local sdk_version cache_root
+  local packages=()
+
+  if [[ "$TARGET" != "all" && "$TARGET" != "opencode" ]]; then
+    log "--repair-opencode-deps only supports --only opencode" "$RED"
+    return 1
+  fi
+  if [[ ! -x "$bun_path" || ! -f "$directory/package.json" ||
+    -L "$directory/package.json" ]]; then
+    log "Requires managed Bun and a regular OpenCode package.json" "$RED"
+    return 1
+  fi
+  while IFS=$'\t' read -r name version extra; do
+    [[ -n "$name" && "$name" != \#* ]] || continue
+    if [[ ! "$name" =~ ^[a-z0-9-]+$ ||
+      ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ || -n "$extra" ]]; then
+      log "Invalid pinned OpenCode dependency manifest" "$RED"
+      return 1
+    fi
+    packages+=("$name@$version")
+  done <"$REPO_ROOT/config/opencode/plugin-dependencies.tsv"
+  [[ ${#packages[@]} -gt 0 ]] || return 1
+  python3 "$REPO_ROOT/scripts/normalize-opencode-lock.py" "$directory/bun.lock" || return 1
+  # Bun merges these declarations, preserving unrelated settings and dependencies.
+  # Do not execute dependency lifecycle scripts or copy third-party plugin sources.
+  "$bun_path" add --cwd "$directory" --dev --exact --ignore-scripts \
+    --force --registry https://registry.npmjs.org "${packages[@]}" || return 1
+  sdk_version="$(node_manifest_version "$REPO_ROOT" npm opencode-ai)" || return 1
+  "$bun_path" add --cwd "$directory" --exact --ignore-scripts \
+    --registry https://registry.npmjs.org "@opencode-ai/plugin@$sdk_version" || return 1
+  # ECC imports its SDK at runtime but publishes it as a devDependency. Put the
+  # peer in the common cache ancestor so both loader layouts can resolve it.
+  cache_root="${XDG_CACHE_HOME:-$HOME/.cache}/opencode"
+  if [[ -d "$cache_root/packages/ecc-universal" ||
+    -d "$cache_root/npm/ecc-universal@latest" ]]; then
+    "$bun_path" add --cwd "$cache_root" --exact --ignore-scripts \
+      --registry https://registry.npmjs.org "@opencode-ai/plugin@$sdk_version"
+  fi
+}
+
+remove_feishu_mcp() {
+  local path="$HOME/.config/opencode/opencode.json"
+  local temporary
+
+  if [[ "$TARGET" != "all" && "$TARGET" != "opencode" ]]; then
+    log "--remove-feishu-mcp only supports --only opencode" "$RED"
+    return 1
+  fi
+  if [[ -L "$path" ]]; then
+    log "Refusing to modify symlink: $path" "$RED"
+    return 1
+  fi
+  [[ -e "$path" ]] || return 0
+  if ! command -v jq >/dev/null 2>&1; then
+    log "jq is required to remove the Feishu MCP entry" "$RED"
+    return 1
+  fi
+  if ! jq -e 'type == "object" and
+    (.mcp == null or (.mcp | type == "object"))' "$path" >/dev/null 2>&1; then
+    log "Invalid OpenCode JSON configuration: $path" "$RED"
+    return 1
+  fi
+  if ! jq -e '.mcp | has("feishu-mcp")' "$path" >/dev/null 2>&1; then
+    return 0
+  fi
+  temporary="$(mktemp "$path.tmp.XXXXXX")"
+  if ! jq 'del(.mcp["feishu-mcp"])' "$path" >"$temporary"; then
+    rm -f "$temporary"
+    return 1
+  fi
+  # The old URL may contain credentials: never create a backup of this config.
+  chmod 600 "$temporary"
+  if ! mv -f "$temporary" "$path"; then
+    rm -f "$temporary"
+    return 1
+  fi
+  log "Removed feishu-mcp from OpenCode configuration" "$GREEN"
+}
+
 remove_reme() {
   local managed_link
   local source
@@ -1475,6 +1568,16 @@ audit_pi() {
     "$REPO_ROOT/config/pi/extensions/reme-memory.ts" \
     "$HOME/.pi/agent/extensions/reme-memory.ts"
 }
+
+if [[ "$MODE" == "repair-opencode-deps" ]]; then
+  repair_opencode_deps
+  return 0 2>/dev/null || exit 0
+fi
+
+if [[ "$MODE" == "remove-feishu-mcp" ]]; then
+  remove_feishu_mcp
+  return 0 2>/dev/null || exit 0
+fi
 
 if [[ "$MODE" == "remove-reme" ]]; then
   remove_reme

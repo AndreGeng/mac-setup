@@ -159,7 +159,8 @@ node_npm_package_matches() {
   npm_bin="$node_root/bin/npm"
   [[ -f "$npm_bin" && -x "$npm_bin" ]] || return 1
   PATH="$node_root/bin:$PATH" \
-    "$npm_bin" list -g --depth=0 "${package_name}@${package_version}" >/dev/null 2>&1
+    "$npm_bin" --prefix "$node_root" list -g --depth=0 \
+    "${package_name}@${package_version}" >/dev/null 2>&1
 }
 
 plan_member_changes() {
