@@ -118,7 +118,7 @@ capability_tools() {
   editor.nvim)
     printf '%s\n' 'rg|ripgrep' 'fd|fd' 'curl|curl' 'git|git' 'tar|tar' 'unzip|unzip'
     if is_linux; then
-      printf '%s\n' 'cc|c-compiler'
+      printf '%s\n' 'cc|c-compiler' 'xclip|xclip'
     fi
     ;;
   shell.zsh)

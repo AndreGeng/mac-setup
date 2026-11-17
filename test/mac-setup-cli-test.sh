@@ -123,6 +123,7 @@ write_fake_editor_tools() {
   write_fake_command "$fake_bin/rg"
   write_fake_command "$fake_bin/fd"
   write_fake_command "$fake_bin/cc"
+  write_fake_command "$fake_bin/xclip"
 }
 
 write_fake_linux_uname() {
@@ -279,6 +280,11 @@ test_vim_apply_and_verify_complete_agent_workflow() {
 
   cli_env "$home" "$state" "$fake_bin" verify vim --format json >"$verify" || return 1
   json_assert "$verify" 'value["status"] == "COMPLIANT"' || return 1
+  if [[ "${MAC_SETUP_TEST_OSTYPE:-$OSTYPE}" == linux* ]]; then
+    json_assert "$verify" \
+      'len([item for item in value["checks"] if item["id"] == "xclip-executable"]) == 1' ||
+      return 1
+  fi
   json_assert "$verify" 'all(item["status"] == "PASS" for item in value["checks"])'
 }
 
@@ -296,6 +302,7 @@ test_vim_verify_discovers_user_local_fd_compat_command() {
   write_fake_command "$fake_bin/rg"
   write_fake_command "$fake_bin/cc"
   write_fake_command "$home/.local/bin/fd"
+  write_fake_command "$fake_bin/xclip"
 
   cli_env "$home" "$state" "$fake_bin" verify vim --format json >"$output" || return 1
   json_assert "$output" 'value["status"] == "COMPLIANT"' || return 1
@@ -687,18 +694,29 @@ test_non_interactive_apply_never_prompts_for_sudo() {
   local fake_bin="$TEMP_ROOT/sudo-bin"
   local plan="$TEMP_ROOT/sudo-plan.json"
   local output="$TEMP_ROOT/sudo-apply.json"
+  local bash_env="$TEMP_ROOT/sudo-bash-env"
   mkdir -p "$home" "$fake_bin"
   write_fake_linux_uname "$fake_bin/uname"
   printf '%s\n' '#!/usr/bin/env bash' 'exit 1' >"$fake_bin/sudo"
   chmod +x "$fake_bin/sudo"
+  cat >"$bash_env" <<'EOF'
+command() {
+  if [[ "$*" == "-v xclip" ]]; then
+    return 1
+  fi
+  builtin command "$@"
+}
+EOF
 
-  MAC_SETUP_TEST_OSTYPE=linux-gnu \
+  BASH_ENV="$bash_env" MAC_SETUP_TEST_OSTYPE=linux-gnu \
     cli_env "$home" "$state" "$fake_bin" plan vim --format json >"$plan" || return 1
+  json_assert "$plan" \
+    '"xclip" in set(item["resource"] for item in value["changes"])' || return 1
   json_assert "$plan" \
     '"sudo" in set(item["type"] for item in value["requiredApprovals"])' || return 1
   local plan_id
   plan_id="$(json_value "$plan" planId)" || return 1
-  MAC_SETUP_TEST_OSTYPE=linux-gnu \
+  BASH_ENV="$bash_env" MAC_SETUP_TEST_OSTYPE=linux-gnu \
     cli_env "$home" "$state" "$fake_bin" apply vim --plan-id "$plan_id" \
     --allow network --allow sudo --non-interactive --format json >"$output" 2>/dev/null
   local status=$?

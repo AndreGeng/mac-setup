@@ -234,7 +234,7 @@ test_opencode_resolves_pinned_npm_without_shell_activation() {
   [[ "$(readlink "$home/.local/bin/opencode")" == "$node_root/bin/opencode" ]]
 }
 
-test_vim_module_publishes_fd_compat_command_on_ubuntu() {
+test_vim_module_installs_xclip_and_publishes_fd_on_linux() {
   local home="$TEMP_ROOT/vim-fd.home"
   local fake_bin="$TEMP_ROOT/vim-fd.bin"
   local output="$TEMP_ROOT/vim-fd.out"
@@ -250,12 +250,22 @@ test_vim_module_publishes_fd_compat_command_on_ubuntu() {
     install_neovim_runtime() { :; }
     install_tree_sitter_cli() { :; }
     install_editor_toolchain() { :; }
-    pkg_install() { :; }
+    command() {
+      if [[ "$*" == "-v fd" && ! -x "$HOME/.local/bin/fd" ]]; then
+        return 1
+      fi
+      builtin command "$@"
+    }
+    pkg_install() {
+      if [[ "$1" == xclip ]]; then
+        printf "%s\n" xclip
+      fi
+    }
       source "$ROOT_DIR/modules/vim.sh"
       "$HOME/.local/bin/fd"
     ' >"$output" 2>&1 || return 1
 
-  [[ "$(<"$output")" == "fdfind-ok" ]]
+  [[ "$(<"$output")" == $'xclip\nfdfind-ok' ]]
 }
 
 test_vim_module_activates_mise_python_for_downstream_modules() {
@@ -595,8 +605,8 @@ run_test no-root-package-install-is-clean-skip test_no_root_package_install_is_a
 run_test opencode-module-has-no-implicit-sudo test_opencode_module_has_no_implicit_sudo
 run_test opencode-resolves-pinned-npm-without-shell-activation \
   test_opencode_resolves_pinned_npm_without_shell_activation
-run_test vim-module-publishes-fd-compat-command-on-ubuntu \
-  test_vim_module_publishes_fd_compat_command_on_ubuntu
+run_test vim-module-installs-xclip-and-publishes-fd-on-linux \
+  test_vim_module_installs_xclip_and_publishes_fd_on_linux
 run_test vim-module-activates-mise-python-for-downstream-modules \
   test_vim_module_activates_mise_python_for_downstream_modules
 run_test tool-command-mapping test_tool_command_mapping

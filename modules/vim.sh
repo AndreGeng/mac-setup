@@ -14,7 +14,7 @@ install_neovim() {
 
   local deps=("curl" "tar" "unzip" "ripgrep")
   if is_linux; then
-    deps+=("c-compiler")
+    deps+=("c-compiler" "xclip")
   fi
   for dep in "${deps[@]}"; do
     pkg_install "$dep" || log "跳过 $dep" "$YELLOW"
