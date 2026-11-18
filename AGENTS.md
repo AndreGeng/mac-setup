@@ -146,3 +146,18 @@ docs/                    Operations, security, and design documentation
 - Add a failing test before changing shell behavior.
 - Run privacy and focused regression checks after changes.
 - Inspect `git status` and the complete diff before reporting completion.
+
+## Automatic Local Commits
+
+- After completing each feature, bug fix, or documentation task and passing the relevant
+  checks, create a local Git commit without asking for additional confirmation. This is
+  standing authorization for local commits in this repository.
+- Keep each commit focused on one completed logical change. Include its related tests and
+  documentation, and use a descriptive Conventional Commit message.
+- Stage only changes belonging to the current task. Preserve unrelated user or agent changes,
+  including any pre-existing staged changes; do not use blanket staging such as `git add .`.
+- Do not commit incomplete work or changes with unresolved failures introduced by the task.
+  Report unrelated pre-existing check failures separately and keep those files out of the commit.
+- Report the commit hash and validation results when the task is complete.
+- This authorization covers local commits only. Push, publish, deploy, and history rewrites
+  still require explicit user authorization.
