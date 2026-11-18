@@ -159,5 +159,20 @@ docs/                    Operations, security, and design documentation
 - Do not commit incomplete work or changes with unresolved failures introduced by the task.
   Report unrelated pre-existing check failures separately and keep those files out of the commit.
 - Report the commit hash and validation results when the task is complete.
-- This authorization covers local commits only. Push, publish, deploy, and history rewrites
-  still require explicit user authorization.
+- This authorization covers local commits only. Push, publish, deploy, and rewriting published
+  or shared history still require explicit user authorization. Local rebases follow the policy below.
+
+## Rebase-First Integration
+
+- When synchronizing with upstream or integrating branches, prefer rebase followed by a
+  fast-forward merge where possible, keeping history linear instead of creating merge commits.
+- For an authorized pull or branch integration, use `git pull --rebase` or fetch and rebase
+  onto the target branch when the commits being replayed are local and unpublished. This is
+  standing authorization to rebase those local commits without additional confirmation.
+- Inspect the working tree, upstream, and commit history first. Preserve unrelated changes;
+  do not discard work or silently stash it to make a rebase possible.
+- Resolve conflicts by preserving the intended changes from both sides, then run the relevant
+  checks before reporting completion. Ask for clarification if the intended resolution is unclear.
+- Do not rewrite published or shared history or force-push without explicit user authorization.
+  If rebase would require that, or preserving merge topology is necessary, explain the limitation
+  and agree on an alternative before creating a merge commit.
