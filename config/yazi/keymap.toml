@@ -1,0 +1,4 @@
+[mgr]
+prepend_keymap = [
+  { on = "z", run = "plugin fzf-hidden", desc = "Fuzzy find files, following hidden visibility" },
+]
