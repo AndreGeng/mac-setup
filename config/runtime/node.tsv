@@ -10,5 +10,5 @@ npm	typescript-language-server	6.0.0
 npm	@olrtg/emmet-language-server	2.8.0
 npm	eslint_d	15.0.3
 npm	vscode-langservers-extracted	4.10.0
-npm	opencode-ai	1.18.20	opencode
+npm	opencode-ai	1.19.6	opencode
 npm	@openai/codex	0.149.0	codex

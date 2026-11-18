@@ -502,7 +502,7 @@ if ("runtime", "node", "22.23.2") not in records:
     raise SystemExit(1)
 if ("runtime", "bun", "1.3.7") not in records:
     raise SystemExit(1)
-if ("npm", "opencode-ai", "1.18.20", "opencode") not in records:
+if ("npm", "opencode-ai", "1.19.6", "opencode") not in records:
     raise SystemExit(1)
 if ("npm", "@openai/codex", "0.149.0", "codex") not in records:
     raise SystemExit(1)

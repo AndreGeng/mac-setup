@@ -211,7 +211,7 @@ test_opencode_resolves_pinned_npm_without_shell_activation() {
   printf '%s\n' '#!/usr/bin/env bash' \
     '[[ "${1:-}" == "--prefix" && "${2:-}" == "$PINNED_NODE_ROOT" ]] || exit 99' \
     'shift 2' \
-    'if [[ "$*" == "install -g opencode-ai@1.18.20" ]]; then' \
+    'if [[ "$*" == "install -g opencode-ai@1.19.6" ]]; then' \
     '  bin_dir="$(cd "$(dirname "$0")" && pwd)"' \
     '  printf "%s\n" "#!/usr/bin/env bash" "printf \"%s\\n\" test-opencode" >"$bin_dir/opencode"' \
     '  chmod +x "$bin_dir/opencode"' \
@@ -323,7 +323,7 @@ test_node_module_installs_pinned_bun_runtime() {
     'printf "%s\n" "$*" >>"$NPM_TRACE"' \
     'bin_dir="$(cd "$(dirname "$0")" && pwd)"' \
     'case "$*" in' \
-    '  "install -g opencode-ai@1.18.20") command_name=opencode ;;' \
+    '  "install -g opencode-ai@1.19.6") command_name=opencode ;;' \
     '  "install -g @openai/codex@0.149.0") command_name=codex ;;' \
     '  *) command_name="" ;;' \
     'esac' \
