@@ -659,6 +659,9 @@ build_verify_member() {
     verify_command gopls-executable gopls
     verify_command ripgrep-executable rg
     verify_command fd-executable fd
+    if is_linux; then
+      verify_command xclip-executable xclip
+    fi
     if [[ "${FEATURE_RUST:-false}" == true ]]; then
       if rust_editor_components_match; then
         add_verify_check rust-editor-components PASS "Rust editor components ($(rust_editor_toolchain))"

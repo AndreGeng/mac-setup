@@ -43,7 +43,7 @@ cd mac-setup
 | 模块 | 说明 | 平台 |
 |------|------|------|
 | zsh | Zsh + zinit，并设置为默认登录 shell | macOS, Linux |
-| vim | Neovim、tree-sitter、Go/gopls + 可选 Python 环境 | macOS, Linux |
+| vim | Neovim、tree-sitter、Go/gopls、xclip（Linux X11 剪贴板）+ 可选 Python 环境 | macOS, Linux |
 | tmux | Tmux + TPM | macOS, Linux |
 | cli-tools | lazygit, fzf, ripgrep, delta 等 | macOS, Linux |
 | nodejs | Node.js、Bun、OpenCode/Codex CLI + 全局 npm 包 | macOS, Linux |
