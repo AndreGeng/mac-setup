@@ -29,8 +29,9 @@ return {
             call floaterm#run('new', 0, [visualmode(), 0, 0, 0], '')
           else
             let tool_cmd = a:tool ==# 'yazi' ? 'mac_setup_yazi' : a:tool
+            let opener_opt = a:tool ==# 'yazi' ? ' --opener=edit' : ''
             call floaterm#run('new', 0, [visualmode(), 0, 0, 0],
-              \ printf('--height=0.99 --width=0.99 --title=%s($1/$2) --name=%s %s', a:tool, a:tool, tool_cmd))
+              \ printf('--height=0.99 --width=0.99 --title=%s($1/$2) --name=%s%s %s', a:tool, a:tool, opener_opt, tool_cmd))
           endif
         else
           call floaterm#toggle(0, a:count ? a:count : bufnr, '')
