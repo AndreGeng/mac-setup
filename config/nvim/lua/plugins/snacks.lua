@@ -15,7 +15,7 @@ return {
 			},
 			quickfile = { enabled = true },
 			scroll = { enabled = true },
-			lazygit = { enabled = true },
+			lazygit = require("functions.lazygit").config(),
 			words = { enabled = true },
 			picker = {
 				enabled = true,
@@ -194,7 +194,7 @@ return {
 			{
 				"<leader>gg",
 				function()
-					require("snacks").lazygit()
+					require("functions.lazygit").open()
 				end,
 				desc = "Lazygit",
 			},
