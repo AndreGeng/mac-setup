@@ -202,6 +202,22 @@
         "baseURL": "{env:MIFY_API_URL}"
       }
     },
+    "Mify-Volcengine": {
+      "models": {
+        "volcengine_maas/deepseek-v4.1-flash": {
+          "interleaved": {
+            "field": "reasoning_content"
+          },
+          "name": "volcengine_maas/deepseek-v4.1-flash"
+        }
+      },
+      "name": "Mify-Volcengine",
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "apiKey": "{env:MIFY_API_TEAM_KEY}",
+        "baseURL": "{env:MIFY_API_URL}"
+      }
+    },
     "Mify-Xiaomi": {
       "models": {
         "xiaomi/mimo-v2.5": {
